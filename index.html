@@ -3,13 +3,14 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Jejak</title>
+<title>Kilas</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
   :root{
-    --bg:#141d18; --bg2:#1b2620; --card:#1f2b24; --border:#2e3c33;
-    --text:#f1ede2; --muted:#8fa092; --accent:#d98e44; --accent2:#7fb88f;
-    --danger:#e0654f; --radius:18px; --font-display:'Georgia', 'Times New Roman', serif;
+    --bg:#0e0f14; --bg2:#171922; --card:#1b1e29; --border:#2a2e3c;
+    --text:#f3f4f8; --muted:#8b8fa3; --accent:#ff7a59; --accent2:#7c5cff;
+    --accent-grad:linear-gradient(135deg,#ff7a59 0%,#ff5da2 50%,#7c5cff 100%);
+    --danger:#ef4444; --radius:18px; --font-display:'Georgia', 'Times New Roman', serif;
   }
   *{box-sizing:border-box; margin:0; padding:0;}
   body{
@@ -19,8 +20,8 @@
   a{color:inherit; text-decoration:none;}
 
   body.light{
-    --bg:#faf7f0; --bg2:#ffffff; --card:#ffffff; --border:#e7e0d2;
-    --text:#26231c; --muted:#7a7363;
+    --bg:#faf8f6; --bg2:#ffffff; --card:#ffffff; --border:#ebe5de;
+    --text:#221f2b; --muted:#867f93;
   }
 
   /* ---------- TOPBAR SEARCH ---------- */
@@ -58,7 +59,7 @@
   .notifItem{display:flex; gap:10px; padding:10px 14px; border-bottom:1px solid var(--border); font-size:12.5px; cursor:pointer;}
   .notifItem:last-child{border-bottom:none;}
   .notifItem:hover{background:var(--bg2);}
-  .notifItem.unread{background:rgba(217,142,68,.06);}
+  .notifItem.unread{background:rgba(255,122,89,.06);}
   .notifItem .txt b{font-weight:700;}
   .notifItem .ntime{color:var(--muted); font-size:11px; margin-top:2px;}
 
@@ -71,7 +72,7 @@
   .dmContactRow .info{flex:1; min-width:0;}
   .dmContactRow .name{font-weight:700; font-size:13px;}
   .dmContactRow .last{font-size:11.5px; color:var(--muted); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
-  .dmBadge{background:var(--accent); color:#1a1208; font-size:10px; font-weight:700; border-radius:10px; padding:2px 6px;}
+  .dmBadge{background:var(--accent); color:#ffffff; font-size:10px; font-weight:700; border-radius:10px; padding:2px 6px;}
   .dmChat{display:flex; flex-direction:column; height:100%;}
   .dmChatHead{display:flex; align-items:center; gap:10px; padding:12px 14px; border-bottom:1px solid var(--border);}
   .dmBackBtn{display:none; background:none; border:none; color:var(--muted); font-size:18px;}
@@ -80,10 +81,10 @@
   .dmBubbleRow{display:flex;}
   .dmBubbleRow.me{justify-content:flex-end;}
   .dmBubble{background:var(--bg2); border:1px solid var(--border); padding:8px 13px; border-radius:14px; font-size:13px; max-width:75%;}
-  .dmBubbleRow.me .dmBubble{background:var(--accent); color:#1a1208; border-color:var(--accent);}
+  .dmBubbleRow.me .dmBubble{background:var(--accent); color:#ffffff; border-color:var(--accent);}
   .dmInputRow{display:flex; gap:8px; padding:12px; border-top:1px solid var(--border);}
   .dmInputRow input{flex:1; background:var(--bg2); border:1px solid var(--border); border-radius:999px; padding:10px 14px; color:var(--text); font-size:13px; outline:none;}
-  .dmInputRow button{background:var(--accent); border:none; color:#1a1208; font-weight:700; border-radius:999px; padding:10px 18px; font-size:13px;}
+  .dmInputRow button{background:var(--accent); border:none; color:#ffffff; font-weight:700; border-radius:999px; padding:10px 18px; font-size:13px;}
   .dmEmpty{display:flex; align-items:center; justify-content:center; height:100%; color:var(--muted); font-size:13px; text-align:center; padding:20px;}
   .msgBtnSmall{background:var(--bg2); border:1px solid var(--border); color:var(--text); border-radius:10px; padding:8px 16px; font-size:13px; font-weight:600; margin-left:8px;}
   img{max-width:100%; display:block;}
@@ -109,14 +110,15 @@
   #authScreen{
     min-height:100vh; display:none; align-items:center; justify-content:center; padding:24px;
     background:
-      radial-gradient(circle at 15% 10%, rgba(217,142,68,.12), transparent 55%),
-      radial-gradient(circle at 85% 90%, rgba(127,184,143,.10), transparent 55%),
+      radial-gradient(circle at 15% 10%, rgba(255,122,89,.12), transparent 55%),
+      radial-gradient(circle at 85% 90%, rgba(124,92,255,.10), transparent 55%),
       var(--bg);
   }
   .authBox{width:380px; max-width:100%;}
   .authBox h1{
-    font-family:var(--font-display); font-size:40px; font-weight:400; letter-spacing:.5px;
-    color:var(--accent2); margin-bottom:4px;
+    font-family:var(--font-display); font-size:46px; font-weight:700; letter-spacing:.5px;
+    margin-bottom:4px;
+    background:var(--accent-grad); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; color:var(--accent2);
   }
   .authBox .tag{color:var(--muted); font-size:13px; margin-bottom:26px; letter-spacing:.3px;}
   .field{margin-bottom:14px;}
@@ -127,8 +129,9 @@
   }
   .field input:focus{border-color:var(--accent);}
   .btnPrimary{
-    width:100%; padding:13px; border:none; border-radius:10px; margin-top:10px;
-    background:var(--accent); color:#1a1208; font-weight:700; font-size:14px; letter-spacing:.02em;
+    width:100%; padding:13px; border:none; border-radius:12px; margin-top:10px;
+    background:var(--accent-grad); color:#ffffff; font-weight:700; font-size:14px; letter-spacing:.02em;
+    box-shadow:0 8px 20px rgba(255,90,120,.25);
   }
   .btnPrimary:hover{filter:brightness(1.08);}
   .btnPrimary:disabled{opacity:.45; cursor:not-allowed;}
@@ -146,7 +149,10 @@
     padding:14px 24px; background:rgba(20,29,24,.9); backdrop-filter:blur(10px);
     border-bottom:1px solid var(--border);
   }
-  .logo{font-family:var(--font-display); font-weight:400; font-size:22px; color:var(--accent2); white-space:nowrap;}
+  .logo{
+    font-family:var(--font-display); font-weight:700; font-size:24px; white-space:nowrap; letter-spacing:.2px;
+    background:var(--accent-grad); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; color:var(--accent2);
+  }
   .topActions{display:flex; align-items:center; gap:14px; margin-left:auto;}
   .iconBtn{
     background:var(--bg2); border:1px solid var(--border); width:38px; height:38px; border-radius:50%;
@@ -156,7 +162,7 @@
   .avatar{
     width:38px; height:38px; border-radius:50%; object-fit:cover; flex-shrink:0;
     background:linear-gradient(135deg,var(--accent),var(--accent2)); display:flex; align-items:center; justify-content:center;
-    font-weight:700; color:#1a1208; font-size:14px; background-size:cover; background-position:center;
+    font-weight:700; color:#ffffff; font-size:14px; background-size:cover; background-position:center;
   }
   .avatar.small{width:32px; height:32px; font-size:12px;}
 
@@ -180,7 +186,7 @@
   .navItem:hover{background:var(--card);}
   .navItem.active{background:var(--card); border-color:var(--border); color:var(--accent2);}
 
-  .card{background:var(--card); border:1px solid var(--border); border-radius:var(--radius); padding:18px; margin-bottom:18px;}
+  .card{background:var(--card); border:1px solid var(--border); border-radius:var(--radius); padding:18px; margin-bottom:18px; box-shadow:0 4px 18px rgba(0,0,0,.18);}
   .composerTop{display:flex; gap:12px;}
   .composerTop textarea{
     flex:1; resize:none; min-height:46px; background:var(--bg2); border:1px solid var(--border);
@@ -200,12 +206,12 @@
   }
   .ghostBtn:hover{border-color:var(--accent);}
   .postBtn{
-    background:var(--accent); border:none; color:#1a1208; font-weight:700;
-    padding:9px 20px; border-radius:10px; font-size:14px;
+    background:var(--accent-grad); border:none; color:#ffffff; font-weight:700;
+    padding:9px 20px; border-radius:12px; font-size:14px; box-shadow:0 6px 16px rgba(255,90,120,.22);
   }
-  .postBtn:disabled{opacity:.4; cursor:not-allowed;}
+  .postBtn:disabled{opacity:.4; cursor:not-allowed; box-shadow:none;}
 
-  .post{background:var(--card); border:1px solid var(--border); border-radius:var(--radius); margin-bottom:18px; overflow:hidden;}
+  .post{background:var(--card); border:1px solid var(--border); border-radius:var(--radius); margin-bottom:18px; overflow:hidden; box-shadow:0 4px 18px rgba(0,0,0,.18);}
   .postHead{display:flex; align-items:center; gap:10px; padding:16px;}
   .postHead .who{flex:1; min-width:0; cursor:pointer;}
   .postHead .name{font-weight:700; font-size:14px;}
@@ -244,7 +250,7 @@
     color:var(--text); font-size:13px; outline:none;
   }
   .commentInputRow input:focus{border-color:var(--accent);}
-  .commentInputRow button{background:var(--accent); border:none; color:#1a1208; font-weight:700; border-radius:999px; padding:8px 16px; font-size:12px;}
+  .commentInputRow button{background:var(--accent); border:none; color:#ffffff; font-weight:700; border-radius:999px; padding:8px 16px; font-size:12px;}
 
   /* ---------- PROFILE PAGE ---------- */
   .profileHeader{display:flex; gap:20px; align-items:center; margin-bottom:10px;}
@@ -257,7 +263,7 @@
   .followBtn{
     border:none; border-radius:10px; padding:9px 20px; font-weight:700; font-size:13px; margin-top:6px;
   }
-  .followBtn.notfollowing{background:var(--accent); color:#1a1208;}
+  .followBtn.notfollowing{background:var(--accent-grad); color:#ffffff; box-shadow:0 6px 14px rgba(255,90,120,.22);}
   .followBtn.following{background:var(--bg2); color:var(--text); border:1px solid var(--border);}
   .backBtn{background:none; border:none; color:var(--muted); font-size:13px; margin-bottom:14px; display:flex; align-items:center; gap:6px;}
   .backBtn:hover{color:var(--text);}
@@ -306,7 +312,7 @@
   .addStoryBtn{position:relative;}
   .addStoryBtn .plus{
     position:absolute; bottom:14px; right:0; width:18px; height:18px; border-radius:50%;
-    background:var(--accent); color:#1a1208; font-size:13px; font-weight:700; display:flex; align-items:center; justify-content:center;
+    background:var(--accent); color:#ffffff; font-size:13px; font-weight:700; display:flex; align-items:center; justify-content:center;
     border:2px solid var(--bg);
   }
   .storyViewerOverlay{
@@ -367,13 +373,13 @@
   .editCaptionBox{padding:0 16px 12px;}
   .editActionsRow{display:flex; gap:8px; margin-top:8px;}
   .editActionsRow button{padding:6px 14px; border-radius:8px; font-size:12px; font-weight:700; border:none;}
-  .editActionsRow .saveSm{background:var(--accent); color:#1a1208;}
+  .editActionsRow .saveSm{background:var(--accent); color:#ffffff;}
   .editActionsRow .cancelSm{background:var(--bg2); border:1px solid var(--border); color:var(--text);}
   .commentRow .editedTag{font-size:10px; color:var(--muted); margin-left:4px;}
   .commentMenuBtn{background:none; border:none; color:var(--muted); font-size:14px; padding:2px 6px; align-self:flex-start;}
   .commentEditBox{flex:1; display:flex; gap:6px;}
   .commentEditBox input{flex:1;}
-  .commentEditBox button{background:var(--accent); border:none; color:#1a1208; font-weight:700; border-radius:8px; padding:6px 10px; font-size:11px;}
+  .commentEditBox button{background:var(--accent); border:none; color:#ffffff; font-weight:700; border-radius:8px; padding:6px 10px; font-size:11px;}
   .postText .editedTag{font-size:11px; color:var(--muted); font-weight:400; margin-left:4px;}
 
   /* ---------- REPOST / BOOKMARK ---------- */
@@ -419,8 +425,48 @@
   .reelMuteBtn{position:absolute; top:14px; right:14px; background:rgba(0,0,0,.4); border:none; color:#fff; width:34px; height:34px; border-radius:50%; font-size:14px;}
   .reelPlayHint{position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:50px; color:rgba(255,255,255,.85); pointer-events:none; opacity:0; transition:.2s;}
   .reelPlayHint.show{opacity:1;}
+  .reelBuffer{
+    position:absolute; inset:0; display:none; align-items:center; justify-content:center; pointer-events:none;
+  }
+  .reelBuffer.show{display:flex;}
+  .reelBuffer i{width:38px; height:38px; border:3px solid rgba(255,255,255,.25); border-top-color:#fff; border-radius:50%; animation:spin .8s linear infinite;}
+  .reelProgressWrap{position:absolute; bottom:0; left:0; right:0; height:3px; background:rgba(255,255,255,.18); cursor:pointer;}
+  .reelProgressBar{height:100%; width:0%; background:var(--accent-grad);}
+  .reelHeart{
+    position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:90px; color:#fff;
+    pointer-events:none; opacity:0; text-shadow:0 4px 18px rgba(0,0,0,.4);
+  }
+  .reelHeart.pop{animation:heartPop .65s ease forwards;}
+  @keyframes heartPop{
+    0%{opacity:0; transform:scale(.4);}
+    25%{opacity:1; transform:scale(1.15);}
+    45%{transform:scale(.95);}
+    75%{opacity:1; transform:scale(1);}
+    100%{opacity:0; transform:scale(1);}
+  }
+
+  /* ---------- FULLSCREEN LIGHTBOX (foto & video) ---------- */
+  .lightboxOverlay{
+    position:fixed; inset:0; background:rgba(0,0,0,.94); z-index:500; display:none;
+    align-items:center; justify-content:center; flex-direction:column;
+  }
+  .lightboxOverlay.show{display:flex;}
+  .lightboxClose{
+    position:absolute; top:16px; right:16px; background:rgba(255,255,255,.12); border:none; color:#fff;
+    width:38px; height:38px; border-radius:50%; font-size:18px; z-index:2;
+  }
+  .lightboxStage{position:relative; width:100%; height:100%; display:flex; align-items:center; justify-content:center;}
+  .lightboxStage img, .lightboxStage video{max-width:94vw; max-height:88vh; object-fit:contain; border-radius:4px;}
+  .lightboxNav{
+    position:absolute; top:50%; transform:translateY(-50%); background:rgba(255,255,255,.12); border:none; color:#fff;
+    width:42px; height:42px; border-radius:50%; font-size:18px;
+  }
+  .lightboxNav.prev{left:14px;} .lightboxNav.next{right:14px;}
+  .lightboxCounter{position:absolute; bottom:18px; left:50%; transform:translateX(-50%); color:#fff; font-size:12px; background:rgba(255,255,255,.12); padding:4px 12px; border-radius:999px;}
+  .zoomable{cursor:zoom-in;}
+  .postImg{cursor:zoom-in;}
   .reelAddBtn{
-    position:fixed; right:24px; bottom:24px; background:var(--accent); color:#1a1208; border:none;
+    position:fixed; right:24px; bottom:24px; background:var(--accent); color:#ffffff; border:none;
     width:54px; height:54px; border-radius:50%; font-size:24px; font-weight:700; box-shadow:0 10px 24px rgba(0,0,0,.4); z-index:30;
   }
 
@@ -456,14 +502,14 @@
   .groupAvatarStack .avatar{width:26px; height:26px; font-size:10px; position:absolute; border:2px solid var(--card);}
   .groupAvatarStack .avatar:nth-child(1){top:0; left:0; z-index:2;}
   .groupAvatarStack .avatar:nth-child(2){bottom:0; right:0; z-index:1;}
-  .groupAvatarSolo{width:38px; height:38px; border-radius:50%; background:linear-gradient(135deg,var(--accent),var(--accent2)); display:flex; align-items:center; justify-content:center; font-weight:700; color:#1a1208; font-size:14px;}
+  .groupAvatarSolo{width:38px; height:38px; border-radius:50%; background:linear-gradient(135deg,var(--accent),var(--accent2)); display:flex; align-items:center; justify-content:center; font-weight:700; color:#ffffff; font-size:14px;}
   .dmBubbleRow .sender{font-size:10.5px; color:var(--accent2); font-weight:700; margin-bottom:2px;}
   .memberPickList{max-height:220px; overflow-y:auto; margin:10px 0; border:1px solid var(--border); border-radius:10px;}
   .memberPickRow{display:flex; align-items:center; gap:10px; padding:9px 10px; border-bottom:1px solid var(--border); cursor:pointer;}
   .memberPickRow:last-child{border-bottom:none;}
-  .memberPickRow.picked{background:rgba(217,142,68,.1);}
+  .memberPickRow.picked{background:rgba(255,122,89,.1);}
   .memberPickRow .chk{margin-left:auto; width:18px; height:18px; border-radius:5px; border:1.5px solid var(--border); display:flex; align-items:center; justify-content:center; font-size:11px;}
-  .memberPickRow.picked .chk{background:var(--accent); border-color:var(--accent); color:#1a1208;}
+  .memberPickRow.picked .chk{background:var(--accent); border-color:var(--accent); color:#ffffff;}
   .groupMembersRow{font-size:11.5px; color:var(--muted); padding:0 14px 10px; cursor:pointer;}
 
   .hidden{display:none !important;}
@@ -520,7 +566,7 @@
   .bottomNav .bnItem .bnAvatar{
     width:24px; height:24px; border-radius:50%; background-size:cover; background-position:center;
     display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:700;
-    background-color:var(--accent2); color:#1a1208; border:1.5px solid transparent;
+    background-color:var(--accent2); color:#ffffff; border:1.5px solid transparent;
   }
   .bottomNav .bnItem.active .bnAvatar{border-color:var(--accent2);}
 
@@ -530,13 +576,13 @@
 </head>
 <body>
 
-<div id="loadingScreen"><div class="spinner"></div><div style="color:var(--muted); font-size:13px;">Memuat Jejak…</div></div>
+<div id="loadingScreen"><div class="spinner"></div><div style="color:var(--muted); font-size:13px;">Memuat Kilas…</div></div>
 
 <!-- ============ AUTH SCREEN ============ -->
 <div id="authScreen">
   <div class="authBox">
-    <h1>Jejak</h1>
-    <div class="tag" id="authTag">Setiap momen meninggalkan jejaknya.</div>
+    <h1>Kilas</h1>
+    <div class="tag" id="authTag">Setiap momen punya kilaunya sendiri.</div>
 
     <div class="errMsg" id="authErr"></div>
 
@@ -567,10 +613,32 @@
   </div>
 </div>
 
+<!-- FULLSCREEN LIGHTBOX (foto & video) -->
+<div class="lightboxOverlay" id="lightboxOverlay" onclick="if(event.target===this) closeLightbox()">
+  <button class="lightboxClose" onclick="closeLightbox()">✕</button>
+  <div class="lightboxStage" id="lightboxStage"></div>
+</div>
+
+<!-- MODAL CAPTION REEL -->
+<div class="modalOverlay" id="reelCaptionModal">
+  <div class="modalBox">
+    <h3>Bagikan reel</h3>
+    <video id="reelCaptionPreview" muted playsinline controls style="width:100%; max-height:280px; border-radius:12px; background:#000; margin-bottom:12px;"></video>
+    <div class="field">
+      <label>Caption</label>
+      <textarea id="reelCaptionInput" placeholder="Tulis caption untuk reel ini (opsional)…"></textarea>
+    </div>
+    <div class="modalActions">
+      <button class="ghostBtn" onclick="closeReelCaptionModal()">Batal</button>
+      <button class="postBtn" onclick="confirmReelUpload()">Bagikan</button>
+    </div>
+  </div>
+</div>
+
 <!-- ============ APP ============ -->
 <div id="app">
   <div class="topbar">
-    <div class="logo">Jejak</div>
+    <div class="logo">Kilas</div>
     <div class="searchWrap" id="searchWrap">
       <span class="si">🔍</span>
       <input type="text" id="searchInput" placeholder="Cari pengguna…" oninput="onSearchInput()" />
@@ -847,14 +915,14 @@ function toggleAuthMode(){
     document.getElementById('authSubmitBtn').textContent = 'Daftar';
     document.getElementById('authSwitchText').textContent = 'Sudah punya akun?';
     document.getElementById('authSwitchLink').textContent = 'Masuk di sini';
-    document.getElementById('authTag').textContent = 'Mulai tinggalkan jejakmu.';
+    document.getElementById('authTag').textContent = 'Mulai bagikan kilasanmu.';
   } else {
     document.getElementById('nameField').classList.add('hidden');
     document.getElementById('usernameField').classList.add('hidden');
     document.getElementById('authSubmitBtn').textContent = 'Masuk';
     document.getElementById('authSwitchText').textContent = 'Belum punya akun?';
     document.getElementById('authSwitchLink').textContent = 'Daftar di sini';
-    document.getElementById('authTag').textContent = 'Setiap momen meninggalkan jejaknya.';
+    document.getElementById('authTag').textContent = 'Setiap momen punya kilaunya sendiri.';
   }
 }
 
@@ -1019,7 +1087,7 @@ async function submitPost(){
 ============================================================ */
 async function loadFeed(){
   const list = document.getElementById('feedList');
-  list.innerHTML = `<div class="emptyState">Memuat jejak terbaru…</div>`;
+  list.innerHTML = `<div class="emptyState">Memuat kilasan terbaru…</div>`;
 
   const [{ data: posts, error }, { data: rps }] = await Promise.all([
     sb.from('posts').select('*').order('created_at', { ascending:false }).limit(50),
@@ -1053,7 +1121,7 @@ async function loadFeed(){
   const finalItems = Object.values(grouped).sort((a,b)=> new Date(b.ts) - new Date(a.ts)).slice(0,60);
 
   if(finalItems.length === 0){
-    list.innerHTML = `<div class="emptyState"><div class="big">Belum ada jejak</div>Jadilah yang pertama membagikan momen.</div>`;
+    list.innerHTML = `<div class="emptyState"><div class="big">Belum ada kilasan</div>Jadilah yang pertama membagikan momen.</div>`;
     return;
   }
 
@@ -1086,17 +1154,18 @@ async function loadPostImagesFor(postIds){
 
 function renderPostMedia(post){
   if(post.video_url){
-    return `<video class="postImg" src="${post.video_url}" controls playsinline preload="metadata"></video>`;
+    return `<video class="postImg" src="${post.video_url}" controls playsinline preload="metadata" onclick="event.stopPropagation()" ondblclick="openLightbox([{type:'video',url:'${post.video_url}'}],0)"></video>`;
   }
   const extra = postImagesMap[post.id] || [];
   const all = post.image_url ? [post.image_url, ...extra] : extra;
   if(all.length === 0) return '';
+  const itemsJson = escapeHtml(JSON.stringify(all.map(u=>({type:'image',url:u}))));
   if(all.length === 1){
-    return `<img class="postImg" src="${all[0]}" loading="lazy" />`;
+    return `<img class="postImg" src="${all[0]}" loading="lazy" onclick="openLightboxJson('${itemsJson}',0)" ondblclick="event.stopPropagation(); doubleTapLikePost('${post.id}')" />`;
   }
   return `<div class="postImgWrap">
     <div class="carouselTrack" id="carousel-${post.id}" onscroll="onCarouselScroll('${post.id}')">
-      ${all.map(u=>`<img class="postImg" src="${u}" loading="lazy" />`).join('')}
+      ${all.map((u,i)=>`<img class="postImg" src="${u}" loading="lazy" onclick="openLightboxJson('${itemsJson}',${i})" ondblclick="event.stopPropagation(); doubleTapLikePost('${post.id}')" />`).join('')}
     </div>
     <div class="carouselCount">1/${all.length}</div>
     <div class="carouselDots" id="dots-${post.id}">${all.map((_,i)=>`<span class="${i===0?'active':''}"></span>`).join('')}</div>
@@ -1251,6 +1320,23 @@ async function toggleLike(postId){
     if(error) showToast('Gagal: ' + error.message);
     else notifyPostOwner(postId, 'like');
   }
+}
+
+function doubleTapLikePost(postId){
+  if(!likedPostIds.has(postId)) toggleLike(postId);
+  const postEl = document.getElementById('post-'+postId);
+  const mediaWrap = postEl?.querySelector('.postImgWrap') || postEl?.querySelector('.postImg')?.parentElement || postEl;
+  if(!mediaWrap) return;
+  let heart = mediaWrap.querySelector('.feedHeartPop');
+  if(!heart){
+    heart = document.createElement('div');
+    heart.className = 'reelHeart feedHeartPop';
+    heart.style.position = 'absolute'; heart.style.color = '#fff'; heart.style.fontSize = '64px';
+    mediaWrap.style.position = mediaWrap.style.position || 'relative';
+    mediaWrap.appendChild(heart);
+  }
+  heart.textContent = '♥';
+  heart.classList.remove('pop'); void heart.offsetWidth; heart.classList.add('pop');
 }
 
 /* ---------- REPOST ---------- */
@@ -2446,10 +2532,56 @@ async function loadHashtagPosts(tag){
 
 
 /* ============================================================
+   FULLSCREEN LIGHTBOX (FOTO & VIDEO)
+============================================================ */
+let lightboxItems = [];
+let lightboxIdx = 0;
+
+function openLightboxJson(jsonStr, idx){
+  try{ openLightbox(JSON.parse(jsonStr), idx); }catch(e){ /* abaikan */ }
+}
+
+function openLightbox(items, startIdx){
+  if(!items || items.length===0) return;
+  lightboxItems = items;
+  lightboxIdx = startIdx || 0;
+  document.getElementById('lightboxOverlay').classList.add('show');
+  renderLightboxStage();
+  document.addEventListener('keydown', lightboxKeyHandler);
+}
+
+function renderLightboxStage(){
+  const stage = document.getElementById('lightboxStage');
+  const item = lightboxItems[lightboxIdx];
+  const navHtml = lightboxItems.length > 1 ? `
+    <button class="lightboxNav prev" onclick="event.stopPropagation(); lightboxPrev()">‹</button>
+    <button class="lightboxNav next" onclick="event.stopPropagation(); lightboxNext()">›</button>
+    <div class="lightboxCounter">${lightboxIdx+1}/${lightboxItems.length}</div>` : '';
+  stage.innerHTML = (item.type === 'video'
+    ? `<video src="${item.url}" controls autoplay playsinline preload="auto"></video>`
+    : `<img src="${item.url}" />`) + navHtml;
+}
+
+function lightboxPrev(){ lightboxIdx = (lightboxIdx - 1 + lightboxItems.length) % lightboxItems.length; renderLightboxStage(); }
+function lightboxNext(){ lightboxIdx = (lightboxIdx + 1) % lightboxItems.length; renderLightboxStage(); }
+
+function closeLightbox(){
+  document.getElementById('lightboxOverlay').classList.remove('show');
+  document.getElementById('lightboxStage').innerHTML = '';
+  document.removeEventListener('keydown', lightboxKeyHandler);
+}
+function lightboxKeyHandler(e){
+  if(e.key === 'Escape') closeLightbox();
+  if(e.key === 'ArrowLeft') lightboxPrev();
+  if(e.key === 'ArrowRight') lightboxNext();
+}
+
+/* ============================================================
    REELS (VIDEO PENDEK)
 ============================================================ */
 let reelsIO = null;
 let reelMuted = true;
+let pendingReelFile = null;
 
 async function renderReels(){
   const wrap = document.getElementById('reelsFeedWrap');
@@ -2471,6 +2603,7 @@ async function renderReels(){
     loadCommentCountsFor(ids)
   ]);
   wrap.innerHTML = `<div class="reelsFeed" id="reelsFeed">${reels.map(renderReelSlide).join('')}</div>`;
+  reelEventsBound.clear();
   setupReelsObserver();
 }
 
@@ -2481,7 +2614,9 @@ function renderReelSlide(r){
   const commentCount = commentCounts[r.id] || 0;
   return `
   <div class="reelSlide" data-reel-id="${r.id}">
-    <video src="${r.video_url}" loop muted playsinline preload="metadata" onclick="toggleReelPlay('${r.id}')"></video>
+    <video src="${r.video_url}" loop muted playsinline preload="none" ondblclick="reelDoubleTapLike(event,'${r.id}')" onclick="toggleReelPlay('${r.id}')"></video>
+    <div class="reelBuffer" id="reelBuf-${r.id}"><i></i></div>
+    <div class="reelHeart" id="reelHeart-${r.id}">♥</div>
     <div class="reelPlayHint" id="reelHint-${r.id}">▶</div>
     <button class="reelMuteBtn" onclick="toggleReelMute(event,'${r.id}')">🔇</button>
     <div class="reelOverlay">
@@ -2500,8 +2635,10 @@ function renderReelSlide(r){
         <button onclick="openReelComments('${r.id}')">💬</button>
         <span class="cnt" id="reelCmtCnt-${r.id}">${commentCount}</span>
       </div>
+      <div><button onclick="openLightbox([{type:'video',url:'${r.video_url}'}],0)" title="Layar penuh">⛶</button></div>
       ${r.user_id===CURRENT_USER.id ? `<div><button onclick="deleteReel('${r.id}')">🗑️</button></div>` : ''}
     </div>
+    <div class="reelProgressWrap" onclick="seekReel(event,'${r.id}')"><div class="reelProgressBar" id="reelProg-${r.id}"></div></div>
   </div>`;
 }
 
@@ -2513,15 +2650,72 @@ function setupReelsObserver(){
     entries.forEach(entry=>{
       const video = entry.target.querySelector('video');
       if(!video) return;
+      const reelId = entry.target.getAttribute('data-reel-id');
       if(entry.isIntersecting && entry.intersectionRatio > 0.6){
+        // aktif: muat penuh untuk pemutaran HD lancar
+        if(video.preload !== 'auto') video.preload = 'auto';
+        if(!video.src) video.load();
         video.muted = reelMuted;
         video.play().catch(()=>{});
+        bindReelMediaEvents(video, reelId);
       } else {
         video.pause();
+        // bukan aktif lagi: turunkan preload supaya hemat bandwidth, tetap simpan metadata utk transisi mulus
+        video.preload = 'metadata';
+        const buf = document.getElementById('reelBuf-'+reelId);
+        if(buf) buf.classList.remove('show');
       }
     });
+    // pre-buffer slide berikutnya supaya transisi swipe terasa instan
+    preloadNeighborReels(entries);
   }, { root: feed, threshold:[0,0.6,1] });
   feed.querySelectorAll('.reelSlide').forEach(s=>reelsIO.observe(s));
+}
+
+function preloadNeighborReels(entries){
+  const activeEntry = entries.find(e=>e.isIntersecting && e.intersectionRatio > 0.6);
+  if(!activeEntry) return;
+  const slide = activeEntry.target;
+  const next = slide.nextElementSibling;
+  const prev = slide.previousElementSibling;
+  [next, prev].forEach(sib=>{
+    if(!sib) return;
+    const v = sib.querySelector('video');
+    if(v && v.preload === 'none') v.preload = 'metadata';
+  });
+}
+
+const reelEventsBound = new Set();
+function bindReelMediaEvents(video, reelId){
+  if(reelEventsBound.has(reelId)) return;
+  reelEventsBound.add(reelId);
+  const buf = document.getElementById('reelBuf-'+reelId);
+  const prog = document.getElementById('reelProg-'+reelId);
+  video.addEventListener('waiting', ()=> buf?.classList.add('show'));
+  video.addEventListener('playing', ()=> buf?.classList.remove('show'));
+  video.addEventListener('canplay', ()=> buf?.classList.remove('show'));
+  video.addEventListener('timeupdate', ()=>{
+    if(!prog || !video.duration) return;
+    prog.style.width = (video.currentTime / video.duration * 100) + '%';
+  });
+}
+
+function seekReel(e, reelId){
+  e.stopPropagation();
+  const slide = document.querySelector(`.reelSlide[data-reel-id="${reelId}"]`);
+  const video = slide?.querySelector('video');
+  if(!video || !video.duration) return;
+  const wrap = e.currentTarget;
+  const rect = wrap.getBoundingClientRect();
+  const ratio = (e.clientX - rect.left) / rect.width;
+  video.currentTime = ratio * video.duration;
+}
+
+function reelDoubleTapLike(e, reelId){
+  e.stopPropagation();
+  if(!likedPostIds.has(reelId)) toggleReelLike(reelId);
+  const heart = document.getElementById('reelHeart-'+reelId);
+  if(heart){ heart.classList.remove('pop'); void heart.offsetWidth; heart.classList.add('pop'); }
 }
 
 function toggleReelPlay(reelId){
@@ -2605,20 +2799,42 @@ function onReelFile(e){
   const file = e.target.files[0];
   if(!file) return;
   e.target.value = '';
-  uploadReel(file);
+  if(!file.type.startsWith('video/')){ showToast('File harus berupa video.'); return; }
+  const MAX_MB = 200;
+  if(file.size > MAX_MB*1024*1024){
+    showToast(`Video terlalu besar (maks ${MAX_MB}MB). Kompres dulu untuk hasil terbaik.`);
+    return;
+  }
+  pendingReelFile = file;
+  document.getElementById('reelCaptionInput').value = '';
+  const preview = document.getElementById('reelCaptionPreview');
+  preview.src = URL.createObjectURL(file);
+  document.getElementById('reelCaptionModal').classList.add('show');
 }
 
-async function uploadReel(file){
-  showToast('Mengunggah reel…');
+function closeReelCaptionModal(){
+  document.getElementById('reelCaptionModal').classList.remove('show');
+  pendingReelFile = null;
+}
+
+async function confirmReelUpload(){
+  if(!pendingReelFile) return;
+  const caption = document.getElementById('reelCaptionInput').value.trim();
+  document.getElementById('reelCaptionModal').classList.remove('show');
+  await uploadReel(pendingReelFile, caption);
+  pendingReelFile = null;
+}
+
+async function uploadReel(file, caption){
+  showToast('Mengunggah reel HD…');
   try{
     if(!file.type.startsWith('video/')) throw new Error('File harus berupa video.');
-    const caption = prompt('Tulis caption untuk reel ini (opsional):') || '';
     const ext = file.name.split('.').pop();
     const path = `reels/${CURRENT_USER.id}_${Date.now()}.${ext}`;
-    const { error: upErr } = await sb.storage.from('media').upload(path, file);
+    const { error: upErr } = await sb.storage.from('media').upload(path, file, { contentType:file.type, cacheControl:'31536000' });
     if(upErr) throw upErr;
     const { data: pub } = sb.storage.from('media').getPublicUrl(path);
-    const { error } = await sb.from('posts').insert({ user_id: CURRENT_USER.id, caption, video_url: pub.publicUrl, image_url:'' });
+    const { error } = await sb.from('posts').insert({ user_id: CURRENT_USER.id, caption:caption||'', video_url: pub.publicUrl, image_url:'' });
     if(error) throw error;
     showToast('Reel dibagikan ✓');
     await renderReels();
