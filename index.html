@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Saud - Social Media</title>
+<title>Connectify - Social Media</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
   :root{
@@ -240,7 +240,7 @@
 </head>
 <body>
 
-<div id="loadingScreen"><div class="spinner"></div><div style="color:var(--muted); font-size:13px;">Memuat Saud...</div></div>
+<div id="loadingScreen"><div class="spinner"></div><div style="color:var(--muted); font-size:13px;">Memuat Connectify...</div></div>
 
 <!-- ================= LOGIN / REGISTER SCREEN ================= -->
 <div id="loginScreen">
@@ -275,7 +275,7 @@
 <!-- ================= APP ================= -->
 <div id="app">
   <div class="topbar">
-    <div class="logo">Saud</div>
+    <div class="logo">Connectify</div>
     <div class="searchWrap">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
       <input id="searchInput" placeholder="Cari orang atau postingan..." oninput="onSearch()" onfocus="onSearch()" />
@@ -411,18 +411,19 @@ async function submitAuth(){
     const { data, error } = await sb.auth.signUp({ email, password: pass });
     if(error){ showAuthError(translateErr(error.message)); btn.disabled=false; btn.textContent='Daftar'; return; }
 
-    if(data.user){
-      await sb.from('profiles').insert({ id: data.user.id, username: uname, name: name, avatar_color: randColor() });
-    }
+    // Simpan dulu nama & username, dipakai untuk bikin profil setelah user benar-benar login
+    // (kalau email confirmation aktif, insert profil sekarang akan gagal karena belum authenticated)
+    localStorage.setItem('connectify_pending_profile', JSON.stringify({ name, username: uname }));
 
     if(data.session){
       CURRENT_USER = data.user;
+      await ensureProfileExists(name, uname);
       await loadMyProfile();
       document.getElementById('loginScreen').style.display='none';
       document.getElementById('app').style.display='block';
       initApp();
     } else {
-      showToast('Akun dibuat! Cek email kamu untuk verifikasi sebelum masuk.');
+      showToast('Akun dibuat! Cek email kamu, klik link verifikasi, lalu masuk di sini.');
       setAuthMode('login');
     }
   } else {
@@ -430,6 +431,14 @@ async function submitAuth(){
     if(error){ showAuthError(translateErr(error.message)); btn.disabled=false; btn.textContent='Masuk'; return; }
     CURRENT_USER = data.user;
     await loadMyProfile();
+    if(!CURRENT_PROFILE){
+      const pending = JSON.parse(localStorage.getItem('connectify_pending_profile') || 'null');
+      const fallbackName = pending?.name || email.split('@')[0];
+      const fallbackUser = pending?.username || ('user' + Math.floor(Math.random()*100000));
+      await ensureProfileExists(fallbackName, fallbackUser);
+      await loadMyProfile();
+      localStorage.removeItem('connectify_pending_profile');
+    }
     document.getElementById('loginScreen').style.display='none';
     document.getElementById('app').style.display='block';
     initApp();
@@ -454,13 +463,29 @@ async function logout(){
 async function loadMyProfile(){
   const { data } = await sb.from('profiles').select('*').eq('id', CURRENT_USER.id).maybeSingle();
   CURRENT_PROFILE = data;
-  profilesCache[CURRENT_USER.id] = data;
+  if(data) profilesCache[CURRENT_USER.id] = data;
+}
+async function ensureProfileExists(name, username){
+  // Cek dulu apakah username sudah dipakai orang lain; kalau ya, tambahkan angka acak
+  let finalUsername = username;
+  const { data: existing } = await sb.from('profiles').select('username').eq('username', finalUsername).maybeSingle();
+  if(existing){ finalUsername = username + Math.floor(Math.random()*1000); }
+  const { error } = await sb.from('profiles').insert({
+    id: CURRENT_USER.id, username: finalUsername, name: name, avatar_color: randColor()
+  });
+  if(error) console.error('Gagal membuat profil:', error.message);
 }
 
 /* ============================================================
    INIT APP
 ============================================================ */
 async function initApp(){
+  if(!CURRENT_PROFILE){
+    showToast('Profil belum lengkap, mencoba memperbaiki...');
+    await ensureProfileExists(CURRENT_USER.email.split('@')[0], 'user'+Math.floor(Math.random()*100000));
+    await loadMyProfile();
+    if(!CURRENT_PROFILE){ showToast('Gagal memuat profil. Coba logout lalu masuk lagi.'); return; }
+  }
   document.getElementById('topAvatar').textContent = initials(CURRENT_PROFILE.name);
   document.getElementById('topAvatar').style.background = CURRENT_PROFILE.avatar_color;
   await loadFollowing();
