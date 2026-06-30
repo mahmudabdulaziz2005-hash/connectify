@@ -368,6 +368,18 @@
   .commentEditBox button{background:var(--accent); border:none; color:#1a1208; font-weight:700; border-radius:8px; padding:6px 10px; font-size:11px;}
   .postText .editedTag{font-size:11px; color:var(--muted); font-weight:400; margin-left:4px;}
 
+  /* ---------- REPOST / BOOKMARK ---------- */
+  .actBtn.reposted{color:var(--accent2);}
+  .actBtn.saved{color:var(--accent);}
+  .repostBanner{display:flex; align-items:center; gap:6px; padding:12px 16px 0; font-size:12px; font-weight:700; color:var(--muted);}
+
+  /* ---------- COMMENT LIKE / REPLY ---------- */
+  .replyRow{margin-left:34px;}
+  .commentMeta{display:flex; align-items:center; gap:14px; margin:3px 0 6px 4px;}
+  .commentLikeBtn, .replyBtn{background:none; border:none; color:var(--muted); font-size:11px; font-weight:700; display:flex; align-items:center; gap:3px; padding:0;}
+  .commentLikeBtn:hover, .replyBtn:hover{color:var(--text);}
+  .commentLikeBtn.liked{color:var(--danger);}
+
   .hidden{display:none !important;}
 </style>
 </head>
@@ -445,6 +457,7 @@
         <button class="navItem active" id="navBeranda">🏠 Beranda</button>
         <button class="navItem" id="navJelajahi">🧭 Jelajahi</button>
         <button class="navItem" id="navPesan">✉️ Pesan</button>
+        <button class="navItem" id="navTersimpan">🔖 Tersimpan</button>
         <button class="navItem" id="navProfil">👤 Profil saya</button>
       </div>
       <div class="trail"><span></span><span></span><span></span><span></span><span></span><span></span></div>
@@ -485,6 +498,9 @@
 
     <!-- EXPLORE VIEW -->
     <div class="main hidden" id="exploreView"></div>
+
+    <!-- SAVED VIEW -->
+    <div class="main hidden" id="savedView"></div>
 
     <!-- RIGHT COLUMN -->
     <div class="rightCol">
@@ -789,28 +805,55 @@ async function loadFeed(){
   const list = document.getElementById('feedList');
   list.innerHTML = `<div class="emptyState">Memuat jejak terbaru…</div>`;
 
-  const { data: posts, error } = await sb.from('posts')
-    .select('*').order('created_at', { ascending:false }).limit(50);
+  const [{ data: posts, error }, { data: rps }] = await Promise.all([
+    sb.from('posts').select('*').order('created_at', { ascending:false }).limit(50),
+    sb.from('reposts').select('*').order('created_at', { ascending:false }).limit(50)
+  ]);
 
   if(error){
     list.innerHTML = `<div class="emptyState">Gagal memuat: ${error.message}</div>`;
     return;
   }
-  if(!posts || posts.length === 0){
+
+  const postsMap = {};
+  (posts||[]).forEach(p=> postsMap[p.id] = p);
+  const missingIds = [...new Set((rps||[]).map(r=>r.post_id))].filter(id=>!postsMap[id]);
+  if(missingIds.length){
+    const { data: extra } = await sb.from('posts').select('*').in('id', missingIds);
+    (extra||[]).forEach(p=> postsMap[p.id] = p);
+  }
+
+  let items = (posts||[]).map(p=>({ post:p, ts:p.created_at, repostBy:null }));
+  (rps||[]).forEach(r=>{
+    const p = postsMap[r.post_id];
+    if(p) items.push({ post:p, ts:r.created_at, repostBy:r.user_id });
+  });
+  // dedup: 1 kartu per postingan, pakai kemunculan terbaru (asli atau repost)
+  const grouped = {};
+  items.forEach(it=>{
+    const id = it.post.id;
+    if(!grouped[id] || new Date(it.ts) > new Date(grouped[id].ts)) grouped[id] = it;
+  });
+  const finalItems = Object.values(grouped).sort((a,b)=> new Date(b.ts) - new Date(a.ts)).slice(0,60);
+
+  if(finalItems.length === 0){
     list.innerHTML = `<div class="emptyState"><div class="big">Belum ada jejak</div>Jadilah yang pertama membagikan momen.</div>`;
     return;
   }
 
-  const userIds = [...new Set(posts.map(p=>p.user_id))];
-  const postIds = posts.map(p=>p.id);
+  const allPosts = finalItems.map(it=>it.post);
+  const userIds = [...new Set(allPosts.map(p=>p.user_id).concat(finalItems.filter(i=>i.repostBy).map(i=>i.repostBy)))];
+  const postIds = allPosts.map(p=>p.id);
   await Promise.all([
     Promise.all(userIds.map(getProfile)),
     loadLikesFor(postIds),
     loadCommentCountsFor(postIds),
-    loadPostImagesFor(postIds)
+    loadPostImagesFor(postIds),
+    loadRepostsFor(postIds),
+    loadBookmarksFor(postIds)
   ]);
 
-  list.innerHTML = posts.map(renderPost).join('');
+  list.innerHTML = finalItems.map(it=> renderPost(it.post, it.repostBy)).join('');
   await loadStories();
 }
 
@@ -851,15 +894,22 @@ function onCarouselScroll(postId){
   if(countEl) countEl.textContent = `${idx+1}/${dots.length}`;
 }
 
-function renderPost(post){
+function renderPost(post, repostBy){
   const u = profilesCache[post.user_id] || { name:'Pengguna', username:'unknown' };
   const isMine = post.user_id === CURRENT_USER.id;
   const liked = likedPostIds.has(post.id);
   const likeCount = likeCounts[post.id] || 0;
   const commentCount = (commentCounts[post.id] || 0);
+  const reposted = repostedPostIds.has(post.id);
+  const repostCount = repostCounts[post.id] || 0;
+  const saved = bookmarkedPostIds.has(post.id);
   postCaptionCache[post.id] = post.caption || '';
+  const repostBanner = repostBy
+    ? `<div class="repostBanner">🔁 ${repostBy===CURRENT_USER.id ? 'Kamu' : escapeHtml((profilesCache[repostBy]||{name:'Seseorang'}).name)} membagikan ulang</div>`
+    : '';
   return `
   <div class="post" id="post-${post.id}">
+    ${repostBanner}
     <div class="postHead">
       <div class="avatar small" style="${avatarStyle(u)}" onclick="viewUser('${post.user_id}')">${avatarInner(u)}</div>
       <div class="who" onclick="viewUser('${post.user_id}')">
@@ -885,6 +935,12 @@ function renderPost(post){
       </button>
       <button class="actBtn" onclick="toggleComments('${post.id}')">
         💬 <span id="commentCount-${post.id}">${commentCount}</span>
+      </button>
+      <button class="actBtn ${reposted?'reposted':''}" id="repostBtn-${post.id}" onclick="toggleRepost('${post.id}')">
+        🔁 <span id="repostCount-${post.id}">${repostCount}</span>
+      </button>
+      <button class="actBtn ${saved?'saved':''}" id="bookmarkBtn-${post.id}" onclick="toggleBookmark('${post.id}')">
+        🔖
       </button>
     </div>
     <div class="commentsBox" id="comments-${post.id}">
@@ -978,6 +1034,99 @@ async function toggleLike(postId){
   }
 }
 
+/* ---------- REPOST ---------- */
+let repostedPostIds = new Set();
+let repostCounts = {};
+
+async function loadRepostsFor(postIds){
+  repostCounts = {};
+  repostedPostIds = new Set();
+  if(postIds.length === 0) return;
+  const { data } = await sb.from('reposts').select('post_id,user_id').in('post_id', postIds);
+  (data||[]).forEach(r=>{
+    repostCounts[r.post_id] = (repostCounts[r.post_id]||0) + 1;
+    if(r.user_id === CURRENT_USER.id) repostedPostIds.add(r.post_id);
+  });
+}
+
+async function toggleRepost(postId){
+  const reposted = repostedPostIds.has(postId);
+  const btn = document.getElementById('repostBtn-'+postId);
+  const countEl = document.getElementById('repostCount-'+postId);
+  if(reposted){
+    repostedPostIds.delete(postId);
+    repostCounts[postId] = Math.max(0,(repostCounts[postId]||1)-1);
+    btn.classList.remove('reposted'); countEl.textContent = repostCounts[postId];
+    const { error } = await sb.from('reposts').delete().eq('post_id', postId).eq('user_id', CURRENT_USER.id);
+    if(error) showToast('Gagal: ' + error.message);
+  } else {
+    repostedPostIds.add(postId);
+    repostCounts[postId] = (repostCounts[postId]||0)+1;
+    btn.classList.add('reposted'); countEl.textContent = repostCounts[postId];
+    const { error } = await sb.from('reposts').insert({ post_id: postId, user_id: CURRENT_USER.id });
+    if(error){ showToast('Gagal: ' + error.message); return; }
+    showToast('Dibagikan ulang ✓');
+    notifyPostOwner(postId, 'repost');
+  }
+}
+
+/* ---------- BOOKMARK ---------- */
+let bookmarkedPostIds = new Set();
+
+async function loadBookmarksFor(postIds){
+  bookmarkedPostIds = new Set();
+  if(postIds.length === 0) return;
+  const { data } = await sb.from('bookmarks').select('post_id').eq('user_id', CURRENT_USER.id).in('post_id', postIds);
+  (data||[]).forEach(b=> bookmarkedPostIds.add(b.post_id));
+}
+
+async function toggleBookmark(postId){
+  const saved = bookmarkedPostIds.has(postId);
+  const btn = document.getElementById('bookmarkBtn-'+postId);
+  if(saved){
+    bookmarkedPostIds.delete(postId);
+    btn.classList.remove('saved');
+    const { error } = await sb.from('bookmarks').delete().eq('post_id', postId).eq('user_id', CURRENT_USER.id);
+    if(error){ showToast('Gagal: ' + error.message); return; }
+    showToast('Dihapus dari tersimpan');
+  } else {
+    bookmarkedPostIds.add(postId);
+    btn.classList.add('saved');
+    const { error } = await sb.from('bookmarks').insert({ post_id: postId, user_id: CURRENT_USER.id });
+    if(error){ showToast('Gagal: ' + error.message); return; }
+    showToast('Tersimpan ✓');
+  }
+  if(currentTab === 'saved' && !bookmarkedPostIds.has(postId)) renderSaved();
+}
+
+async function renderSaved(){
+  const box = document.getElementById('savedView');
+  box.innerHTML = `<div class="emptyState">Memuat tersimpan…</div>`;
+  const { data: bms, error } = await sb.from('bookmarks').select('post_id').eq('user_id', CURRENT_USER.id).order('created_at', {ascending:false});
+  if(error){ box.innerHTML = `<div class="emptyState">Gagal memuat: ${error.message}</div>`; return; }
+  if(!bms || bms.length===0){
+    box.innerHTML = `<div class="emptyState"><div class="big">Belum ada yang disimpan</div>Tap ikon 🔖 di postingan untuk menyimpannya.</div>`;
+    return;
+  }
+  const ids = bms.map(b=>b.post_id);
+  const { data: posts } = await sb.from('posts').select('*').in('id', ids);
+  const ordered = ids.map(id=> (posts||[]).find(p=>p.id===id)).filter(Boolean);
+  if(ordered.length===0){
+    box.innerHTML = `<div class="emptyState">Belum ada yang disimpan.</div>`;
+    return;
+  }
+  const userIds = [...new Set(ordered.map(p=>p.user_id))];
+  await Promise.all([
+    Promise.all(userIds.map(getProfile)),
+    loadLikesFor(ids),
+    loadCommentCountsFor(ids),
+    loadPostImagesFor(ids),
+    loadRepostsFor(ids),
+    loadBookmarksFor(ids)
+  ]);
+  box.innerHTML = ordered.map(p=>renderPost(p)).join('');
+}
+
 /* ---------- COMMENTS ---------- */
 let commentCounts = {};
 let openComments = new Set();
@@ -1003,28 +1152,107 @@ async function loadComments(postId){
   if(!cmts || cmts.length===0){ list.innerHTML = `<div style="color:var(--muted); font-size:12px;">Belum ada komentar.</div>`; return; }
   const uids = [...new Set(cmts.map(c=>c.user_id))];
   await Promise.all(uids.map(getProfile));
-  list.innerHTML = cmts.map(c=>{
-    const u = profilesCache[c.user_id] || {name:'Pengguna'};
-    const isMine = c.user_id === CURRENT_USER.id;
-    return `<div class="commentRow" id="comment-${c.id}">
-      <div class="bubble" id="commentBubble-${c.id}">
-        <span class="cname">${escapeHtml(u.name)}</span>${escapeHtml(c.text)}${c.edited?'<span class="editedTag">(diedit)</span>':''}
-      </div>
-      ${isMine ? `
-      <div class="postMenuWrap">
-        <button class="commentMenuBtn" onclick="toggleCommentMenu('${c.id}')">⋯</button>
-        <div class="postMenuDrop" id="cmenu-${c.id}">
-          <button style="color:var(--text);" onclick="startEditComment('${c.id}','${postId}')">Edit</button>
-          <button onclick="deleteComment('${c.id}','${postId}')">Hapus</button>
-        </div>
-      </div>` : ''}
-    </div>`;
-  }).join('');
+  await loadCommentLikesFor(cmts.map(c=>c.id));
+
   commentTextCache = {}; commentNameCache = {};
   cmts.forEach(c=>{
     commentTextCache[c.id] = c.text;
     commentNameCache[c.id] = (profilesCache[c.user_id]||{name:'Pengguna'}).name;
   });
+
+  const topLevel = cmts.filter(c=>!c.parent_id);
+  const repliesMap = {};
+  cmts.filter(c=>c.parent_id).forEach(c=>{
+    if(!repliesMap[c.parent_id]) repliesMap[c.parent_id] = [];
+    repliesMap[c.parent_id].push(c);
+  });
+
+  list.innerHTML = topLevel.map(c =>
+    renderCommentRow(c, postId, false) + (repliesMap[c.id]||[]).map(r=>renderCommentRow(r, postId, true)).join('')
+  ).join('');
+}
+
+function renderCommentRow(c, postId, isReply){
+  const u = profilesCache[c.user_id] || {name:'Pengguna'};
+  const isMine = c.user_id === CURRENT_USER.id;
+  const liked = commentLikedIds.has(c.id);
+  const likeCount = commentLikeCounts[c.id] || 0;
+  return `<div class="commentRow ${isReply?'replyRow':''}" id="comment-${c.id}">
+    <div style="flex:1; min-width:0;">
+      <div class="bubble" id="commentBubble-${c.id}">
+        <span class="cname">${escapeHtml(u.name)}</span>${escapeHtml(c.text)}${c.edited?'<span class="editedTag">(diedit)</span>':''}
+      </div>
+      <div class="commentMeta">
+        <button class="commentLikeBtn ${liked?'liked':''}" onclick="toggleCommentLike('${c.id}','${postId}')">${liked?'♥':'♡'}${likeCount>0?' '+likeCount:''}</button>
+        ${!isReply ? `<button class="replyBtn" onclick="startReplyComment('${c.id}','${postId}')">Balas</button>` : ''}
+      </div>
+      <div id="replyBox-${c.id}"></div>
+    </div>
+    ${isMine ? `
+    <div class="postMenuWrap">
+      <button class="commentMenuBtn" onclick="toggleCommentMenu('${c.id}')">⋯</button>
+      <div class="postMenuDrop" id="cmenu-${c.id}">
+        <button style="color:var(--text);" onclick="startEditComment('${c.id}','${postId}')">Edit</button>
+        <button onclick="deleteComment('${c.id}','${postId}')">Hapus</button>
+      </div>
+    </div>` : ''}
+  </div>`;
+}
+
+/* ---------- LIKE KOMENTAR ---------- */
+let commentLikedIds = new Set();
+let commentLikeCounts = {};
+
+async function loadCommentLikesFor(commentIds){
+  commentLikedIds = new Set(); commentLikeCounts = {};
+  if(!commentIds.length) return;
+  const { data } = await sb.from('comment_likes').select('comment_id,user_id').in('comment_id', commentIds);
+  (data||[]).forEach(l=>{
+    commentLikeCounts[l.comment_id] = (commentLikeCounts[l.comment_id]||0)+1;
+    if(l.user_id === CURRENT_USER.id) commentLikedIds.add(l.comment_id);
+  });
+}
+
+async function toggleCommentLike(commentId, postId){
+  const liked = commentLikedIds.has(commentId);
+  if(liked){
+    const { error } = await sb.from('comment_likes').delete().eq('comment_id', commentId).eq('user_id', CURRENT_USER.id);
+    if(error){ showToast('Gagal: ' + error.message); return; }
+  } else {
+    const { error } = await sb.from('comment_likes').insert({ comment_id: commentId, user_id: CURRENT_USER.id });
+    if(error){ showToast('Gagal: ' + error.message); return; }
+  }
+  await loadComments(postId);
+}
+
+/* ---------- BALAS KOMENTAR ---------- */
+function startReplyComment(parentId, postId){
+  const box = document.getElementById('replyBox-'+parentId);
+  if(!box) return;
+  const name = commentNameCache[parentId] || '';
+  box.innerHTML = `<div class="commentInputRow" style="margin-top:6px;">
+    <input type="text" id="replyInput-${parentId}" placeholder="Balas ${escapeHtml(name)}…" onkeydown="if(event.key==='Enter') submitReply('${parentId}','${postId}')" />
+    <button onclick="submitReply('${parentId}','${postId}')">Kirim</button>
+  </div>`;
+  document.getElementById('replyInput-'+parentId).focus();
+}
+
+async function submitReply(parentId, postId){
+  const input = document.getElementById('replyInput-'+parentId);
+  const text = input.value.trim();
+  if(!text) return;
+  const { error } = await sb.from('comments').insert({ post_id: postId, user_id: CURRENT_USER.id, text, parent_id: parentId });
+  if(error){ showToast('Gagal membalas: ' + error.message); return; }
+  notifyPostOwner(postId, 'comment');
+  await refreshCommentCount(postId);
+  await loadComments(postId);
+}
+
+async function refreshCommentCount(postId){
+  const { count } = await sb.from('comments').select('*', {count:'exact', head:true}).eq('post_id', postId);
+  commentCounts[postId] = count || 0;
+  const cc = document.getElementById('commentCount-'+postId);
+  if(cc) cc.textContent = commentCounts[postId];
 }
 
 let commentTextCache = {};
@@ -1059,12 +1287,10 @@ async function saveEditComment(commentId){
 }
 
 async function deleteComment(commentId, postId){
-  if(!confirm('Hapus komentar ini?')) return;
+  if(!confirm('Hapus komentar ini? Balasan di dalamnya juga akan terhapus.')) return;
   const { error } = await sb.from('comments').delete().eq('id', commentId);
   if(error){ showToast('Gagal menghapus: ' + error.message); return; }
-  commentCounts[postId] = Math.max(0,(commentCounts[postId]||1)-1);
-  const cc = document.getElementById('commentCount-'+postId);
-  if(cc) cc.textContent = commentCounts[postId];
+  await refreshCommentCount(postId);
   await loadComments(postId);
 }
 
@@ -1089,6 +1315,7 @@ let currentTab = 'feed';
 document.getElementById('navBeranda').addEventListener('click', ()=> switchTab('feed'));
 document.getElementById('navJelajahi').addEventListener('click', ()=> switchTab('explore'));
 document.getElementById('navPesan').addEventListener('click', ()=> switchTab('messages'));
+document.getElementById('navTersimpan').addEventListener('click', ()=> switchTab('saved'));
 document.getElementById('navProfil').addEventListener('click', ()=> viewUser(CURRENT_USER.id));
 
 function setActiveNav(id){
@@ -1102,9 +1329,11 @@ function switchTab(tab){
   document.getElementById('profileView').classList.add('hidden');
   document.getElementById('messagesView').classList.toggle('hidden', tab!=='messages');
   document.getElementById('exploreView').classList.toggle('hidden', tab!=='explore');
+  document.getElementById('savedView').classList.toggle('hidden', tab!=='saved');
   if(tab==='feed'){ setActiveNav('navBeranda'); }
   if(tab==='messages'){ setActiveNav('navPesan'); renderMessages(); }
   if(tab==='explore'){ setActiveNav('navJelajahi'); renderExplore(); }
+  if(tab==='saved'){ setActiveNav('navTersimpan'); renderSaved(); }
 }
 
 function showFeedView(){ switchTab('feed'); }
@@ -1116,6 +1345,8 @@ async function viewUser(uid){
   currentTab = 'profile';
   document.getElementById('mainContent').classList.add('hidden');
   document.getElementById('messagesView').classList.add('hidden');
+  document.getElementById('exploreView').classList.add('hidden');
+  document.getElementById('savedView').classList.add('hidden');
   document.getElementById('profileView').classList.remove('hidden');
   setActiveNav(uid === CURRENT_USER.id ? 'navProfil' : null);
 
@@ -1167,7 +1398,9 @@ async function viewUser(uid){
   await Promise.all([
     loadLikesFor(posts.map(p=>p.id)),
     loadCommentCountsFor(posts.map(p=>p.id)),
-    loadPostImagesFor(posts.map(p=>p.id))
+    loadPostImagesFor(posts.map(p=>p.id)),
+    loadRepostsFor(posts.map(p=>p.id)),
+    loadBookmarksFor(posts.map(p=>p.id))
   ]);
   postsBox.innerHTML = posts.map(renderPost).join('');
 }
@@ -1312,7 +1545,7 @@ function toggleNotifDrop(){
   if(drop.classList.contains('show')) loadNotifList();
 }
 
-const notifLabel = { like:'menyukai postinganmu', comment:'mengomentari postinganmu', follow:'mulai mengikutimu' };
+const notifLabel = { like:'menyukai postinganmu', comment:'mengomentari postinganmu', follow:'mulai mengikutimu', repost:'membagikan ulang postinganmu' };
 
 async function loadNotifList(){
   const list = document.getElementById('notifList');
@@ -1680,7 +1913,9 @@ async function loadHashtagPosts(tag){
     Promise.all(userIds.map(getProfile)),
     loadLikesFor(postIds),
     loadCommentCountsFor(postIds),
-    loadPostImagesFor(postIds)
+    loadPostImagesFor(postIds),
+    loadRepostsFor(postIds),
+    loadBookmarksFor(postIds)
   ]);
   results.innerHTML = `<div class="exploreTag">#${escapeHtml(tag)} · ${posts.length} postingan</div>` + posts.map(renderPost).join('');
 }
