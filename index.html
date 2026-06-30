@@ -1,0 +1,1252 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Jejak</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  :root{
+    --bg:#141d18; --bg2:#1b2620; --card:#1f2b24; --border:#2e3c33;
+    --text:#f1ede2; --muted:#8fa092; --accent:#d98e44; --accent2:#7fb88f;
+    --danger:#e0654f; --radius:18px; --font-display:'Georgia', 'Times New Roman', serif;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{
+    font-family:-apple-system,'Segoe UI',system-ui,sans-serif;
+    background:var(--bg); color:var(--text); min-height:100vh;
+  }
+  a{color:inherit; text-decoration:none;}
+
+  body.light{
+    --bg:#faf7f0; --bg2:#ffffff; --card:#ffffff; --border:#e7e0d2;
+    --text:#26231c; --muted:#7a7363;
+  }
+
+  /* ---------- TOPBAR SEARCH ---------- */
+  .searchWrap{flex:1; max-width:380px; position:relative;}
+  .searchWrap input{
+    width:100%; padding:10px 14px 10px 36px; border-radius:999px; border:1px solid var(--border);
+    background:var(--bg2); color:var(--text); font-size:13px; outline:none;
+  }
+  .searchWrap input:focus{border-color:var(--accent);}
+  .searchWrap .si{position:absolute; left:13px; top:50%; transform:translateY(-50%); opacity:.5; font-size:13px;}
+  .searchResults{
+    position:absolute; top:46px; left:0; right:0; background:var(--card); border:1px solid var(--border);
+    border-radius:12px; max-height:320px; overflow-y:auto; box-shadow:0 12px 30px rgba(0,0,0,.35); display:none; z-index:60;
+  }
+  .searchResults.show{display:block;}
+  .searchItem{display:flex; align-items:center; gap:10px; padding:10px 14px; border-bottom:1px solid var(--border); cursor:pointer;}
+  .searchItem:last-child{border-bottom:none;}
+  .searchItem:hover{background:var(--bg2);}
+  .searchItem .name{font-weight:700; font-size:13px;}
+  .searchItem .uname{font-size:11px; color:var(--muted);}
+
+  /* ---------- BADGE / DROPDOWN NOTIF ---------- */
+  .badge{
+    position:absolute; top:-3px; right:-3px; background:var(--danger); color:#fff; font-size:10px;
+    border-radius:10px; padding:1px 5px; font-weight:700; min-width:15px; text-align:center;
+  }
+  .dropdownWrap{position:relative;}
+  .notifDrop{
+    position:absolute; right:0; top:46px; width:320px; max-height:380px; overflow-y:auto;
+    background:var(--card); border:1px solid var(--border); border-radius:14px; display:none; z-index:60;
+    box-shadow:0 14px 32px rgba(0,0,0,.35);
+  }
+  .notifDrop.show{display:block;}
+  .notifDrop h4{padding:12px 14px; font-size:13px; border-bottom:1px solid var(--border);}
+  .notifItem{display:flex; gap:10px; padding:10px 14px; border-bottom:1px solid var(--border); font-size:12.5px; cursor:pointer;}
+  .notifItem:last-child{border-bottom:none;}
+  .notifItem:hover{background:var(--bg2);}
+  .notifItem.unread{background:rgba(217,142,68,.06);}
+  .notifItem .txt b{font-weight:700;}
+  .notifItem .ntime{color:var(--muted); font-size:11px; margin-top:2px;}
+
+  /* ---------- DM ---------- */
+  .dmLayout{display:grid; grid-template-columns:240px 1fr; gap:0; height:560px; background:var(--card); border:1px solid var(--border); border-radius:var(--radius); overflow:hidden;}
+  @media(max-width:700px){.dmLayout{grid-template-columns:1fr;}}
+  .dmListCol{border-right:1px solid var(--border); overflow-y:auto;}
+  .dmContactRow{display:flex; align-items:center; gap:10px; padding:12px 14px; cursor:pointer; border-bottom:1px solid var(--border);}
+  .dmContactRow:hover, .dmContactRow.active{background:var(--bg2);}
+  .dmContactRow .info{flex:1; min-width:0;}
+  .dmContactRow .name{font-weight:700; font-size:13px;}
+  .dmContactRow .last{font-size:11.5px; color:var(--muted); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+  .dmBadge{background:var(--accent); color:#1a1208; font-size:10px; font-weight:700; border-radius:10px; padding:2px 6px;}
+  .dmChat{display:flex; flex-direction:column; height:100%;}
+  .dmChatHead{display:flex; align-items:center; gap:10px; padding:12px 14px; border-bottom:1px solid var(--border);}
+  .dmBackBtn{display:none; background:none; border:none; color:var(--muted); font-size:18px;}
+  @media(max-width:700px){.dmBackBtn{display:block;}}
+  .dmMessages{flex:1; overflow-y:auto; padding:14px; display:flex; flex-direction:column; gap:8px;}
+  .dmBubbleRow{display:flex;}
+  .dmBubbleRow.me{justify-content:flex-end;}
+  .dmBubble{background:var(--bg2); border:1px solid var(--border); padding:8px 13px; border-radius:14px; font-size:13px; max-width:75%;}
+  .dmBubbleRow.me .dmBubble{background:var(--accent); color:#1a1208; border-color:var(--accent);}
+  .dmInputRow{display:flex; gap:8px; padding:12px; border-top:1px solid var(--border);}
+  .dmInputRow input{flex:1; background:var(--bg2); border:1px solid var(--border); border-radius:999px; padding:10px 14px; color:var(--text); font-size:13px; outline:none;}
+  .dmInputRow button{background:var(--accent); border:none; color:#1a1208; font-weight:700; border-radius:999px; padding:10px 18px; font-size:13px;}
+  .dmEmpty{display:flex; align-items:center; justify-content:center; height:100%; color:var(--muted); font-size:13px; text-align:center; padding:20px;}
+  .msgBtnSmall{background:var(--bg2); border:1px solid var(--border); color:var(--text); border-radius:10px; padding:8px 16px; font-size:13px; font-weight:600; margin-left:8px;}
+  img{max-width:100%; display:block;}
+  button{cursor:pointer; font-family:inherit;}
+  ::-webkit-scrollbar{width:8px;}
+  ::-webkit-scrollbar-thumb{background:var(--border); border-radius:8px;}
+
+  /* trail dots — signature motif: a footprint-trail divider */
+  .trail{
+    display:flex; align-items:center; gap:6px; margin:18px 0; opacity:.55;
+  }
+  .trail span{width:4px; height:4px; border-radius:50%; background:var(--accent2);}
+  .trail span:nth-child(2n){background:var(--accent); opacity:.7;}
+
+  #loadingScreen{
+    position:fixed; inset:0; display:flex; align-items:center; justify-content:center;
+    background:var(--bg); z-index:999; flex-direction:column; gap:14px;
+  }
+  .spinner{width:34px; height:34px; border:3px solid var(--border); border-top-color:var(--accent); border-radius:50%; animation:spin .8s linear infinite;}
+  @keyframes spin{to{transform:rotate(360deg);}}
+
+  /* ---------- AUTH ---------- */
+  #authScreen{
+    min-height:100vh; display:none; align-items:center; justify-content:center; padding:24px;
+    background:
+      radial-gradient(circle at 15% 10%, rgba(217,142,68,.12), transparent 55%),
+      radial-gradient(circle at 85% 90%, rgba(127,184,143,.10), transparent 55%),
+      var(--bg);
+  }
+  .authBox{width:380px; max-width:100%;}
+  .authBox h1{
+    font-family:var(--font-display); font-size:40px; font-weight:400; letter-spacing:.5px;
+    color:var(--accent2); margin-bottom:4px;
+  }
+  .authBox .tag{color:var(--muted); font-size:13px; margin-bottom:26px; letter-spacing:.3px;}
+  .field{margin-bottom:14px;}
+  .field label{font-size:11px; text-transform:uppercase; letter-spacing:.08em; color:var(--muted); display:block; margin-bottom:6px;}
+  .field input{
+    width:100%; padding:12px 14px; border-radius:10px; border:1px solid var(--border);
+    background:var(--bg2); color:var(--text); font-size:14px; outline:none;
+  }
+  .field input:focus{border-color:var(--accent);}
+  .btnPrimary{
+    width:100%; padding:13px; border:none; border-radius:10px; margin-top:10px;
+    background:var(--accent); color:#1a1208; font-weight:700; font-size:14px; letter-spacing:.02em;
+  }
+  .btnPrimary:hover{filter:brightness(1.08);}
+  .btnPrimary:disabled{opacity:.45; cursor:not-allowed;}
+  .switchMode{text-align:center; margin-top:20px; font-size:13px; color:var(--muted);}
+  .switchMode span{color:var(--accent2); cursor:pointer; font-weight:600;}
+  .errMsg{
+    background:rgba(224,101,79,.12); border:1px solid rgba(224,101,79,.35); color:#f0a08f;
+    padding:10px 12px; border-radius:8px; font-size:13px; margin-bottom:14px; display:none;
+  }
+
+  /* ---------- APP ---------- */
+  #app{display:none;}
+  .topbar{
+    position:sticky; top:0; z-index:50; display:flex; align-items:center; gap:18px;
+    padding:14px 24px; background:rgba(20,29,24,.9); backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--border);
+  }
+  .logo{font-family:var(--font-display); font-weight:400; font-size:22px; color:var(--accent2); white-space:nowrap;}
+  .topActions{display:flex; align-items:center; gap:14px; margin-left:auto;}
+  .iconBtn{
+    background:var(--bg2); border:1px solid var(--border); width:38px; height:38px; border-radius:50%;
+    display:flex; align-items:center; justify-content:center; color:var(--text); font-size:15px;
+  }
+  .iconBtn:hover{border-color:var(--accent);}
+  .avatar{
+    width:38px; height:38px; border-radius:50%; object-fit:cover; flex-shrink:0;
+    background:linear-gradient(135deg,var(--accent),var(--accent2)); display:flex; align-items:center; justify-content:center;
+    font-weight:700; color:#1a1208; font-size:14px; background-size:cover; background-position:center;
+  }
+  .avatar.small{width:32px; height:32px; font-size:12px;}
+
+  .layout{display:grid; grid-template-columns:200px minmax(0,560px) 1fr; gap:24px; max-width:1080px; margin:0 auto; padding:24px 16px;}
+  @media(max-width:900px){.layout{grid-template-columns:1fr; max-width:560px;}}
+  .sidebar{position:sticky; top:84px; align-self:start;}
+  @media(max-width:900px){.sidebar{display:none;}}
+  .navList{display:flex; flex-direction:column; gap:4px;}
+  .navItem{
+    display:flex; align-items:center; gap:12px; padding:11px 14px; border-radius:12px; color:var(--text);
+    font-weight:600; font-size:14px; border:1px solid transparent; background:none; width:100%; text-align:left;
+  }
+  .navItem:hover{background:var(--card);}
+  .navItem.active{background:var(--card); border-color:var(--border); color:var(--accent2);}
+
+  .card{background:var(--card); border:1px solid var(--border); border-radius:var(--radius); padding:18px; margin-bottom:18px;}
+  .composerTop{display:flex; gap:12px;}
+  .composerTop textarea{
+    flex:1; resize:none; min-height:46px; background:var(--bg2); border:1px solid var(--border);
+    border-radius:14px; padding:12px 14px; color:var(--text); font-size:15px; outline:none; font-family:inherit;
+  }
+  .composerTop textarea:focus{border-color:var(--accent);}
+  .imgPreviewWrap{position:relative; margin-top:12px;}
+  .imgPreviewWrap img{border-radius:14px; max-height:300px; width:100%; object-fit:cover;}
+  .removeImg{
+    position:absolute; top:8px; right:8px; background:rgba(0,0,0,.6); color:#fff; border:none;
+    width:26px; height:26px; border-radius:50%; font-size:13px;
+  }
+  .composerActions{display:flex; align-items:center; justify-content:space-between; margin-top:12px; padding-top:12px; border-top:1px solid var(--border);}
+  .ghostBtn{
+    background:var(--bg2); border:1px solid var(--border); border-radius:10px; padding:8px 12px;
+    color:var(--text); font-size:13px; display:flex; align-items:center; gap:6px; font-weight:600;
+  }
+  .ghostBtn:hover{border-color:var(--accent);}
+  .postBtn{
+    background:var(--accent); border:none; color:#1a1208; font-weight:700;
+    padding:9px 20px; border-radius:10px; font-size:14px;
+  }
+  .postBtn:disabled{opacity:.4; cursor:not-allowed;}
+
+  .post{background:var(--card); border:1px solid var(--border); border-radius:var(--radius); margin-bottom:18px; overflow:hidden;}
+  .postHead{display:flex; align-items:center; gap:10px; padding:16px;}
+  .postHead .who{flex:1; min-width:0; cursor:pointer;}
+  .postHead .name{font-weight:700; font-size:14px;}
+  .postHead .time{font-size:12px; color:var(--muted);}
+  .postHead .avatar{cursor:pointer;}
+  .postMenuWrap{position:relative;}
+  .postMenuBtn{background:none; border:none; color:var(--muted); font-size:18px; padding:4px 8px;}
+  .postMenuDrop{
+    position:absolute; right:0; top:32px; background:var(--bg2); border:1px solid var(--border);
+    border-radius:10px; overflow:hidden; min-width:140px; z-index:10; display:none; box-shadow:0 10px 24px rgba(0,0,0,.4);
+  }
+  .postMenuDrop.show{display:block;}
+  .postMenuDrop button{
+    width:100%; text-align:left; padding:10px 14px; background:none; border:none; color:var(--danger);
+    font-size:13px; font-weight:600;
+  }
+  .postMenuDrop button:hover{background:rgba(224,101,79,.1);}
+  .postText{padding:0 16px 12px; font-size:15px; line-height:1.5; white-space:pre-wrap; word-break:break-word;}
+  .postImg{width:100%; max-height:480px; object-fit:cover;}
+
+  .postActions{display:flex; border-top:1px solid var(--border); margin-top:2px;}
+  .actBtn{
+    flex:1; background:none; border:none; padding:11px; display:flex; align-items:center; justify-content:center;
+    gap:7px; font-size:13px; font-weight:600; color:var(--muted);
+  }
+  .actBtn:hover{color:var(--text);}
+  .actBtn.liked{color:var(--danger);}
+  .commentsBox{border-top:1px solid var(--border); padding:12px 16px; display:none;}
+  .commentsBox.show{display:block;}
+  .commentRow{display:flex; gap:8px; margin-bottom:10px; font-size:13px;}
+  .commentRow .bubble{background:var(--bg2); border-radius:12px; padding:7px 11px; flex:1;}
+  .commentRow .cname{font-weight:700; margin-right:6px;}
+  .commentInputRow{display:flex; gap:8px; margin-top:8px;}
+  .commentInputRow input{
+    flex:1; background:var(--bg2); border:1px solid var(--border); border-radius:999px; padding:8px 14px;
+    color:var(--text); font-size:13px; outline:none;
+  }
+  .commentInputRow input:focus{border-color:var(--accent);}
+  .commentInputRow button{background:var(--accent); border:none; color:#1a1208; font-weight:700; border-radius:999px; padding:8px 16px; font-size:12px;}
+
+  /* ---------- PROFILE PAGE ---------- */
+  .profileHeader{display:flex; gap:20px; align-items:center; margin-bottom:10px;}
+  .profileHeader .avatar{width:84px; height:84px; font-size:30px;}
+  .profileHeader .pname{font-family:var(--font-display); font-size:24px; color:var(--text);}
+  .profileHeader .puname{color:var(--muted); font-size:13px; margin-bottom:8px;}
+  .profileStats{display:flex; gap:18px; margin:10px 0; font-size:13px;}
+  .profileStats b{color:var(--accent2);}
+  .profileBio{font-size:14px; line-height:1.5; margin:8px 0 14px; white-space:pre-wrap;}
+  .followBtn{
+    border:none; border-radius:10px; padding:9px 20px; font-weight:700; font-size:13px; margin-top:6px;
+  }
+  .followBtn.notfollowing{background:var(--accent); color:#1a1208;}
+  .followBtn.following{background:var(--bg2); color:var(--text); border:1px solid var(--border);}
+  .backBtn{background:none; border:none; color:var(--muted); font-size:13px; margin-bottom:14px; display:flex; align-items:center; gap:6px;}
+  .backBtn:hover{color:var(--text);}
+
+  /* ---------- MODAL EDIT PROFIL ---------- */
+  .modalOverlay{
+    position:fixed; inset:0; background:rgba(0,0,0,.6); z-index:300; display:none;
+    align-items:center; justify-content:center; padding:20px;
+  }
+  .modalOverlay.show{display:flex;}
+  .modalBox{background:var(--card); border:1px solid var(--border); border-radius:18px; padding:24px; width:380px; max-width:100%;}
+  .modalBox h3{font-family:var(--font-display); font-size:20px; margin-bottom:16px; color:var(--accent2);}
+  .modalBox textarea{
+    width:100%; min-height:70px; resize:vertical; background:var(--bg2); border:1px solid var(--border);
+    border-radius:10px; padding:10px 12px; color:var(--text); font-size:14px; outline:none; font-family:inherit;
+  }
+  .modalActions{display:flex; gap:10px; margin-top:16px;}
+  .modalActions .ghostBtn{flex:1; justify-content:center;}
+  .modalActions .postBtn{flex:1; text-align:center; display:block;}
+  .editAvatarRow{display:flex; align-items:center; gap:14px; margin-bottom:16px;}
+
+  .emptyState{text-align:center; padding:60px 20px; color:var(--muted); font-size:14px;}
+  .emptyState .big{font-family:var(--font-display); font-size:22px; color:var(--accent2); margin-bottom:8px;}
+
+  .rightCol{position:sticky; top:84px; align-self:start;}
+  @media(max-width:900px){.rightCol{display:none;}}
+  .profileMini{display:flex; align-items:center; gap:12px; margin-bottom:18px;}
+  .profileMini .name{font-weight:700; font-size:14px;}
+  .profileMini .uname{font-size:12px; color:var(--muted);}
+
+  #toast{
+    position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(20px);
+    background:var(--card); border:1px solid var(--border); padding:12px 20px; border-radius:10px;
+    font-size:13px; opacity:0; pointer-events:none; transition:.25s; z-index:200;
+  }
+  #toast.show{opacity:1; transform:translateX(-50%) translateY(0);}
+
+  .hidden{display:none !important;}
+</style>
+</head>
+<body>
+
+<div id="loadingScreen"><div class="spinner"></div><div style="color:var(--muted); font-size:13px;">Memuat Jejak…</div></div>
+
+<!-- ============ AUTH SCREEN ============ -->
+<div id="authScreen">
+  <div class="authBox">
+    <h1>Jejak</h1>
+    <div class="tag" id="authTag">Setiap momen meninggalkan jejaknya.</div>
+
+    <div class="errMsg" id="authErr"></div>
+
+    <form id="authForm">
+      <div class="field hidden" id="nameField">
+        <label>Nama lengkap</label>
+        <input type="text" id="inName" placeholder="Nama kamu" autocomplete="name" />
+      </div>
+      <div class="field hidden" id="usernameField">
+        <label>Username</label>
+        <input type="text" id="inUsername" placeholder="tanpa spasi, contoh: budi_s" autocomplete="off" />
+      </div>
+      <div class="field">
+        <label>Email</label>
+        <input type="email" id="inEmail" placeholder="kamu@email.com" autocomplete="email" required />
+      </div>
+      <div class="field">
+        <label>Kata sandi</label>
+        <input type="password" id="inPassword" placeholder="minimal 6 karakter" autocomplete="current-password" required />
+      </div>
+      <button class="btnPrimary" id="authSubmitBtn" type="submit">Masuk</button>
+    </form>
+
+    <div class="switchMode">
+      <span id="authSwitchText">Belum punya akun?</span>
+      <span id="authSwitchLink" onclick="toggleAuthMode()">Daftar di sini</span>
+    </div>
+  </div>
+</div>
+
+<!-- ============ APP ============ -->
+<div id="app">
+  <div class="topbar">
+    <div class="logo">Jejak</div>
+    <div class="searchWrap">
+      <span class="si">🔍</span>
+      <input type="text" id="searchInput" placeholder="Cari pengguna…" oninput="onSearchInput()" />
+      <div class="searchResults" id="searchResults"></div>
+    </div>
+    <div class="topActions">
+      <button class="iconBtn" id="themeBtn" onclick="toggleTheme()" title="Ganti tema">🌙</button>
+      <div class="dropdownWrap">
+        <button class="iconBtn" onclick="toggleNotifDrop()" title="Notifikasi">
+          🔔<span class="badge hidden" id="notifBadge">0</span>
+        </button>
+        <div class="notifDrop" id="notifDrop">
+          <h4>Notifikasi</h4>
+          <div id="notifList"></div>
+        </div>
+      </div>
+      <button class="iconBtn" onclick="switchTab('messages')" title="Pesan" style="position:relative;">
+        ✉️<span class="badge hidden" id="dmBadgeNav">0</span>
+      </button>
+      <button class="iconBtn" onclick="logout()" title="Keluar">⎋</button>
+      <div class="avatar small" id="topAvatar" onclick="viewUser(CURRENT_USER.id)" style="cursor:pointer"></div>
+    </div>
+  </div>
+
+  <div class="layout">
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+      <div class="navList">
+        <button class="navItem active" id="navBeranda">🏠 Beranda</button>
+        <button class="navItem" id="navPesan">✉️ Pesan</button>
+        <button class="navItem" id="navProfil">👤 Profil saya</button>
+      </div>
+      <div class="trail"><span></span><span></span><span></span><span></span><span></span><span></span></div>
+    </div>
+
+    <!-- MAIN -->
+    <div class="main" id="mainContent">
+      <div class="card" id="composerCard">
+        <div class="composerTop">
+          <div class="avatar small" id="composerAvatar"></div>
+          <textarea id="composerText" placeholder="Apa yang sedang terjadi?" rows="2"></textarea>
+        </div>
+        <div class="imgPreviewWrap hidden" id="imgPreviewWrap">
+          <img id="imgPreview" src="" />
+          <button class="removeImg" onclick="removeComposerImage()">✕</button>
+        </div>
+        <input type="file" id="composerFile" accept="image/*" class="hidden" onchange="onComposerFile(event)" />
+        <div class="composerActions">
+          <button class="ghostBtn" onclick="document.getElementById('composerFile').click()">🖼️ Foto</button>
+          <button class="postBtn" id="composerSubmit" onclick="submitPost()">Bagikan</button>
+        </div>
+      </div>
+
+      <div id="feedList"></div>
+    </div>
+
+    <!-- PROFILE VIEW (disisipkan secara dinamis menggantikan komposer+feed) -->
+    <div class="main hidden" id="profileView">
+      <button class="backBtn" onclick="showFeedView()">← Kembali ke beranda</button>
+      <div class="card" id="profileHeaderCard"></div>
+      <div id="profilePosts"></div>
+    </div>
+
+    <!-- MESSAGES VIEW -->
+    <div class="main hidden" id="messagesView"></div>
+
+    <!-- RIGHT COLUMN -->
+    <div class="rightCol">
+      <div class="card">
+        <div class="profileMini">
+          <div class="avatar" id="sideAvatar"></div>
+          <div>
+            <div class="name" id="sideName">—</div>
+            <div class="uname" id="sideUsername">—</div>
+          </div>
+        </div>
+        <div style="font-size:12px; color:var(--muted); line-height:1.5;">
+          Klik avatar atau nama seseorang untuk melihat profilnya. Fitur pencarian &amp; notifikasi akan menyusul.
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<!-- MODAL EDIT PROFIL -->
+<div class="modalOverlay" id="editProfileModal">
+  <div class="modalBox">
+    <h3>Edit profil</h3>
+    <div class="editAvatarRow">
+      <div class="avatar" id="editAvatarPreview" style="width:56px;height:56px;"></div>
+      <button class="ghostBtn" onclick="document.getElementById('editAvatarFile').click()">Ganti foto</button>
+      <input type="file" id="editAvatarFile" accept="image/*" class="hidden" onchange="onEditAvatarFile(event)" />
+    </div>
+    <div class="field">
+      <label>Nama</label>
+      <input type="text" id="editName" />
+    </div>
+    <div class="field">
+      <label>Bio</label>
+      <textarea id="editBio" placeholder="Ceritakan sedikit tentang dirimu…"></textarea>
+    </div>
+    <div class="modalActions">
+      <button class="ghostBtn" onclick="closeEditProfile()">Batal</button>
+      <button class="postBtn" id="saveProfileBtn" onclick="saveProfile()">Simpan</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ============================================================
+   KONFIGURASI SUPABASE
+============================================================ */
+const SUPABASE_URL = 'https://xvesfzxguerrbmnzyvqi.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh2ZXNmenhndWVycmJtbnp5dnFpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI3OTQ0NzEsImV4cCI6MjA5ODM3MDQ3MX0.XPPPAyp2b6QDMu7cwK9DLBobikXKI5CyXa58-OJ9vSw';
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+let CURRENT_USER = null;
+let CURRENT_PROFILE = null;
+let authMode = 'login'; // 'login' | 'register'
+let composerImageFile = null;
+let profilesCache = {};
+
+/* ============================================================
+   INIT
+============================================================ */
+window.addEventListener('DOMContentLoaded', init);
+
+async function init(){
+  const { data:{ session } } = await sb.auth.getSession();
+  if(session){
+    await handleLoggedIn(session.user);
+  } else {
+    showAuthScreen();
+  }
+  document.getElementById('loadingScreen').style.display = 'none';
+
+  sb.auth.onAuthStateChange((event, session)=>{
+    if(event === 'SIGNED_OUT'){
+      CURRENT_USER = null; CURRENT_PROFILE = null;
+      showAuthScreen();
+    }
+  });
+}
+
+function showAuthScreen(){
+  document.getElementById('authScreen').style.display = 'flex';
+  document.getElementById('app').style.display = 'none';
+}
+
+async function handleLoggedIn(user){
+  CURRENT_USER = user;
+  const { data: profile } = await sb.from('profiles').select('*').eq('id', user.id).maybeSingle();
+  if(!profile){
+    // safety net jika trigger profil gagal — minta lengkapi nanti, tapi tetap masuk
+    CURRENT_PROFILE = { id:user.id, name: user.email.split('@')[0], username: user.email.split('@')[0], avatar_url:'' };
+  } else {
+    CURRENT_PROFILE = profile;
+  }
+  document.getElementById('authScreen').style.display = 'none';
+  document.getElementById('app').style.display = 'block';
+  renderSelfUI();
+  await loadFeed();
+  loadNotifCount();
+  updateDmBadge();
+  subscribeNotifications();
+}
+
+/* ============================================================
+   AUTH FORM
+============================================================ */
+function toggleAuthMode(){
+  authMode = authMode === 'login' ? 'register' : 'login';
+  document.getElementById('authErr').style.display = 'none';
+  if(authMode === 'register'){
+    document.getElementById('nameField').classList.remove('hidden');
+    document.getElementById('usernameField').classList.remove('hidden');
+    document.getElementById('authSubmitBtn').textContent = 'Daftar';
+    document.getElementById('authSwitchText').textContent = 'Sudah punya akun?';
+    document.getElementById('authSwitchLink').textContent = 'Masuk di sini';
+    document.getElementById('authTag').textContent = 'Mulai tinggalkan jejakmu.';
+  } else {
+    document.getElementById('nameField').classList.add('hidden');
+    document.getElementById('usernameField').classList.add('hidden');
+    document.getElementById('authSubmitBtn').textContent = 'Masuk';
+    document.getElementById('authSwitchText').textContent = 'Belum punya akun?';
+    document.getElementById('authSwitchLink').textContent = 'Daftar di sini';
+    document.getElementById('authTag').textContent = 'Setiap momen meninggalkan jejaknya.';
+  }
+}
+
+document.getElementById('authForm').addEventListener('submit', async (e)=>{
+  e.preventDefault();
+  const errBox = document.getElementById('authErr');
+  errBox.style.display = 'none';
+  const email = document.getElementById('inEmail').value.trim();
+  const password = document.getElementById('inPassword').value;
+  const btn = document.getElementById('authSubmitBtn');
+  btn.disabled = true;
+
+  try{
+    if(authMode === 'login'){
+      const { data, error } = await sb.auth.signInWithPassword({ email, password });
+      if(error) throw error;
+      await handleLoggedIn(data.user);
+    } else {
+      const name = document.getElementById('inName').value.trim();
+      let username = document.getElementById('inUsername').value.trim().toLowerCase().replace(/\s+/g,'_');
+      if(!name || !username) throw new Error('Nama dan username wajib diisi.');
+
+      const { data, error } = await sb.auth.signUp({ email, password });
+      if(error) throw error;
+      if(!data.user) throw new Error('Pendaftaran berhasil, cek email untuk verifikasi sebelum masuk.');
+
+      const { error: profErr } = await sb.from('profiles').insert({
+        id: data.user.id, name, username, bio:'', avatar_url:''
+      });
+      if(profErr){
+        if(profErr.message.includes('duplicate')) throw new Error('Username sudah dipakai, coba yang lain.');
+        throw profErr;
+      }
+      await handleLoggedIn(data.user);
+    }
+  } catch(err){
+    errBox.textContent = err.message || 'Terjadi kesalahan.';
+    errBox.style.display = 'block';
+  } finally {
+    btn.disabled = false;
+  }
+});
+
+async function logout(){
+  await sb.auth.signOut();
+}
+
+/* ============================================================
+   PROFIL / AVATAR HELPERS
+============================================================ */
+function avatarInitial(p){ return (p?.name || '?').trim().charAt(0).toUpperCase(); }
+function avatarStyle(p){
+  if(p?.avatar_url) return `background-image:url('${p.avatar_url}')`;
+  return '';
+}
+function avatarInner(p){
+  return p?.avatar_url ? '' : avatarInitial(p);
+}
+
+function renderSelfUI(){
+  const p = CURRENT_PROFILE;
+  ['topAvatar','composerAvatar','sideAvatar'].forEach(id=>{
+    const el = document.getElementById(id);
+    el.setAttribute('style', avatarStyle(p));
+    el.textContent = avatarInner(p);
+  });
+  document.getElementById('sideName').textContent = p.name;
+  document.getElementById('sideUsername').textContent = '@' + p.username;
+}
+
+async function getProfile(uid){
+  if(profilesCache[uid]) return profilesCache[uid];
+  const { data } = await sb.from('profiles').select('*').eq('id', uid).maybeSingle();
+  const p = data || { name:'Pengguna', username:'tidak diketahui', avatar_url:'' };
+  profilesCache[uid] = p;
+  return p;
+}
+
+/* ============================================================
+   COMPOSER
+============================================================ */
+function onComposerFile(e){
+  const file = e.target.files[0];
+  if(!file) return;
+  composerImageFile = file;
+  const reader = new FileReader();
+  reader.onload = ()=>{
+    document.getElementById('imgPreview').src = reader.result;
+    document.getElementById('imgPreviewWrap').classList.remove('hidden');
+  };
+  reader.readAsDataURL(file);
+}
+function removeComposerImage(){
+  composerImageFile = null;
+  document.getElementById('composerFile').value = '';
+  document.getElementById('imgPreviewWrap').classList.add('hidden');
+}
+
+async function submitPost(){
+  const textEl = document.getElementById('composerText');
+  const caption = textEl.value.trim();
+  if(!caption && !composerImageFile){ showToast('Tulis sesuatu atau tambahkan foto dulu.'); return; }
+
+  const btn = document.getElementById('composerSubmit');
+  btn.disabled = true; btn.textContent = 'Mengirim…';
+
+  try{
+    let image_url = '';
+    if(composerImageFile){
+      const ext = composerImageFile.name.split('.').pop();
+      const path = `posts/${CURRENT_USER.id}_${Date.now()}.${ext}`;
+      const { error: upErr } = await sb.storage.from('media').upload(path, composerImageFile);
+      if(upErr) throw upErr;
+      const { data: pub } = sb.storage.from('media').getPublicUrl(path);
+      image_url = pub.publicUrl;
+    }
+
+    const { error } = await sb.from('posts').insert({
+      user_id: CURRENT_USER.id, caption, image_url
+    });
+    if(error) throw error;
+
+    textEl.value = '';
+    removeComposerImage();
+    showToast('Postingan dibagikan ✓');
+    await loadFeed();
+  } catch(err){
+    showToast('Gagal memposting: ' + err.message);
+  } finally {
+    btn.disabled = false; btn.textContent = 'Bagikan';
+  }
+}
+
+/* ============================================================
+   FEED
+============================================================ */
+async function loadFeed(){
+  const list = document.getElementById('feedList');
+  list.innerHTML = `<div class="emptyState">Memuat jejak terbaru…</div>`;
+
+  const { data: posts, error } = await sb.from('posts')
+    .select('*').order('created_at', { ascending:false }).limit(50);
+
+  if(error){
+    list.innerHTML = `<div class="emptyState">Gagal memuat: ${error.message}</div>`;
+    return;
+  }
+  if(!posts || posts.length === 0){
+    list.innerHTML = `<div class="emptyState"><div class="big">Belum ada jejak</div>Jadilah yang pertama membagikan momen.</div>`;
+    return;
+  }
+
+  const userIds = [...new Set(posts.map(p=>p.user_id))];
+  const postIds = posts.map(p=>p.id);
+  await Promise.all([
+    Promise.all(userIds.map(getProfile)),
+    loadLikesFor(postIds),
+    loadCommentCountsFor(postIds)
+  ]);
+
+  list.innerHTML = posts.map(renderPost).join('');
+}
+
+function renderPost(post){
+  const u = profilesCache[post.user_id] || { name:'Pengguna', username:'unknown' };
+  const isMine = post.user_id === CURRENT_USER.id;
+  const liked = likedPostIds.has(post.id);
+  const likeCount = likeCounts[post.id] || 0;
+  const commentCount = (commentCounts[post.id] || 0);
+  return `
+  <div class="post" id="post-${post.id}">
+    <div class="postHead">
+      <div class="avatar small" style="${avatarStyle(u)}" onclick="viewUser('${post.user_id}')">${avatarInner(u)}</div>
+      <div class="who" onclick="viewUser('${post.user_id}')">
+        <div class="name">${escapeHtml(u.name)}</div>
+        <div class="time">@${escapeHtml(u.username)} · ${timeAgo(post.created_at)}</div>
+      </div>
+      ${isMine ? `
+      <div class="postMenuWrap">
+        <button class="postMenuBtn" onclick="togglePostMenu('${post.id}')">⋯</button>
+        <div class="postMenuDrop" id="menu-${post.id}">
+          <button onclick="deletePost('${post.id}')">Hapus postingan</button>
+        </div>
+      </div>` : ''}
+    </div>
+    ${post.caption ? `<div class="postText">${escapeHtml(post.caption)}</div>` : ''}
+    ${post.image_url ? `<img class="postImg" src="${post.image_url}" loading="lazy" />` : ''}
+    <div class="postActions">
+      <button class="actBtn ${liked?'liked':''}" id="likeBtn-${post.id}" onclick="toggleLike('${post.id}')">
+        ${liked?'♥':'♡'} <span id="likeCount-${post.id}">${likeCount}</span>
+      </button>
+      <button class="actBtn" onclick="toggleComments('${post.id}')">
+        💬 <span id="commentCount-${post.id}">${commentCount}</span>
+      </button>
+    </div>
+    <div class="commentsBox" id="comments-${post.id}">
+      <div id="commentList-${post.id}"></div>
+      <div class="commentInputRow">
+        <input type="text" id="commentInput-${post.id}" placeholder="Tulis komentar…" onkeydown="if(event.key==='Enter') submitComment('${post.id}')" />
+        <button onclick="submitComment('${post.id}')">Kirim</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+function togglePostMenu(postId){
+  document.querySelectorAll('.postMenuDrop').forEach(d=>{ if(d.id !== 'menu-'+postId) d.classList.remove('show'); });
+  document.getElementById('menu-'+postId).classList.toggle('show');
+}
+document.addEventListener('click', (e)=>{
+  if(!e.target.closest('.postMenuWrap')) document.querySelectorAll('.postMenuDrop').forEach(d=>d.classList.remove('show'));
+});
+
+async function deletePost(postId){
+  if(!confirm('Hapus postingan ini?')) return;
+  const { error } = await sb.from('posts').delete().eq('id', postId);
+  if(error){ showToast('Gagal menghapus: ' + error.message); return; }
+  document.getElementById('post-'+postId)?.remove();
+  showToast('Postingan dihapus');
+}
+
+/* ---------- LIKES ---------- */
+let likedPostIds = new Set();
+let likeCounts = {};
+
+async function loadLikesFor(postIds){
+  if(postIds.length === 0) return;
+  const { data } = await sb.from('likes').select('post_id,user_id').in('post_id', postIds);
+  likeCounts = {};
+  likedPostIds = new Set();
+  (data||[]).forEach(l=>{
+    likeCounts[l.post_id] = (likeCounts[l.post_id]||0) + 1;
+    if(l.user_id === CURRENT_USER.id) likedPostIds.add(l.post_id);
+  });
+}
+
+async function toggleLike(postId){
+  const liked = likedPostIds.has(postId);
+  const btn = document.getElementById('likeBtn-'+postId);
+  const countEl = document.getElementById('likeCount-'+postId);
+  if(liked){
+    likedPostIds.delete(postId);
+    likeCounts[postId] = Math.max(0,(likeCounts[postId]||1)-1);
+    btn.classList.remove('liked'); btn.innerHTML = `♡ <span id="likeCount-${postId}">${likeCounts[postId]}</span>`;
+    const { error } = await sb.from('likes').delete().eq('post_id', postId).eq('user_id', CURRENT_USER.id);
+    if(error) showToast('Gagal: ' + error.message);
+  } else {
+    likedPostIds.add(postId);
+    likeCounts[postId] = (likeCounts[postId]||0)+1;
+    btn.classList.add('liked'); btn.innerHTML = `♥ <span id="likeCount-${postId}">${likeCounts[postId]}</span>`;
+    const { error } = await sb.from('likes').insert({ post_id: postId, user_id: CURRENT_USER.id });
+    if(error) showToast('Gagal: ' + error.message);
+    else notifyPostOwner(postId, 'like');
+  }
+}
+
+/* ---------- COMMENTS ---------- */
+let commentCounts = {};
+let openComments = new Set();
+
+async function loadCommentCountsFor(postIds){
+  if(postIds.length === 0) return;
+  const { data } = await sb.from('comments').select('post_id').in('post_id', postIds);
+  commentCounts = {};
+  (data||[]).forEach(c=>{ commentCounts[c.post_id] = (commentCounts[c.post_id]||0)+1; });
+}
+
+async function toggleComments(postId){
+  const box = document.getElementById('comments-'+postId);
+  box.classList.toggle('show');
+  if(box.classList.contains('show')) await loadComments(postId);
+}
+
+async function loadComments(postId){
+  const list = document.getElementById('commentList-'+postId);
+  list.innerHTML = `<div style="color:var(--muted); font-size:12px;">Memuat…</div>`;
+  const { data: cmts, error } = await sb.from('comments').select('*').eq('post_id', postId).order('created_at', { ascending:true });
+  if(error){ list.innerHTML = `<div style="color:var(--muted); font-size:12px;">Gagal memuat komentar.</div>`; return; }
+  if(!cmts || cmts.length===0){ list.innerHTML = `<div style="color:var(--muted); font-size:12px;">Belum ada komentar.</div>`; return; }
+  const uids = [...new Set(cmts.map(c=>c.user_id))];
+  await Promise.all(uids.map(getProfile));
+  list.innerHTML = cmts.map(c=>{
+    const u = profilesCache[c.user_id] || {name:'Pengguna'};
+    return `<div class="commentRow"><div class="bubble"><span class="cname">${escapeHtml(u.name)}</span>${escapeHtml(c.text)}</div></div>`;
+  }).join('');
+}
+
+async function submitComment(postId){
+  const input = document.getElementById('commentInput-'+postId);
+  const text = input.value.trim();
+  if(!text) return;
+  input.value = '';
+  const { error } = await sb.from('comments').insert({ post_id: postId, user_id: CURRENT_USER.id, text });
+  if(error){ showToast('Gagal komentar: ' + error.message); return; }
+  notifyPostOwner(postId, 'comment');
+  commentCounts[postId] = (commentCounts[postId]||0)+1;
+  document.getElementById('commentCount-'+postId).textContent = commentCounts[postId];
+  await loadComments(postId);
+}
+
+/* ============================================================
+   NAVIGASI / TABS
+============================================================ */
+let currentTab = 'feed';
+
+document.getElementById('navBeranda').addEventListener('click', ()=> switchTab('feed'));
+document.getElementById('navPesan').addEventListener('click', ()=> switchTab('messages'));
+document.getElementById('navProfil').addEventListener('click', ()=> viewUser(CURRENT_USER.id));
+
+function setActiveNav(id){
+  ['navBeranda','navPesan','navProfil'].forEach(n=>document.getElementById(n).classList.remove('active'));
+  if(id) document.getElementById(id).classList.add('active');
+}
+
+function switchTab(tab){
+  currentTab = tab;
+  document.getElementById('mainContent').classList.toggle('hidden', tab!=='feed');
+  document.getElementById('profileView').classList.add('hidden');
+  document.getElementById('messagesView').classList.toggle('hidden', tab!=='messages');
+  if(tab==='feed'){ setActiveNav('navBeranda'); }
+  if(tab==='messages'){ setActiveNav('navPesan'); renderMessages(); }
+}
+
+function showFeedView(){ switchTab('feed'); }
+
+/* ============================================================
+   PROFILE VIEW
+============================================================ */
+async function viewUser(uid){
+  currentTab = 'profile';
+  document.getElementById('mainContent').classList.add('hidden');
+  document.getElementById('messagesView').classList.add('hidden');
+  document.getElementById('profileView').classList.remove('hidden');
+  setActiveNav(uid === CURRENT_USER.id ? 'navProfil' : null);
+
+  const headerCard = document.getElementById('profileHeaderCard');
+  headerCard.innerHTML = `<div style="color:var(--muted); font-size:13px;">Memuat profil…</div>`;
+  document.getElementById('profilePosts').innerHTML = '';
+
+  const profile = uid === CURRENT_USER.id ? CURRENT_PROFILE : await getProfile(uid);
+  profilesCache[uid] = profile;
+
+  const [{ count: followerCount }, { count: followingCount }, { count: postCount }] = await Promise.all([
+    sb.from('follows').select('*', {count:'exact', head:true}).eq('following_id', uid),
+    sb.from('follows').select('*', {count:'exact', head:true}).eq('follower_id', uid),
+    sb.from('posts').select('*', {count:'exact', head:true}).eq('user_id', uid),
+  ]);
+
+  let isFollowing = false;
+  if(uid !== CURRENT_USER.id){
+    const { data: f } = await sb.from('follows').select('*').eq('follower_id', CURRENT_USER.id).eq('following_id', uid).maybeSingle();
+    isFollowing = !!f;
+  }
+
+  headerCard.innerHTML = `
+    <div class="profileHeader">
+      <div class="avatar" style="${avatarStyle(profile)}">${avatarInner(profile)}</div>
+      <div>
+        <div class="pname">${escapeHtml(profile.name)}</div>
+        <div class="puname">@${escapeHtml(profile.username)}</div>
+      </div>
+    </div>
+    ${profile.bio ? `<div class="profileBio">${escapeHtml(profile.bio)}</div>` : ''}
+    <div class="profileStats">
+      <div><b>${postCount||0}</b> postingan</div>
+      <div><b>${followerCount||0}</b> pengikut</div>
+      <div><b>${followingCount||0}</b> mengikuti</div>
+    </div>
+    ${uid === CURRENT_USER.id
+      ? `<button class="ghostBtn" onclick="openEditProfile()">Edit profil</button>`
+      : `<button class="followBtn ${isFollowing?'following':'notfollowing'}" id="followBtn-${uid}" onclick="toggleFollow('${uid}')">${isFollowing?'Mengikuti':'Ikuti'}</button>
+         <button class="msgBtnSmall" onclick="openDmWith('${uid}')">Kirim pesan</button>`
+    }`;
+
+  const { data: posts } = await sb.from('posts').select('*').eq('user_id', uid).order('created_at', { ascending:false });
+  const postsBox = document.getElementById('profilePosts');
+  if(!posts || posts.length===0){
+    postsBox.innerHTML = `<div class="emptyState">Belum ada postingan.</div>`;
+    return;
+  }
+  await Promise.all([
+    loadLikesFor(posts.map(p=>p.id)),
+    loadCommentCountsFor(posts.map(p=>p.id))
+  ]);
+  postsBox.innerHTML = posts.map(renderPost).join('');
+}
+
+async function toggleFollow(uid){
+  const btn = document.getElementById('followBtn-'+uid);
+  const nowFollowing = btn.classList.contains('following');
+  if(nowFollowing){
+    const { error } = await sb.from('follows').delete().eq('follower_id', CURRENT_USER.id).eq('following_id', uid);
+    if(error){ showToast('Gagal: ' + error.message); return; }
+    btn.classList.remove('following'); btn.classList.add('notfollowing'); btn.textContent = 'Ikuti';
+  } else {
+    const { error } = await sb.from('follows').insert({ follower_id: CURRENT_USER.id, following_id: uid });
+    if(error){ showToast('Gagal: ' + error.message); return; }
+    btn.classList.remove('notfollowing'); btn.classList.add('following'); btn.textContent = 'Mengikuti';
+    sb.from('notifications').insert({ user_id: uid, actor_id: CURRENT_USER.id, type:'follow' });
+  }
+}
+
+/* ============================================================
+   EDIT PROFIL
+============================================================ */
+let editAvatarFile = null;
+
+function openEditProfile(){
+  document.getElementById('editName').value = CURRENT_PROFILE.name || '';
+  document.getElementById('editBio').value = CURRENT_PROFILE.bio || '';
+  const prev = document.getElementById('editAvatarPreview');
+  prev.setAttribute('style', `width:56px;height:56px;${avatarStyle(CURRENT_PROFILE)}`);
+  prev.textContent = avatarInner(CURRENT_PROFILE);
+  editAvatarFile = null;
+  document.getElementById('editProfileModal').classList.add('show');
+}
+function closeEditProfile(){
+  document.getElementById('editProfileModal').classList.remove('show');
+}
+function onEditAvatarFile(e){
+  const file = e.target.files[0];
+  if(!file) return;
+  editAvatarFile = file;
+  const reader = new FileReader();
+  reader.onload = ()=>{
+    const prev = document.getElementById('editAvatarPreview');
+    prev.style.backgroundImage = `url('${reader.result}')`;
+    prev.textContent = '';
+  };
+  reader.readAsDataURL(file);
+}
+
+async function saveProfile(){
+  const btn = document.getElementById('saveProfileBtn');
+  btn.disabled = true; btn.textContent = 'Menyimpan…';
+  try{
+    const name = document.getElementById('editName').value.trim();
+    const bio = document.getElementById('editBio').value.trim();
+    if(!name) throw new Error('Nama tidak boleh kosong.');
+
+    let avatar_url = CURRENT_PROFILE.avatar_url || '';
+    if(editAvatarFile){
+      const ext = editAvatarFile.name.split('.').pop();
+      const path = `avatars/${CURRENT_USER.id}_${Date.now()}.${ext}`;
+      const { error: upErr } = await sb.storage.from('media').upload(path, editAvatarFile);
+      if(upErr) throw upErr;
+      const { data: pub } = sb.storage.from('media').getPublicUrl(path);
+      avatar_url = pub.publicUrl;
+    }
+
+    const { error } = await sb.from('profiles').update({ name, bio, avatar_url }).eq('id', CURRENT_USER.id);
+    if(error) throw error;
+
+    CURRENT_PROFILE = { ...CURRENT_PROFILE, name, bio, avatar_url };
+    profilesCache[CURRENT_USER.id] = CURRENT_PROFILE;
+    renderSelfUI();
+    closeEditProfile();
+    showToast('Profil diperbarui ✓');
+    viewUser(CURRENT_USER.id);
+  } catch(err){
+    showToast('Gagal menyimpan: ' + err.message);
+  } finally {
+    btn.disabled = false; btn.textContent = 'Simpan';
+  }
+}
+
+async function notifyPostOwner(postId, type){
+  const { data: post } = await sb.from('posts').select('user_id').eq('id', postId).maybeSingle();
+  if(!post || post.user_id === CURRENT_USER.id) return;
+  await sb.from('notifications').insert({ user_id: post.user_id, actor_id: CURRENT_USER.id, type, post_id: postId });
+}
+
+/* ============================================================
+   PENCARIAN PENGGUNA
+============================================================ */
+let searchTimer;
+function onSearchInput(){
+  clearTimeout(searchTimer);
+  const q = document.getElementById('searchInput').value.trim();
+  const box = document.getElementById('searchResults');
+  if(!q){ box.classList.remove('show'); return; }
+  searchTimer = setTimeout(async ()=>{
+    const { data, error } = await sb.from('profiles')
+      .select('*')
+      .or(`name.ilike.%${q}%,username.ilike.%${q}%`)
+      .neq('id', CURRENT_USER.id)
+      .limit(8);
+    if(error || !data || data.length===0){
+      box.innerHTML = `<div class="searchItem" style="cursor:default; color:var(--muted);">Tidak ditemukan.</div>`;
+      box.classList.add('show'); return;
+    }
+    data.forEach(u=>profilesCache[u.id]=u);
+    box.innerHTML = data.map(u=>`
+      <div class="searchItem" onclick="selectSearchResult('${u.id}')">
+        <div class="avatar tiny" style="width:30px;height:30px;font-size:12px;${avatarStyle(u)}">${avatarInner(u)}</div>
+        <div><div class="name">${escapeHtml(u.name)}</div><div class="uname">@${escapeHtml(u.username)}</div></div>
+      </div>`).join('');
+    box.classList.add('show');
+  }, 300);
+}
+function selectSearchResult(uid){
+  document.getElementById('searchResults').classList.remove('show');
+  document.getElementById('searchInput').value = '';
+  viewUser(uid);
+}
+document.addEventListener('click', (e)=>{
+  if(!e.target.closest('.searchWrap')) document.getElementById('searchResults').classList.remove('show');
+  if(!e.target.closest('.dropdownWrap')) document.getElementById('notifDrop').classList.remove('show');
+});
+
+/* ============================================================
+   NOTIFIKASI
+============================================================ */
+let notifChannel;
+async function loadNotifCount(){
+  const { count } = await sb.from('notifications').select('*', {count:'exact', head:true}).eq('user_id', CURRENT_USER.id).eq('is_read', false);
+  const badge = document.getElementById('notifBadge');
+  if(count>0){ badge.classList.remove('hidden'); badge.textContent = count; }
+  else badge.classList.add('hidden');
+}
+
+function toggleNotifDrop(){
+  const drop = document.getElementById('notifDrop');
+  drop.classList.toggle('show');
+  if(drop.classList.contains('show')) loadNotifList();
+}
+
+const notifLabel = { like:'menyukai postinganmu', comment:'mengomentari postinganmu', follow:'mulai mengikutimu' };
+
+async function loadNotifList(){
+  const list = document.getElementById('notifList');
+  list.innerHTML = `<div style="padding:14px; font-size:12px; color:var(--muted);">Memuat…</div>`;
+  const { data: notifs, error } = await sb.from('notifications').select('*').eq('user_id', CURRENT_USER.id).order('created_at', {ascending:false}).limit(30);
+  if(error || !notifs || notifs.length===0){
+    list.innerHTML = `<div style="padding:14px; font-size:12px; color:var(--muted);">Belum ada notifikasi.</div>`;
+    return;
+  }
+  const uids = [...new Set(notifs.map(n=>n.actor_id))];
+  await Promise.all(uids.map(getProfile));
+  list.innerHTML = notifs.map(n=>{
+    const u = profilesCache[n.actor_id] || {name:'Seseorang'};
+    return `<div class="notifItem ${n.is_read?'':'unread'}" onclick="onNotifClick('${n.id}','${n.actor_id}')">
+      <div class="avatar tiny" style="width:30px;height:30px;font-size:11px;${avatarStyle(u)}">${avatarInner(u)}</div>
+      <div class="txt"><div><b>${escapeHtml(u.name)}</b> ${notifLabel[n.type]||''}</div><div class="ntime">${timeAgo(n.created_at)}</div></div>
+    </div>`;
+  }).join('');
+  await sb.from('notifications').update({is_read:true}).eq('user_id', CURRENT_USER.id).eq('is_read', false);
+  loadNotifCount();
+}
+function onNotifClick(notifId, actorId){
+  document.getElementById('notifDrop').classList.remove('show');
+  viewUser(actorId);
+}
+
+function subscribeNotifications(){
+  notifChannel = sb.channel('notif-'+CURRENT_USER.id)
+    .on('postgres_changes', { event:'INSERT', schema:'public', table:'notifications', filter:`user_id=eq.${CURRENT_USER.id}` }, ()=>{
+      loadNotifCount();
+    })
+    .subscribe();
+}
+
+/* ============================================================
+   PESAN LANGSUNG (DM)
+============================================================ */
+let dmActiveUserId = null;
+let dmChannel;
+
+async function renderMessages(){
+  const box = document.getElementById('messagesView');
+  box.innerHTML = `
+    <div class="dmLayout">
+      <div class="dmListCol" id="dmList"><div class="emptyState" style="padding:30px 14px;">Memuat…</div></div>
+      <div class="dmChat" id="dmChat"><div class="dmEmpty">Pilih percakapan untuk mulai mengobrol 💬</div></div>
+    </div>`;
+  await loadDmList();
+  if(dmActiveUserId) openDmWith(dmActiveUserId);
+}
+
+async function loadDmList(){
+  const me = CURRENT_USER.id;
+  const { data: msgs } = await sb.from('messages')
+    .select('*').or(`sender_id.eq.${me},receiver_id.eq.${me}`).order('created_at', {ascending:false});
+  const list = document.getElementById('dmList');
+  if(!list) return;
+  if(!msgs || msgs.length===0){
+    list.innerHTML = `<div class="emptyState" style="padding:30px 14px;">Belum ada percakapan.<br/>Cari pengguna lalu kirim pesan.</div>`;
+    return;
+  }
+  const contactsMap = {};
+  msgs.forEach(m=>{
+    const otherId = m.sender_id===me ? m.receiver_id : m.sender_id;
+    if(!contactsMap[otherId]) contactsMap[otherId] = { lastMsg:m, unread:0 };
+    if(m.receiver_id===me && !m.is_read) contactsMap[otherId].unread++;
+  });
+  const ids = Object.keys(contactsMap);
+  await Promise.all(ids.map(getProfile));
+  list.innerHTML = ids.map(id=>{
+    const u = profilesCache[id] || {name:'Pengguna', username:'unknown'};
+    const c = contactsMap[id];
+    return `<div class="dmContactRow ${dmActiveUserId===id?'active':''}" onclick="openDmWith('${id}')">
+      <div class="avatar small" style="${avatarStyle(u)}">${avatarInner(u)}</div>
+      <div class="info"><div class="name">${escapeHtml(u.name)}</div><div class="last">${escapeHtml(c.lastMsg.text)}</div></div>
+      ${c.unread>0 ? `<div class="dmBadge">${c.unread}</div>` : ''}
+    </div>`;
+  }).join('');
+  updateDmBadge();
+}
+
+async function openDmWith(uid){
+  if(uid === CURRENT_USER.id) return;
+  dmActiveUserId = uid;
+  if(currentTab !== 'messages'){ switchTab('messages'); return; }
+  const u = await getProfile(uid);
+  const chat = document.getElementById('dmChat');
+  chat.innerHTML = `
+    <div class="dmChatHead">
+      <button class="dmBackBtn" onclick="dmActiveUserId=null; renderMessages();">←</button>
+      <div class="avatar small" style="${avatarStyle(u)};cursor:pointer" onclick="viewUser('${uid}')">${avatarInner(u)}</div>
+      <div class="who" style="cursor:pointer" onclick="viewUser('${uid}')"><div class="name">${escapeHtml(u.name)}</div><div class="time">@${escapeHtml(u.username)}</div></div>
+    </div>
+    <div class="dmMessages" id="dmMessages"><div class="dmEmpty">Memuat pesan…</div></div>
+    <div class="dmInputRow">
+      <input type="text" id="dmInput" placeholder="Tulis pesan…" onkeydown="if(event.key==='Enter') sendDm()" />
+      <button onclick="sendDm()">Kirim</button>
+    </div>`;
+  document.querySelectorAll('.dmContactRow').forEach(r=>r.classList.remove('active'));
+  await loadDmMessages(uid);
+  subscribeDm(uid);
+}
+
+async function loadDmMessages(uid){
+  const me = CURRENT_USER.id;
+  const { data: msgs, error } = await sb.from('messages')
+    .select('*').or(`and(sender_id.eq.${me},receiver_id.eq.${uid}),and(sender_id.eq.${uid},receiver_id.eq.${me})`)
+    .order('created_at', {ascending:true}).limit(200);
+  const box = document.getElementById('dmMessages');
+  if(!box) return;
+  if(error){ box.innerHTML = `<div class="dmEmpty">Gagal memuat pesan.</div>`; return; }
+  if(!msgs || msgs.length===0){
+    box.innerHTML = `<div class="dmEmpty">Belum ada pesan. Sapa duluan yuk 👋</div>`;
+  } else {
+    box.innerHTML = msgs.map(m=>`<div class="dmBubbleRow ${m.sender_id===me?'me':''}"><div class="dmBubble">${escapeHtml(m.text)}</div></div>`).join('');
+    box.scrollTop = box.scrollHeight;
+  }
+  await sb.from('messages').update({is_read:true}).eq('sender_id', uid).eq('receiver_id', me).eq('is_read', false);
+  updateDmBadge();
+}
+
+async function sendDm(){
+  const input = document.getElementById('dmInput');
+  const text = input.value.trim();
+  if(!text || !dmActiveUserId) return;
+  input.value = '';
+  const { error } = await sb.from('messages').insert({ sender_id: CURRENT_USER.id, receiver_id: dmActiveUserId, text });
+  if(error){ showToast('Gagal mengirim pesan: ' + error.message); return; }
+  await loadDmMessages(dmActiveUserId);
+  await loadDmList();
+}
+
+function subscribeDm(uid){
+  if(dmChannel) sb.removeChannel(dmChannel);
+  dmChannel = sb.channel('dm-with-'+uid)
+    .on('postgres_changes', { event:'INSERT', schema:'public', table:'messages' }, (payload)=>{
+      const m = payload.new;
+      const me = CURRENT_USER.id;
+      const involves = (m.sender_id===me && m.receiver_id===uid) || (m.sender_id===uid && m.receiver_id===me);
+      if(involves && dmActiveUserId===uid) loadDmMessages(uid);
+      if(m.receiver_id===me) loadDmList();
+    })
+    .subscribe();
+}
+
+async function updateDmBadge(){
+  const me = CURRENT_USER.id;
+  const { count } = await sb.from('messages').select('*', {count:'exact', head:true}).eq('receiver_id', me).eq('is_read', false);
+  const navBadge = document.getElementById('dmBadgeNav');
+  if(navBadge){
+    if(count>0){ navBadge.classList.remove('hidden'); navBadge.textContent = count; }
+    else navBadge.classList.add('hidden');
+  }
+}
+
+/* ============================================================
+   TEMA
+============================================================ */
+function toggleTheme(){
+  document.body.classList.toggle('light');
+  document.getElementById('themeBtn').textContent = document.body.classList.contains('light') ? '☀️' : '🌙';
+  localStorage.setItem('jejak_theme', document.body.classList.contains('light') ? 'light':'dark');
+}
+(function initTheme(){
+  if(localStorage.getItem('jejak_theme')==='light'){
+    document.body.classList.add('light');
+    window.addEventListener('DOMContentLoaded', ()=>{
+      const btn = document.getElementById('themeBtn');
+      if(btn) btn.textContent = '☀️';
+    });
+  }
+})();
+
+/* ============================================================
+   UTILS
+============================================================ */
+function escapeHtml(str){
+  const div = document.createElement('div');
+  div.textContent = str || '';
+  return div.innerHTML;
+}
+function timeAgo(isoStr){
+  const ts = new Date(isoStr).getTime();
+  const s = Math.floor((Date.now()-ts)/1000);
+  if(s<60) return 'baru saja';
+  if(s<3600) return Math.floor(s/60)+'m';
+  if(s<86400) return Math.floor(s/3600)+'j';
+  return Math.floor(s/86400)+'h';
+}
+let toastTimer;
+function showToast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=>t.classList.remove('show'), 2500);
+}
+</script>
+</body>
+</html>
