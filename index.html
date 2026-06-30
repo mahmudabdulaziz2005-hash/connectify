@@ -872,6 +872,33 @@
   </div>
 </div>
 
+<!-- MODAL LAPORKAN -->
+<div class="modalOverlay" id="reportModal">
+  <div class="modalBox">
+    <h3>Laporkan</h3>
+    <div class="field">
+      <label>Alasan</label>
+      <select id="reportReasonSelect" style="width:100%; padding:12px 14px; border-radius:10px; border:1px solid var(--border); background:var(--bg2); color:var(--text); font-size:14px;">
+        <option value="spam">Spam</option>
+        <option value="harassment">Pelecehan / Bullying</option>
+        <option value="hate">Ujaran kebencian</option>
+        <option value="nudity">Konten dewasa / tidak senonoh</option>
+        <option value="violence">Kekerasan</option>
+        <option value="misinformation">Informasi palsu</option>
+        <option value="other">Lainnya</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>Detail tambahan (opsional)</label>
+      <input type="text" id="reportDetailInput" placeholder="Jelaskan lebih lanjut…" />
+    </div>
+    <div class="modalActions">
+      <button class="ghostBtn" onclick="closeReportModal()">Batal</button>
+      <button class="postBtn" id="submitReportBtn" onclick="submitReport()">Kirim laporan</button>
+    </div>
+  </div>
+</div>
+
 <script>
 /* ============================================================
    KONFIGURASI SUPABASE
@@ -886,6 +913,8 @@ let authMode = 'login'; // 'login' | 'register'
 let composerImageFiles = [];
 let profilesCache = {};
 let postCaptionCache = {};
+let blockedUserIds = new Set();
+let reportTarget = { type:null, id:null };
 
 /* ============================================================
    INIT
@@ -934,6 +963,7 @@ async function handleLoggedIn(user){
   document.getElementById('authScreen').style.display = 'none';
   document.getElementById('app').style.display = 'block';
   renderSelfUI();
+  await loadBlockedUsers();
   await loadFeed();
   loadNotifCount();
   updateDmBadge();
@@ -1155,7 +1185,9 @@ async function loadFeed(){
     const id = it.post.id;
     if(!grouped[id] || new Date(it.ts) > new Date(grouped[id].ts)) grouped[id] = it;
   });
-  const finalItems = Object.values(grouped).sort((a,b)=> new Date(b.ts) - new Date(a.ts)).slice(0,60);
+  const finalItems = Object.values(grouped)
+    .filter(it => !blockedUserIds.has(it.post.user_id) && !blockedUserIds.has(it.repostBy))
+    .sort((a,b)=> new Date(b.ts) - new Date(a.ts)).slice(0,60);
 
   if(finalItems.length === 0){
     list.innerHTML = `<div class="emptyState"><div class="big">Belum ada kilasan</div>Jadilah yang pertama membagikan momen.</div>`;
@@ -1248,7 +1280,14 @@ function renderPost(post, repostBy){
           <button style="color:var(--text);" onclick="startEditCaption('${post.id}')">Edit caption</button>
           <button onclick="deletePost('${post.id}')">Hapus postingan</button>
         </div>
-      </div>` : ''}
+      </div>` : `
+      <div class="postMenuWrap">
+        <button class="postMenuBtn" onclick="togglePostMenu('${post.id}')">⋯</button>
+        <div class="postMenuDrop" id="menu-${post.id}">
+          <button style="color:var(--text);" onclick="openReportModal('post','${post.id}')">Laporkan postingan</button>
+          <button onclick="toggleBlockUser('${post.user_id}'); document.getElementById('menu-${post.id}').classList.remove('show');">${blockedUserIds.has(post.user_id)?'Buka blokir pengguna':'Blokir pengguna'}</button>
+        </div>
+      </div>`}
     </div>
     <div id="postTextWrap-${post.id}">
       ${post.caption ? `<div class="postText" id="postText-${post.id}">${parseHashtags(post.caption)}${post.edited?'<span class="editedTag">(diedit)</span>':''}</div>` : `<div id="postText-${post.id}"></div>`}
@@ -1743,7 +1782,9 @@ async function viewUser(uid){
     ${uid === CURRENT_USER.id
       ? `<button class="ghostBtn" onclick="openEditProfile()">Edit profil</button>`
       : `<button class="followBtn ${isFollowing?'following':'notfollowing'}" id="followBtn-${uid}" onclick="toggleFollow('${uid}')">${isFollowing?'Mengikuti':'Ikuti'}</button>
-         <button class="msgBtnSmall" onclick="openDmWith('${uid}')">Kirim pesan</button>`
+         <button class="msgBtnSmall" onclick="openDmWith('${uid}')">Kirim pesan</button>
+         <button class="msgBtnSmall" id="blockBtn-${uid}" onclick="toggleBlockUser('${uid}')">${blockedUserIds.has(uid)?'Buka blokir':'Blokir'}</button>
+         <button class="msgBtnSmall" onclick="openReportModal('user','${uid}')">Laporkan</button>`
     }
     <div class="storiesBar" id="highlightsBar-${uid}" style="margin-top:14px;"></div>`;
 
@@ -3049,6 +3090,78 @@ async function uploadReel(file, caption){
     await renderReels();
   } catch(err){
     showToast('Gagal mengunggah reel: ' + err.message);
+  }
+}
+
+/* ============================================================
+   BLOKIR PENGGUNA
+============================================================ */
+async function loadBlockedUsers(){
+  const { data, error } = await sb.from('blocks').select('blocked_id').eq('blocker_id', CURRENT_USER.id);
+  if(error){ console.error(error); return; }
+  blockedUserIds = new Set((data||[]).map(b=>b.blocked_id));
+}
+
+async function toggleBlockUser(uid){
+  const btn = document.getElementById('blockBtn-'+uid);
+  const isBlocked = blockedUserIds.has(uid);
+  try{
+    if(isBlocked){
+      const { error } = await sb.from('blocks').delete().eq('blocker_id', CURRENT_USER.id).eq('blocked_id', uid);
+      if(error) throw error;
+      blockedUserIds.delete(uid);
+      if(btn) btn.textContent = 'Blokir';
+      showToast('Blokir dibuka ✓');
+    } else {
+      if(!confirm('Blokir pengguna ini? Anda tidak akan melihat postingan mereka lagi.')) return;
+      const { error } = await sb.from('blocks').insert({ blocker_id: CURRENT_USER.id, blocked_id: uid });
+      if(error) throw error;
+      blockedUserIds.add(uid);
+      if(btn) btn.textContent = 'Buka blokir';
+      // putuskan hubungan ikuti-mengikuti dua arah agar konsisten
+      await sb.from('follows').delete().eq('follower_id', CURRENT_USER.id).eq('following_id', uid);
+      await sb.from('follows').delete().eq('follower_id', uid).eq('following_id', CURRENT_USER.id);
+      showToast('Pengguna diblokir ✓');
+      await loadFeed();
+    }
+  } catch(err){
+    showToast('Gagal: ' + err.message);
+  }
+}
+
+/* ============================================================
+   LAPORKAN KONTEN / PENGGUNA
+============================================================ */
+function openReportModal(targetType, targetId){
+  reportTarget = { type: targetType, id: targetId };
+  document.getElementById('reportReasonSelect').value = 'spam';
+  document.getElementById('reportDetailInput').value = '';
+  document.getElementById('reportModal').classList.add('show');
+}
+function closeReportModal(){
+  document.getElementById('reportModal').classList.remove('show');
+  reportTarget = { type:null, id:null };
+}
+async function submitReport(){
+  if(!reportTarget.id){ closeReportModal(); return; }
+  const reason = document.getElementById('reportReasonSelect').value;
+  const detail = document.getElementById('reportDetailInput').value.trim();
+  const btn = document.getElementById('submitReportBtn');
+  btn.disabled = true; btn.textContent = 'Mengirim…';
+  try{
+    const { error } = await sb.from('reports').insert({
+      reporter_id: CURRENT_USER.id,
+      target_type: reportTarget.type,
+      target_id: String(reportTarget.id),
+      reason, detail
+    });
+    if(error) throw error;
+    showToast('Laporan terkirim. Terima kasih sudah menjaga komunitas ✓');
+    closeReportModal();
+  } catch(err){
+    showToast('Gagal mengirim laporan: ' + err.message);
+  } finally {
+    btn.disabled = false; btn.textContent = 'Kirim laporan';
   }
 }
 
