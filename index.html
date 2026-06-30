@@ -682,7 +682,7 @@
     <!-- MAIN -->
     <div class="main" id="mainContent">
       <div class="storiesBar" id="storiesBar"></div>
-      <input type="file" id="storyFile" accept="image/*" class="hidden" onchange="onStoryFile(event)" />
+      <input type="file" id="storyFile" accept="image/*,video/*" class="hidden" onchange="onStoryFile(event)" />
       <div class="card" id="composerCard">
         <div class="composerTop">
           <div class="avatar small" id="composerAvatar"></div>
@@ -761,6 +761,32 @@
 <!-- STORY VIEWER -->
 <div class="storyViewerOverlay" id="storyViewerOverlay">
   <div class="storyViewerBox" id="storyViewerBox"></div>
+</div>
+
+<!-- STORY VIEWERS LIST -->
+<div class="modalOverlay" id="storyViewersOverlay">
+  <div class="modalBox" style="width:340px; max-height:70vh; display:flex; flex-direction:column;">
+    <h3>Dilihat oleh</h3>
+    <div id="storyViewersBody" style="flex:1; overflow-y:auto; margin:0 -6px; padding:0 6px; font-size:13px;">Memuat…</div>
+    <button class="ghostBtn" onclick="document.getElementById('storyViewersOverlay').classList.remove('show')" style="margin-top:10px;">Tutup</button>
+  </div>
+</div>
+
+<!-- SAVE TO HIGHLIGHT -->
+<div class="modalOverlay" id="highlightSaveOverlay">
+  <div class="modalBox" style="width:340px;">
+    <h3>Simpan ke Sorotan</h3>
+    <div class="field" style="margin-top:10px;">
+      <label>Pilih sorotan yang ada</label>
+      <div id="highlightExistingList" style="display:flex; flex-wrap:wrap; gap:8px; margin-bottom:10px;"></div>
+    </div>
+    <div class="field">
+      <label>Atau buat sorotan baru</label>
+      <input type="text" id="newHighlightName" placeholder="Nama sorotan (mis. Liburan)" />
+    </div>
+    <button class="btnPrimary" onclick="confirmSaveHighlight()">Simpan</button>
+    <button class="ghostBtn" onclick="document.getElementById('highlightSaveOverlay').classList.remove('show')" style="margin-top:8px;">Batal</button>
+  </div>
 </div>
 
 <!-- REEL COMMENTS DRAWER -->
@@ -1707,7 +1733,10 @@ async function viewUser(uid){
       ? `<button class="ghostBtn" onclick="openEditProfile()">Edit profil</button>`
       : `<button class="followBtn ${isFollowing?'following':'notfollowing'}" id="followBtn-${uid}" onclick="toggleFollow('${uid}')">${isFollowing?'Mengikuti':'Ikuti'}</button>
          <button class="msgBtnSmall" onclick="openDmWith('${uid}')">Kirim pesan</button>`
-    }`;
+    }
+    <div class="storiesBar" id="highlightsBar-${uid}" style="margin-top:14px;"></div>`;
+
+  loadHighlights(uid);
 
   const { data: posts } = await sb.from('posts').select('*').eq('user_id', uid).order('created_at', { ascending:false });
   const postsBox = document.getElementById('profilePosts');
@@ -2369,19 +2398,38 @@ function allSeen(group){
 function onStoryFile(e){
   const file = e.target.files[0];
   if(!file) return;
-  uploadStory(file);
   e.target.value = '';
+  const isVideo = file.type.startsWith('video/');
+  const isImage = file.type.startsWith('image/');
+  if(!isVideo && !isImage){ showToast('File harus berupa foto atau video.'); return; }
+  const MAX_MB = isVideo ? 100 : 15;
+  if(file.size > MAX_MB*1024*1024){ showToast(`File terlalu besar (maks ${MAX_MB}MB).`); return; }
+  if(isVideo){
+    // batasi durasi story video maks 60 detik biar konsisten dgn konsep "story"
+    const tmpVideo = document.createElement('video');
+    tmpVideo.preload = 'metadata';
+    tmpVideo.onloadedmetadata = ()=>{
+      URL.revokeObjectURL(tmpVideo.src);
+      if(tmpVideo.duration > 60){ showToast('Video story maksimal 60 detik.'); return; }
+      uploadStory(file, true);
+    };
+    tmpVideo.src = URL.createObjectURL(file);
+  } else {
+    uploadStory(file, false);
+  }
 }
 
-async function uploadStory(file){
+async function uploadStory(file, isVideo){
   showToast('Mengunggah story…');
   try{
     const ext = file.name.split('.').pop();
     const path = `stories/${CURRENT_USER.id}_${Date.now()}.${ext}`;
-    const { error: upErr } = await sb.storage.from('media').upload(path, file);
+    const { error: upErr } = await sb.storage.from('media').upload(path, file, { contentType:file.type, cacheControl:'31536000' });
     if(upErr) throw upErr;
     const { data: pub } = sb.storage.from('media').getPublicUrl(path);
-    const { error } = await sb.from('stories').insert({ user_id: CURRENT_USER.id, image_url: pub.publicUrl });
+    const payload = { user_id: CURRENT_USER.id };
+    if(isVideo) payload.video_url = pub.publicUrl; else payload.image_url = pub.publicUrl;
+    const { error } = await sb.from('stories').insert(payload);
     if(error) throw error;
     showToast('Story dibagikan ✓');
     await loadStories();
@@ -2407,6 +2455,9 @@ function renderStorySlide(){
   seenStoryIds.add(story.id);
   localStorage.setItem('jejak_seen_stories', JSON.stringify([...seenStoryIds]));
 
+  const isHL = !!ctx.isHighlight;
+  const isVideo = !!story.video_url;
+  if(!isHL && ctx.uid!==CURRENT_USER.id) recordStoryView(story.id);
   const box = document.getElementById('storyViewerBox');
   box.innerHTML = `
     <div class="storyProgWrap">
@@ -2415,21 +2466,78 @@ function renderStorySlide(){
     <div class="storyViewerHead">
       <div class="avatar small" style="${avatarStyle(u)}">${avatarInner(u)}</div>
       <div><div class="name">${escapeHtml(u.name)}</div><div class="time">${timeAgo(story.created_at)}</div></div>
+      ${isVideo ? `<button class="storyCloseBtn" style="margin-left:8px; font-size:15px;" onclick="event.stopPropagation(); toggleStoryMute()" id="storyMuteBtn">${storyMuted?'🔇':'🔊'}</button>` : ''}
+      ${(!isHL && ctx.uid===CURRENT_USER.id) ? `<button class="storyCloseBtn" style="font-size:15px;" onclick="event.stopPropagation(); openSaveToHighlight('${story.id}')" title="Simpan ke Sorotan">★</button>` : ''}
       <button class="storyCloseBtn" onclick="closeStoryViewer()">✕</button>
     </div>
-    <img class="storyImg" src="${story.image_url}" />
-    <div class="storyTapZone left" onclick="prevStory()"></div>
-    <div class="storyTapZone right" onclick="nextStory()"></div>
-    ${ctx.uid===CURRENT_USER.id ? `<button class="storyDeleteBtn" onclick="deleteStory('${story.id}')">Hapus story ini</button>` : ''}
+    ${isVideo
+      ? `<video class="storyImg" id="storyVideoEl" src="${story.video_url}" autoplay playsinline ${storyMuted?'muted':''}></video>`
+      : `<img class="storyImg" src="${story.image_url}" />`}
+    <div class="storyTapZone left" onclick="prevStory()" onpointerdown="pauseStorySlide()" onpointerup="resumeStorySlide()" onpointerleave="resumeStorySlide()"></div>
+    <div class="storyTapZone right" onclick="nextStory()" onpointerdown="pauseStorySlide()" onpointerup="resumeStorySlide()" onpointerleave="resumeStorySlide()"></div>
+    ${(!isHL && ctx.uid===CURRENT_USER.id) ? `<button class="storyDeleteBtn" style="left:10px; right:auto;" onclick="openStoryViewersList('${story.id}')">👁 Dilihat oleh</button>` : ''}
+    ${(!isHL && ctx.uid===CURRENT_USER.id) ? `<button class="storyDeleteBtn" onclick="deleteStory('${story.id}')">Hapus story ini</button>` : ''}
+    ${(!isHL && ctx.uid!==CURRENT_USER.id) ? `
+    <div class="dmInputRow" style="position:absolute; left:0; right:0; bottom:0; background:rgba(0,0,0,.35); border-top:none;">
+      <input type="text" id="storyReplyInput" placeholder="Balas story…" onkeydown="if(event.key==='Enter') sendStoryReply('${ctx.uid}')" style="background:rgba(255,255,255,.12); color:#fff; border-color:rgba(255,255,255,.25);" />
+      <button onclick="sendStoryReply('${ctx.uid}')">Kirim</button>
+    </div>` : ''}
   `;
   const curBar = document.getElementById('sprog-'+ctx.idx);
-  if(curBar){
-    const iEl = curBar.querySelector('i');
-    iEl.style.transition = 'none'; iEl.style.width = '0%';
-    requestAnimationFrame(()=>{ iEl.style.transition = 'width 5s linear'; iEl.style.width = '100%'; });
+  const startProgress = (durationMs)=>{
+    if(curBar){
+      const iEl = curBar.querySelector('i');
+      iEl.style.transition = 'none'; iEl.style.width = '0%';
+      requestAnimationFrame(()=>{ iEl.style.transition = `width ${durationMs/1000}s linear`; iEl.style.width = '100%'; });
+    }
+    ctx.timer = setTimeout(()=>nextStory(), durationMs);
+  };
+  if(isVideo){
+    const vEl = document.getElementById('storyVideoEl');
+    vEl.play().catch(()=>{});
+    if(vEl.readyState >= 1 && vEl.duration){
+      startProgress(Math.min(vEl.duration*1000, 60000));
+    } else {
+      vEl.onloadedmetadata = ()=> startProgress(Math.min(vEl.duration*1000, 60000));
+    }
+  } else {
+    startProgress(5000);
   }
-  ctx.timer = setTimeout(()=>nextStory(), 5000);
   renderStoriesBar();
+}
+
+let storyMuted = false;
+function toggleStoryMute(){
+  storyMuted = !storyMuted;
+  const v = document.getElementById('storyVideoEl');
+  if(v) v.muted = storyMuted;
+  const btn = document.getElementById('storyMuteBtn');
+  if(btn) btn.textContent = storyMuted ? '🔇' : '🔊';
+}
+function pauseStorySlide(){
+  const ctx = storyViewerCtx;
+  if(!ctx) return;
+  clearTimeout(ctx.timer);
+  const bar = document.getElementById('sprog-'+ctx.idx);
+  if(bar){ const i = bar.querySelector('i'); i.style.animationPlayState='paused'; const cs=getComputedStyle(i); i.style.width=cs.width; i.style.transition='none'; }
+  const v = document.getElementById('storyVideoEl');
+  if(v) v.pause();
+}
+function resumeStorySlide(){
+  renderStorySlide();
+}
+async function sendStoryReply(toUid){
+  const input = document.getElementById('storyReplyInput');
+  const text = input.value.trim();
+  if(!text) return;
+  input.value = '';
+  try{
+    const { error } = await sb.from('messages').insert({ sender_id: CURRENT_USER.id, receiver_id: toUid, text: '↪ Membalas story: ' + text });
+    if(error) throw error;
+    showToast('Balasan story terkirim ✓');
+  } catch(err){
+    showToast('Gagal mengirim balasan: ' + err.message);
+  }
 }
 
 function nextStory(){
@@ -2458,6 +2566,96 @@ async function deleteStory(storyId){
   closeStoryViewer();
   await loadStories();
 }
+
+/* ---------- STORY VIEWS ---------- */
+async function recordStoryView(storyId){
+  if(!storyId) return;
+  try{
+    await sb.from('story_views').upsert({ story_id: storyId, viewer_id: CURRENT_USER.id }, { onConflict:'story_id,viewer_id' });
+  } catch(err){ /* table mungkin belum ada / RLS, abaikan diam-diam */ }
+}
+
+async function openStoryViewersList(storyId){
+  document.getElementById('storyViewersOverlay').classList.add('show');
+  const body = document.getElementById('storyViewersBody');
+  body.innerHTML = 'Memuat…';
+  const { data, error } = await sb.from('story_views').select('viewer_id, viewed_at').eq('story_id', storyId).order('viewed_at', {ascending:false});
+  if(error || !data || data.length===0){ body.innerHTML = `<div class="emptyState" style="padding:20px 0;">Belum ada yang melihat.</div>`; return; }
+  const uids = [...new Set(data.map(v=>v.viewer_id))];
+  await Promise.all(uids.map(async uid=>{ if(!profilesCache[uid]) profilesCache[uid] = await getProfile(uid); }));
+  body.innerHTML = data.map(v=>{
+    const u = profilesCache[v.viewer_id] || {name:'Pengguna'};
+    return `<div class="searchItem" onclick="document.getElementById('storyViewersOverlay').classList.remove('show'); closeStoryViewer(); viewUser('${v.viewer_id}')">
+      <div class="avatar small" style="${avatarStyle(u)}">${avatarInner(u)}</div>
+      <div><div class="name">${escapeHtml(u.name)}</div><div class="uname">@${escapeHtml(u.username||'')}</div></div>
+    </div>`;
+  }).join('');
+}
+
+/* ---------- HIGHLIGHTS (Sorotan) ---------- */
+async function loadHighlights(uid){
+  const bar = document.getElementById('highlightsBar-'+uid);
+  if(!bar) return;
+  const { data, error } = await sb.from('highlights').select('*').eq('user_id', uid).order('created_at', {ascending:true});
+  const highlights = (!error && data) ? data : [];
+  bar.innerHTML = `
+    ${highlights.map(h=>`
+      <div class="storyItem" onclick='openHighlightViewer(${JSON.stringify(h.id)})'>
+        <div class="storyRing seen"><div class="avatar" style="background-image:url('${h.cover_url||''}'); background-size:cover;">${h.cover_url?'':'★'}</div></div>
+        <span class="slabel">${escapeHtml(h.title)}</span>
+      </div>`).join('')}
+    ${uid===CURRENT_USER.id ? `
+      <div class="storyItem" onclick="showToast('Buka story Anda lalu pilih ★ Simpan ke Sorotan')">
+        <div class="storyRing"><div class="avatar">+</div></div>
+        <span class="slabel">Sorotan baru</span>
+      </div>` : ''}
+  `;
+}
+
+let highlightSaveCtx = null;
+async function openSaveToHighlight(storyId){
+  highlightSaveCtx = storyId;
+  document.getElementById('highlightSaveOverlay').classList.add('show');
+  document.getElementById('newHighlightName').value = '';
+  const { data } = await sb.from('highlights').select('*').eq('user_id', CURRENT_USER.id).order('created_at', {ascending:true});
+  const list = document.getElementById('highlightExistingList');
+  list.innerHTML = (data||[]).map(h=>`<button class="msgBtnSmall" onclick="confirmSaveHighlight('${h.id}')">${escapeHtml(h.title)}</button>`).join('') || `<span style="color:var(--muted); font-size:12px;">Belum ada sorotan.</span>`;
+}
+
+async function confirmSaveHighlight(existingId){
+  const ctx = storyViewerCtx;
+  const story = ctx ? ctx.group.stories[ctx.idx] : null;
+  if(!story){ showToast('Story tidak ditemukan.'); return; }
+  const item = { id: story.id, image_url: story.image_url||null, video_url: story.video_url||null, created_at: story.created_at };
+  try{
+    if(existingId){
+      const { data: h, error } = await sb.from('highlights').select('items').eq('id', existingId).single();
+      if(error) throw error;
+      const items = [...(h.items||[]), item];
+      const { error: upErr } = await sb.from('highlights').update({ items }).eq('id', existingId);
+      if(upErr) throw upErr;
+    } else {
+      const name = document.getElementById('newHighlightName').value.trim();
+      if(!name){ showToast('Beri nama sorotan dulu.'); return; }
+      const { error } = await sb.from('highlights').insert({ user_id: CURRENT_USER.id, title:name, cover_url: story.image_url||'', items:[item] });
+      if(error) throw error;
+    }
+    showToast('Tersimpan ke sorotan ✓');
+    document.getElementById('highlightSaveOverlay').classList.remove('show');
+    loadHighlights(CURRENT_USER.id);
+  } catch(err){
+    showToast('Gagal menyimpan sorotan: ' + err.message);
+  }
+}
+
+async function openHighlightViewer(highlightId){
+  const { data: h, error } = await sb.from('highlights').select('*').eq('id', highlightId).single();
+  if(error || !h || !h.items || h.items.length===0){ showToast('Sorotan kosong.'); return; }
+  storyViewerCtx = { uid: h.user_id, idx:0, group:{ user_id:h.user_id, stories:h.items }, timer:null, isHighlight:true };
+  document.getElementById('storyViewerOverlay').classList.add('show');
+  renderStorySlide();
+}
+
 
 /* ============================================================
    EXPLORE / HASHTAG
