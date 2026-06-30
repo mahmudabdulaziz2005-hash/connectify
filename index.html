@@ -161,7 +161,15 @@
   .avatar.small{width:32px; height:32px; font-size:12px;}
 
   .layout{display:grid; grid-template-columns:200px minmax(0,560px) 1fr; gap:24px; max-width:1080px; margin:0 auto; padding:24px 16px;}
-  @media(max-width:900px){.layout{grid-template-columns:1fr; max-width:560px;}}
+  /* ---------- BREAKPOINTS ----------
+     ≥1101px : desktop penuh, 3 kolom (sidebar + feed + rightCol)
+     901–1100px : kolom kanan disembunyikan, 2 kolom (sidebar + feed)
+     701–900px  : sidebar disembunyikan, 1 kolom, bottom nav muncul
+     ≤700px     : layout mobile penuh, topbar diringkas
+     ≤380px     : penyesuaian ekstra untuk layar sangat sempit
+  ------------------------------------ */
+  @media(max-width:1100px){.rightCol{display:none;} .layout{grid-template-columns:200px minmax(0,560px);}}
+  @media(max-width:900px){.layout{grid-template-columns:1fr; max-width:560px; padding-bottom:84px;}}
   .sidebar{position:sticky; top:84px; align-self:start;}
   @media(max-width:900px){.sidebar{display:none;}}
   .navList{display:flex; flex-direction:column; gap:4px;}
@@ -459,6 +467,65 @@
   .groupMembersRow{font-size:11.5px; color:var(--muted); padding:0 14px 10px; cursor:pointer;}
 
   .hidden{display:none !important;}
+
+  /* ============================================================
+     RESPONSIVE: TOPBAR, MODAL, BOTTOM NAV
+  ============================================================ */
+  @media(max-width:700px){
+    .topbar{padding:10px 12px; gap:10px;}
+    .logo{font-size:19px;}
+    .searchWrap{display:none;}
+    .searchWrap.mobileOpen{
+      display:block; position:fixed; top:8px; left:8px; right:8px; max-width:none; z-index:80;
+    }
+    .topActions{gap:8px;}
+    .iconBtn{width:34px; height:34px; font-size:14px;}
+    .avatar{width:34px; height:34px;}
+  }
+  .mobileSearchBtn{display:none;}
+  @media(max-width:700px){.mobileSearchBtn{display:flex;}}
+
+  @media(max-width:480px){
+    .topbar{padding:8px 10px;}
+    .logo{font-size:17px;}
+    .layout{padding:14px 10px 84px;}
+    .card{padding:14px;}
+  }
+
+  .notifDrop{max-width:92vw;}
+  .modalBox{max-width:92vw;}
+  .followListBox{max-width:92vw;}
+  @media(max-width:480px){
+    .notifDrop{right:-6px; width:94vw;}
+    .modalBox{padding:18px;}
+  }
+
+  /* ---------- BOTTOM NAV (mobile) ---------- */
+  .bottomNav{
+    display:none; position:fixed; left:0; right:0; bottom:0; z-index:55;
+    background:rgba(20,29,24,.96); backdrop-filter:blur(10px); border-top:1px solid var(--border);
+    padding:6px 4px calc(6px + env(safe-area-inset-bottom));
+  }
+  body.light .bottomNav{background:rgba(255,255,255,.96);}
+  @media(max-width:900px){.bottomNav{display:flex;}}
+  .bottomNav .bnItem{
+    flex:1; background:none; border:none; display:flex; flex-direction:column; align-items:center; gap:2px;
+    color:var(--muted); font-size:19px; padding:6px 2px; position:relative;
+  }
+  .bottomNav .bnItem.active{color:var(--accent2);}
+  .bottomNav .bnItem .bnBadge{
+    position:absolute; top:2px; right:18%; background:var(--danger); color:#fff; font-size:9px;
+    border-radius:8px; padding:0 4px; min-width:13px; text-align:center; font-weight:700;
+  }
+  .bottomNav .bnItem .bnAvatar{
+    width:24px; height:24px; border-radius:50%; background-size:cover; background-position:center;
+    display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:700;
+    background-color:var(--accent2); color:#1a1208; border:1.5px solid transparent;
+  }
+  .bottomNav .bnItem.active .bnAvatar{border-color:var(--accent2);}
+
+  /* reels feed height adapts so bottom nav doesn't cover controls on mobile */
+  @media(max-width:900px){.reelsFeed{height:calc(100vh - 220px);} .reelAddBtn{bottom:96px;}}
 </style>
 </head>
 <body>
@@ -504,12 +571,13 @@
 <div id="app">
   <div class="topbar">
     <div class="logo">Jejak</div>
-    <div class="searchWrap">
+    <div class="searchWrap" id="searchWrap">
       <span class="si">🔍</span>
       <input type="text" id="searchInput" placeholder="Cari pengguna…" oninput="onSearchInput()" />
       <div class="searchResults" id="searchResults"></div>
     </div>
     <div class="topActions">
+      <button class="iconBtn mobileSearchBtn" onclick="toggleMobileSearch()" title="Cari">🔍</button>
       <button class="iconBtn" id="themeBtn" onclick="toggleTheme()" title="Ganti tema">🌙</button>
       <div class="dropdownWrap">
         <button class="iconBtn" onclick="toggleNotifDrop()" title="Notifikasi">
@@ -527,6 +595,7 @@
       <div class="avatar small" id="topAvatar" onclick="viewUser(CURRENT_USER.id)" style="cursor:pointer"></div>
     </div>
   </div>
+
 
   <div class="layout">
     <!-- SIDEBAR -->
@@ -604,6 +673,19 @@
       </div>
     </div>
   </div>
+
+  <!-- BOTTOM NAV (mobile) -->
+  <div class="bottomNav" id="bottomNav">
+    <button class="bnItem active" id="bnBeranda" onclick="switchTab('feed')">🏠</button>
+    <button class="bnItem" id="bnJelajahi" onclick="switchTab('explore')">🧭</button>
+    <button class="bnItem" id="bnReels" onclick="switchTab('reels')">🎬</button>
+    <button class="bnItem" id="bnPesan" onclick="switchTab('messages')" style="position:relative;">
+      ✉️<span class="badge hidden bnBadge" id="dmBadgeBn">0</span>
+    </button>
+    <button class="bnItem" id="bnProfil" onclick="viewUser(CURRENT_USER.id)">
+      <div class="bnAvatar" id="bnAvatar"></div>
+    </button>
+  </div>
 </div>
 
 <div id="toast"></div>
@@ -611,6 +693,18 @@
 <!-- STORY VIEWER -->
 <div class="storyViewerOverlay" id="storyViewerOverlay">
   <div class="storyViewerBox" id="storyViewerBox"></div>
+</div>
+
+<!-- REEL COMMENTS DRAWER -->
+<div class="modalOverlay" id="reelCommentsOverlay">
+  <div class="modalBox" style="width:420px; max-height:75vh; display:flex; flex-direction:column;">
+    <h3>Komentar</h3>
+    <div id="reelCommentsBody" style="flex:1; overflow-y:auto; margin:0 -6px; padding:0 6px;"></div>
+    <div class="commentInputRow" id="reelCommentsInputRow" style="margin-top:10px;"></div>
+    <div class="modalActions">
+      <button class="ghostBtn" style="flex:1; justify-content:center;" onclick="closeReelComments()">Tutup</button>
+    </div>
+  </div>
 </div>
 
 
@@ -822,8 +916,9 @@ function avatarInner(p){
 
 function renderSelfUI(){
   const p = CURRENT_PROFILE;
-  ['topAvatar','composerAvatar','sideAvatar'].forEach(id=>{
+  ['topAvatar','composerAvatar','sideAvatar','bnAvatar'].forEach(id=>{
     const el = document.getElementById(id);
+    if(!el) return;
     el.setAttribute('style', avatarStyle(p));
     el.textContent = avatarInner(p);
   });
@@ -1443,9 +1538,20 @@ document.getElementById('navPesan').addEventListener('click', ()=> switchTab('me
 document.getElementById('navTersimpan').addEventListener('click', ()=> switchTab('saved'));
 document.getElementById('navProfil').addEventListener('click', ()=> viewUser(CURRENT_USER.id));
 
+const bottomNavMap = { navBeranda:'bnBeranda', navJelajahi:'bnJelajahi', navReels:'bnReels', navPesan:'bnPesan', navProfil:'bnProfil' };
 function setActiveNav(id){
   ['navBeranda','navJelajahi','navReels','navPesan','navProfil'].forEach(n=>document.getElementById(n).classList.remove('active'));
-  if(id) document.getElementById(id).classList.add('active');
+  Object.values(bottomNavMap).forEach(n=>document.getElementById(n)?.classList.remove('active'));
+  if(id){
+    document.getElementById(id).classList.add('active');
+    document.getElementById(bottomNavMap[id])?.classList.add('active');
+  }
+}
+
+function toggleMobileSearch(){
+  const wrap = document.getElementById('searchWrap');
+  wrap.classList.toggle('mobileOpen');
+  if(wrap.classList.contains('mobileOpen')) document.getElementById('searchInput').focus();
 }
 
 function switchTab(tab){
@@ -1717,10 +1823,14 @@ function onSearchInput(){
 function selectSearchResult(uid){
   document.getElementById('searchResults').classList.remove('show');
   document.getElementById('searchInput').value = '';
+  document.getElementById('searchWrap').classList.remove('mobileOpen');
   viewUser(uid);
 }
 document.addEventListener('click', (e)=>{
-  if(!e.target.closest('.searchWrap')) document.getElementById('searchResults').classList.remove('show');
+  if(!e.target.closest('.searchWrap') && !e.target.closest('.mobileSearchBtn')){
+    document.getElementById('searchResults').classList.remove('show');
+    document.getElementById('searchWrap').classList.remove('mobileOpen');
+  }
   if(!e.target.closest('.dropdownWrap')) document.getElementById('notifDrop').classList.remove('show');
 });
 
@@ -2108,11 +2218,11 @@ function subscribeDm(uid){
 async function updateDmBadge(){
   const me = CURRENT_USER.id;
   const { count } = await sb.from('messages').select('*', {count:'exact', head:true}).eq('receiver_id', me).eq('is_read', false);
-  const navBadge = document.getElementById('dmBadgeNav');
-  if(navBadge){
+  [document.getElementById('dmBadgeNav'), document.getElementById('dmBadgeBn')].forEach(navBadge=>{
+    if(!navBadge) return;
     if(count>0){ navBadge.classList.remove('hidden'); navBadge.textContent = count; }
     else navBadge.classList.add('hidden');
-  }
+  });
 }
 
 /* ============================================================
@@ -2458,20 +2568,29 @@ async function toggleLikeGeneric(postId){
   }
 }
 
+let currentReelCommentId = null;
 function openReelComments(reelId){
-  viewExplorePostAsReelComment(reelId);
+  currentReelCommentId = reelId;
+  document.getElementById('reelCommentsOverlay').classList.add('show');
+  document.getElementById('reelCommentsBody').innerHTML = `<div id="commentList-${reelId}" style="font-size:13px; color:var(--muted);">Memuat…</div>`;
+  document.getElementById('reelCommentsInputRow').innerHTML = `
+    <input type="text" id="commentInput-${reelId}" placeholder="Tulis komentar…" onkeydown="if(event.key==='Enter') submitReelComment('${reelId}')" />
+    <button onclick="submitReelComment('${reelId}')">Kirim</button>
+    <span class="hidden" id="commentCount-${reelId}"></span>`;
+  loadComments(reelId);
 }
-async function viewExplorePostAsReelComment(reelId){
-  // tampilkan komentar lewat toast-prompt sederhana
-  const text = prompt('Tulis komentar untuk reel ini:');
-  if(!text || !text.trim()) return;
-  const { error } = await sb.from('comments').insert({ post_id: reelId, user_id: CURRENT_USER.id, text: text.trim() });
-  if(error){ showToast('Gagal komentar: ' + error.message); return; }
-  notifyPostOwner(reelId, 'comment');
-  commentCounts[reelId] = (commentCounts[reelId]||0)+1;
+function closeReelComments(){
+  document.getElementById('reelCommentsOverlay').classList.remove('show');
+  if(currentReelCommentId){
+    const cnt = document.getElementById('reelCmtCnt-'+currentReelCommentId);
+    if(cnt) cnt.textContent = commentCounts[currentReelCommentId] || 0;
+  }
+  currentReelCommentId = null;
+}
+async function submitReelComment(reelId){
+  await submitComment(reelId);
   const cnt = document.getElementById('reelCmtCnt-'+reelId);
-  if(cnt) cnt.textContent = commentCounts[reelId];
-  showToast('Komentar terkirim ✓');
+  if(cnt) cnt.textContent = commentCounts[reelId] || 0;
 }
 
 async function deleteReel(reelId){
