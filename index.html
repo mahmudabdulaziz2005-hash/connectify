@@ -3,15 +3,15 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Kilas Pro</title>
-<meta name="theme-color" content="#7c5cff">
+<title>Kilas</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
   :root{
-    --bg:#0e0f14; --bg2:#171922; --card:#1b1e29; --border:#2a2e3c;
-    --text:#f3f4f8; --muted:#8b8fa3; --accent:#ff7a59; --accent2:#7c5cff;
-    --accent-grad:linear-gradient(135deg,#ff7a59 0%,#ff5da2 50%,#7c5cff 100%);
-    --danger:#ef4444; --radius:18px; --font-display:'Georgia', 'Times New Roman', serif;
+    --bg:linear-gradient(135deg,#08f3d4 50%,#141616 30%,#ec0c0c 100%);
+    --bg2:#f3f5f7; --card:#e0e2eb; --border:#da1768;
+    --text:#16181b; --muted:#0a0c0a; --accent:#e714a8; --accent2:#e9e7f3;
+    --accent-grad:linear-gradient(135deg,#110910 0%,#48cad3 50%,#f0b177 100%);
+    --danger:#4e1313; --radius:18px; --font-display:'Georgia', 'Times New Roman', serif;
   }
   *{box-sizing:border-box; margin:0; padding:0;}
   body{
@@ -21,8 +21,8 @@
   a{color:inherit; text-decoration:none;}
 
   body.light{
-    --bg:#faf8f6; --bg2:#ffffff; --card:#ffffff; --border:#ebe5de;
-    --text:#221f2b; --muted:#867f93;
+    --bg:#ec8013; --bg2:#ebf1f3; --card:#0e0c0c; --border:#2fb7da;
+    --text:#221f2b; --muted:#786d8b;
   }
 
   /* ---------- TOPBAR SEARCH ---------- */
@@ -111,7 +111,7 @@
   #authScreen{
     min-height:100vh; display:none; align-items:center; justify-content:center; padding:24px;
     background:
-      radial-gradient(circle at 15% 10%, rgba(255,122,89,.12), transparent 55%),
+      radial-gradient(circle at 15% 10%, rgba(214, 98, 69, 0.12), transparent 55%),
       radial-gradient(circle at 85% 90%, rgba(124,92,255,.10), transparent 55%),
       var(--bg);
   }
@@ -446,6 +446,37 @@
     100%{opacity:0; transform:scale(1);}
   }
 
+  /* ---------- PANGGILAN TELEPON (voice call) ---------- */
+  .callOverlay{
+    position:fixed; inset:0; background:linear-gradient(160deg,#0c0d10,#1b1320); z-index:600; display:none;
+    align-items:center; justify-content:center; flex-direction:column;
+  }
+  .callOverlay.show{display:flex;}
+  .callBox{display:flex; flex-direction:column; align-items:center; gap:10px; padding:30px; text-align:center;}
+  .callAvatarBig{
+    width:110px; height:110px; border-radius:50%; background:linear-gradient(135deg,var(--accent),var(--accent2));
+    display:flex; align-items:center; justify-content:center; font-size:38px; font-weight:700; color:#fff;
+    background-size:cover; background-position:center; box-shadow:0 0 0 6px rgba(255,255,255,.06);
+    animation:callPulse 1.8s ease-in-out infinite;
+  }
+  @keyframes callPulse{0%{box-shadow:0 0 0 6px rgba(255,255,255,.06);}50%{box-shadow:0 0 0 14px rgba(255,255,255,.03);}100%{box-shadow:0 0 0 6px rgba(255,255,255,.06);}}
+  .callName{font-family:var(--font-display); font-size:24px; color:#fff; margin-top:8px;}
+  .callStatus{font-size:13px; color:rgba(255,255,255,.6); letter-spacing:.02em;}
+  .callActions{display:flex; gap:26px; margin-top:34px;}
+  .callBtnRound{
+    width:58px; height:58px; border-radius:50%; border:none; font-size:22px; display:flex;
+    align-items:center; justify-content:center; color:#fff; box-shadow:0 8px 20px rgba(0,0,0,.35);
+  }
+  .callBtnRound.accept{background:#2fb35a;}
+  .callBtnRound.decline{background:#e0654f;}
+  .callBtnRound.mute{background:rgba(255,255,255,.14);}
+  .callBtnRound.mute.active{background:var(--accent);}
+  .callBtn{
+    background:var(--bg2); border:1px solid var(--border); width:34px; height:34px; border-radius:50%;
+    display:flex; align-items:center; justify-content:center; color:var(--text); font-size:14px; margin-left:auto;
+  }
+  .callBtn:hover{border-color:var(--accent);}
+
   /* ---------- FULLSCREEN LIGHTBOX (foto & video) ---------- */
   .lightboxOverlay{
     position:fixed; inset:0; background:rgba(0,0,0,.94); z-index:500; display:none;
@@ -574,16 +605,6 @@
   /* reels feed height adapts so bottom nav doesn't cover controls on mobile */
   @media(max-width:900px){.reelsFeed{height:calc(100vh - 220px);} .reelAddBtn{bottom:96px;}}
 </style>
-
-<style>
-#backToTop{
- position:fixed;right:20px;bottom:90px;z-index:999;
- width:46px;height:46px;border:none;border-radius:50%;
- display:none;font-size:18px;cursor:pointer;
-}
-.glow-logo{filter:drop-shadow(0 0 10px rgba(124,92,255,.35));}
-</style>
-
 </head>
 <body>
 
@@ -872,31 +893,25 @@
   </div>
 </div>
 
-<!-- MODAL LAPORKAN -->
-<div class="modalOverlay" id="reportModal">
-  <div class="modalBox">
-    <h3>Laporkan</h3>
-    <div class="field">
-      <label>Alasan</label>
-      <select id="reportReasonSelect" style="width:100%; padding:12px 14px; border-radius:10px; border:1px solid var(--border); background:var(--bg2); color:var(--text); font-size:14px;">
-        <option value="spam">Spam</option>
-        <option value="harassment">Pelecehan / Bullying</option>
-        <option value="hate">Ujaran kebencian</option>
-        <option value="nudity">Konten dewasa / tidak senonoh</option>
-        <option value="violence">Kekerasan</option>
-        <option value="misinformation">Informasi palsu</option>
-        <option value="other">Lainnya</option>
-      </select>
+<!-- ---------- PANGGILAN TELEPON ---------- -->
+<div class="callOverlay" id="callOverlay">
+  <div class="callBox">
+    <div class="callAvatarBig" id="callAvatarBig">?</div>
+    <div class="callName" id="callName">Pengguna</div>
+    <div class="callStatus" id="callStatus">Memanggil…</div>
+    <div class="callActions" id="callActionsIncoming" style="display:none;">
+      <button class="callBtnRound decline" title="Tolak" onclick="declineCall()">✕</button>
+      <button class="callBtnRound accept" title="Terima" onclick="acceptCall()">📞</button>
     </div>
-    <div class="field">
-      <label>Detail tambahan (opsional)</label>
-      <input type="text" id="reportDetailInput" placeholder="Jelaskan lebih lanjut…" />
+    <div class="callActions" id="callActionsOutgoing" style="display:none;">
+      <button class="callBtnRound decline" title="Batalkan" onclick="hangupCall()">✕</button>
     </div>
-    <div class="modalActions">
-      <button class="ghostBtn" onclick="closeReportModal()">Batal</button>
-      <button class="postBtn" id="submitReportBtn" onclick="submitReport()">Kirim laporan</button>
+    <div class="callActions" id="callActionsActive" style="display:none;">
+      <button class="callBtnRound mute" id="muteBtn" title="Bisukan mikrofon" onclick="toggleMute()">🎤</button>
+      <button class="callBtnRound decline" title="Tutup telepon" onclick="hangupCall()">✕</button>
     </div>
   </div>
+  <audio id="remoteAudio" autoplay playsinline></audio>
 </div>
 
 <script>
@@ -913,8 +928,6 @@ let authMode = 'login'; // 'login' | 'register'
 let composerImageFiles = [];
 let profilesCache = {};
 let postCaptionCache = {};
-let blockedUserIds = new Set();
-let reportTarget = { type:null, id:null };
 
 /* ============================================================
    INIT
@@ -963,11 +976,11 @@ async function handleLoggedIn(user){
   document.getElementById('authScreen').style.display = 'none';
   document.getElementById('app').style.display = 'block';
   renderSelfUI();
-  await loadBlockedUsers();
   await loadFeed();
   loadNotifCount();
   updateDmBadge();
   subscribeNotifications();
+  subscribeIncomingCalls();
 }
 
 /* ============================================================
@@ -1034,6 +1047,8 @@ document.getElementById('authForm').addEventListener('submit', async (e)=>{
 });
 
 async function logout(){
+  cleanupCall();
+  if(incomingCallChannel){ sb.removeChannel(incomingCallChannel); incomingCallChannel = null; }
   await sb.auth.signOut();
 }
 
@@ -1185,9 +1200,7 @@ async function loadFeed(){
     const id = it.post.id;
     if(!grouped[id] || new Date(it.ts) > new Date(grouped[id].ts)) grouped[id] = it;
   });
-  const finalItems = Object.values(grouped)
-    .filter(it => !blockedUserIds.has(it.post.user_id) && !blockedUserIds.has(it.repostBy))
-    .sort((a,b)=> new Date(b.ts) - new Date(a.ts)).slice(0,60);
+  const finalItems = Object.values(grouped).sort((a,b)=> new Date(b.ts) - new Date(a.ts)).slice(0,60);
 
   if(finalItems.length === 0){
     list.innerHTML = `<div class="emptyState"><div class="big">Belum ada kilasan</div>Jadilah yang pertama membagikan momen.</div>`;
@@ -1280,14 +1293,7 @@ function renderPost(post, repostBy){
           <button style="color:var(--text);" onclick="startEditCaption('${post.id}')">Edit caption</button>
           <button onclick="deletePost('${post.id}')">Hapus postingan</button>
         </div>
-      </div>` : `
-      <div class="postMenuWrap">
-        <button class="postMenuBtn" onclick="togglePostMenu('${post.id}')">⋯</button>
-        <div class="postMenuDrop" id="menu-${post.id}">
-          <button style="color:var(--text);" onclick="openReportModal('post','${post.id}')">Laporkan postingan</button>
-          <button onclick="toggleBlockUser('${post.user_id}'); document.getElementById('menu-${post.id}').classList.remove('show');">${blockedUserIds.has(post.user_id)?'Buka blokir pengguna':'Blokir pengguna'}</button>
-        </div>
-      </div>`}
+      </div>` : ''}
     </div>
     <div id="postTextWrap-${post.id}">
       ${post.caption ? `<div class="postText" id="postText-${post.id}">${parseHashtags(post.caption)}${post.edited?'<span class="editedTag">(diedit)</span>':''}</div>` : `<div id="postText-${post.id}"></div>`}
@@ -1783,8 +1789,7 @@ async function viewUser(uid){
       ? `<button class="ghostBtn" onclick="openEditProfile()">Edit profil</button>`
       : `<button class="followBtn ${isFollowing?'following':'notfollowing'}" id="followBtn-${uid}" onclick="toggleFollow('${uid}')">${isFollowing?'Mengikuti':'Ikuti'}</button>
          <button class="msgBtnSmall" onclick="openDmWith('${uid}')">Kirim pesan</button>
-         <button class="msgBtnSmall" id="blockBtn-${uid}" onclick="toggleBlockUser('${uid}')">${blockedUserIds.has(uid)?'Buka blokir':'Blokir'}</button>
-         <button class="msgBtnSmall" onclick="openReportModal('user','${uid}')">Laporkan</button>`
+         <button class="msgBtnSmall" onclick="startCall('${uid}')">📞 Telepon</button>`
     }
     <div class="storiesBar" id="highlightsBar-${uid}" style="margin-top:14px;"></div>`;
 
@@ -2329,6 +2334,7 @@ async function openDmWith(uid){
       <button class="dmBackBtn" onclick="dmActiveUserId=null; renderMessages();">←</button>
       <div class="avatar small" style="${avatarStyle(u)};cursor:pointer" onclick="viewUser('${uid}')">${avatarInner(u)}</div>
       <div class="who" style="cursor:pointer" onclick="viewUser('${uid}')"><div class="name">${escapeHtml(u.name)}</div><div class="time">@${escapeHtml(u.username)}</div></div>
+      <button class="callBtn" title="Telepon" onclick="startCall('${uid}')">📞</button>
     </div>
     <div class="dmMessages" id="dmMessages"><div class="dmEmpty">Memuat pesan…</div></div>
     <div class="dmInputRow">
@@ -3094,75 +3100,296 @@ async function uploadReel(file, caption){
 }
 
 /* ============================================================
-   BLOKIR PENGGUNA
+   PANGGILAN TELEPON (voice call via WebRTC)
+   Signaling memakai Supabase Realtime broadcast channel,
+   tanpa server tambahan.
 ============================================================ */
-async function loadBlockedUsers(){
-  const { data, error } = await sb.from('blocks').select('blocked_id').eq('blocker_id', CURRENT_USER.id);
-  if(error){ console.error(error); return; }
-  blockedUserIds = new Set((data||[]).map(b=>b.blocked_id));
+const ICE_SERVERS = [
+  { urls: 'stun:stun.l.google.com:19302' },
+  { urls: 'stun:stun1.l.google.com:19302' }
+];
+
+let incomingCallChannel = null;  // channel pribadi 'calls-{myId}', selalu aktif selama login
+let callChannel = null;          // channel per-panggilan 'call-{callId}', aktif selama 1 panggilan
+let pc = null;                   // RTCPeerConnection aktif
+let localStream = null;
+let currentCallId = null;
+let currentCallPeerId = null;
+let isCaller = false;
+let callState = 'idle';          // idle | calling | ringing | active
+let callTimer = null;
+let callSeconds = 0;
+let isMuted = false;
+let pendingOfferPayload = null;  // payload masuk yang belum dijawab
+let callTimeoutHandle = null;
+
+function subscribeIncomingCalls(){
+  if(incomingCallChannel) sb.removeChannel(incomingCallChannel);
+  incomingCallChannel = sb.channel('calls-' + CURRENT_USER.id)
+    .on('broadcast', { event: 'incoming' }, ({ payload }) => handleIncomingCall(payload))
+    .subscribe();
 }
 
-async function toggleBlockUser(uid){
-  const btn = document.getElementById('blockBtn-'+uid);
-  const isBlocked = blockedUserIds.has(uid);
-  try{
-    if(isBlocked){
-      const { error } = await sb.from('blocks').delete().eq('blocker_id', CURRENT_USER.id).eq('blocked_id', uid);
-      if(error) throw error;
-      blockedUserIds.delete(uid);
-      if(btn) btn.textContent = 'Blokir';
-      showToast('Blokir dibuka ✓');
-    } else {
-      if(!confirm('Blokir pengguna ini? Anda tidak akan melihat postingan mereka lagi.')) return;
-      const { error } = await sb.from('blocks').insert({ blocker_id: CURRENT_USER.id, blocked_id: uid });
-      if(error) throw error;
-      blockedUserIds.add(uid);
-      if(btn) btn.textContent = 'Buka blokir';
-      // putuskan hubungan ikuti-mengikuti dua arah agar konsisten
-      await sb.from('follows').delete().eq('follower_id', CURRENT_USER.id).eq('following_id', uid);
-      await sb.from('follows').delete().eq('follower_id', uid).eq('following_id', CURRENT_USER.id);
-      showToast('Pengguna diblokir ✓');
-      await loadFeed();
+function uuidv4(){
+  if(crypto.randomUUID) return crypto.randomUUID();
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c=>{
+    const r = Math.random()*16|0, v = c==='x'?r:(r&0x3|0x8);
+    return v.toString(16);
+  });
+}
+
+function createPeerConnection(){
+  const conn = new RTCPeerConnection({ iceServers: ICE_SERVERS });
+  conn.onicecandidate = (e)=>{
+    if(e.candidate && callChannel){
+      callChannel.send({ type:'broadcast', event:'ice', payload:{ candidate: e.candidate } });
     }
+  };
+  conn.ontrack = (e)=>{
+    const audioEl = document.getElementById('remoteAudio');
+    if(audioEl) audioEl.srcObject = e.streams[0];
+  };
+  conn.onconnectionstatechange = ()=>{
+    if(['failed','closed'].includes(conn.connectionState) && callState !== 'idle'){
+      if(conn.connectionState === 'failed') endCallUI('Koneksi terputus');
+    }
+  };
+  return conn;
+}
+
+function showCallOverlay(){
+  document.getElementById('callOverlay').classList.add('show');
+}
+function hideCallOverlay(){
+  document.getElementById('callOverlay').classList.remove('show');
+}
+
+function setCallUIPeer(uid, fallbackProfile){
+  const p = profilesCache[uid] || fallbackProfile || { name:'Pengguna', avatar_url:'' };
+  const av = document.getElementById('callAvatarBig');
+  const nm = document.getElementById('callName');
+  if(p.avatar_url){ av.style.backgroundImage = `url('${p.avatar_url}')`; av.textContent=''; }
+  else { av.style.backgroundImage='none'; av.textContent = (p.name||'?').trim().charAt(0).toUpperCase(); }
+  nm.textContent = p.name || 'Pengguna';
+}
+
+function setCallActionsVisible(which){
+  ['callActionsIncoming','callActionsOutgoing','callActionsActive'].forEach(id=>{
+    document.getElementById(id).style.display = (id===which) ? 'flex' : 'none';
+  });
+}
+
+/* ---------- MEMULAI PANGGILAN (caller) ---------- */
+async function startCall(targetUid){
+  if(targetUid === CURRENT_USER.id) return;
+  if(callState !== 'idle'){ showToast('Sedang ada panggilan berlangsung.'); return; }
+
+  await getProfile(targetUid);
+  currentCallId = uuidv4();
+  currentCallPeerId = targetUid;
+  isCaller = true;
+  callState = 'calling';
+
+  setCallUIPeer(targetUid);
+  document.getElementById('callStatus').textContent = 'Memanggil…';
+  setCallActionsVisible('callActionsOutgoing');
+  showCallOverlay();
+
+  try{
+    localStream = await navigator.mediaDevices.getUserMedia({ audio:true });
   } catch(err){
-    showToast('Gagal: ' + err.message);
+    showToast('Gagal mengakses mikrofon: ' + err.message);
+    cleanupCall();
+    return;
+  }
+
+  pc = createPeerConnection();
+  localStream.getTracks().forEach(t => pc.addTrack(t, localStream));
+
+  callChannel = sb.channel('call-' + currentCallId)
+    .on('broadcast', { event:'answer' }, ({ payload }) => onRemoteAnswer(payload))
+    .on('broadcast', { event:'ice' }, ({ payload }) => onRemoteIce(payload))
+    .on('broadcast', { event:'declined' }, () => onRemoteDeclined())
+    .on('broadcast', { event:'hangup' }, () => onRemoteHangup())
+    .subscribe(async (status)=>{
+      if(status === 'SUBSCRIBED'){
+        const offer = await pc.createOffer();
+        await pc.setLocalDescription(offer);
+        const ringChannel = sb.channel('calls-' + targetUid);
+        ringChannel.subscribe((st)=>{
+          if(st === 'SUBSCRIBED'){
+            ringChannel.send({
+              type:'broadcast', event:'incoming',
+              payload:{
+                callId: currentCallId, from: CURRENT_USER.id,
+                fromName: CURRENT_PROFILE.name, fromAvatar: CURRENT_PROFILE.avatar_url,
+                offer
+              }
+            });
+            setTimeout(()=> sb.removeChannel(ringChannel), 1500);
+          }
+        });
+        callTimeoutHandle = setTimeout(()=>{
+          if(callState === 'calling'){ showToast('Tidak ada jawaban.'); hangupCall(); }
+        }, 30000);
+      }
+    });
+}
+
+/* ---------- MENERIMA PANGGILAN (callee) ---------- */
+function handleIncomingCall(payload){
+  if(callState !== 'idle'){
+    // sedang sibuk, tolak otomatis
+    const tmp = sb.channel('call-' + payload.callId);
+    tmp.subscribe((st)=>{
+      if(st === 'SUBSCRIBED'){
+        tmp.send({ type:'broadcast', event:'declined', payload:{ reason:'busy' } });
+        setTimeout(()=> sb.removeChannel(tmp), 1000);
+      }
+    });
+    return;
+  }
+
+  pendingOfferPayload = payload;
+  currentCallId = payload.callId;
+  currentCallPeerId = payload.from;
+  isCaller = false;
+  callState = 'ringing';
+
+  profilesCache[payload.from] = profilesCache[payload.from] || { name: payload.fromName, avatar_url: payload.fromAvatar, username:'' };
+  setCallUIPeer(payload.from, { name: payload.fromName, avatar_url: payload.fromAvatar });
+  document.getElementById('callStatus').textContent = 'Panggilan masuk…';
+  setCallActionsVisible('callActionsIncoming');
+  showCallOverlay();
+
+  callChannel = sb.channel('call-' + currentCallId)
+    .on('broadcast', { event:'ice' }, ({ payload }) => onRemoteIce(payload))
+    .on('broadcast', { event:'hangup' }, () => onRemoteHangup())
+    .subscribe();
+
+  callTimeoutHandle = setTimeout(()=>{
+    if(callState === 'ringing'){ declineCall(); }
+  }, 30000);
+}
+
+async function acceptCall(){
+  if(!pendingOfferPayload) return;
+  clearTimeout(callTimeoutHandle);
+  document.getElementById('callStatus').textContent = 'Menghubungkan…';
+
+  try{
+    localStream = await navigator.mediaDevices.getUserMedia({ audio:true });
+  } catch(err){
+    showToast('Gagal mengakses mikrofon: ' + err.message);
+    declineCall();
+    return;
+  }
+
+  pc = createPeerConnection();
+  localStream.getTracks().forEach(t => pc.addTrack(t, localStream));
+
+  await pc.setRemoteDescription(new RTCSessionDescription(pendingOfferPayload.offer));
+  const answer = await pc.createAnswer();
+  await pc.setLocalDescription(answer);
+
+  callChannel.send({ type:'broadcast', event:'answer', payload:{ answer } });
+
+  callState = 'active';
+  startCallTimer();
+  setCallActionsVisible('callActionsActive');
+  pendingOfferPayload = null;
+}
+
+function declineCall(){
+  if(callChannel){
+    callChannel.send({ type:'broadcast', event:'declined', payload:{ reason:'declined' } });
+  }
+  cleanupCall();
+}
+
+/* ---------- EVENT DARI LAWAN BICARA ---------- */
+async function onRemoteAnswer(payload){
+  if(!pc || callState !== 'calling') return;
+  clearTimeout(callTimeoutHandle);
+  await pc.setRemoteDescription(new RTCSessionDescription(payload.answer));
+  callState = 'active';
+  startCallTimer();
+  setCallActionsVisible('callActionsActive');
+}
+
+async function onRemoteIce(payload){
+  if(!pc || !payload?.candidate) return;
+  try{ await pc.addIceCandidate(new RTCIceCandidate(payload.candidate)); }
+  catch(err){ /* abaikan kandidat yang gagal */ }
+}
+
+function onRemoteDeclined(){
+  if(callState === 'calling'){
+    showToast('Panggilan ditolak.');
+    cleanupCall();
   }
 }
 
-/* ============================================================
-   LAPORKAN KONTEN / PENGGUNA
-============================================================ */
-function openReportModal(targetType, targetId){
-  reportTarget = { type: targetType, id: targetId };
-  document.getElementById('reportReasonSelect').value = 'spam';
-  document.getElementById('reportDetailInput').value = '';
-  document.getElementById('reportModal').classList.add('show');
-}
-function closeReportModal(){
-  document.getElementById('reportModal').classList.remove('show');
-  reportTarget = { type:null, id:null };
-}
-async function submitReport(){
-  if(!reportTarget.id){ closeReportModal(); return; }
-  const reason = document.getElementById('reportReasonSelect').value;
-  const detail = document.getElementById('reportDetailInput').value.trim();
-  const btn = document.getElementById('submitReportBtn');
-  btn.disabled = true; btn.textContent = 'Mengirim…';
-  try{
-    const { error } = await sb.from('reports').insert({
-      reporter_id: CURRENT_USER.id,
-      target_type: reportTarget.type,
-      target_id: String(reportTarget.id),
-      reason, detail
-    });
-    if(error) throw error;
-    showToast('Laporan terkirim. Terima kasih sudah menjaga komunitas ✓');
-    closeReportModal();
-  } catch(err){
-    showToast('Gagal mengirim laporan: ' + err.message);
-  } finally {
-    btn.disabled = false; btn.textContent = 'Kirim laporan';
+function onRemoteHangup(){
+  if(callState !== 'idle'){
+    showToast('Panggilan berakhir.');
+    cleanupCall();
   }
+}
+
+/* ---------- KONTROL SAAT PANGGILAN AKTIF ---------- */
+function toggleMute(){
+  if(!localStream) return;
+  isMuted = !isMuted;
+  localStream.getAudioTracks().forEach(t => t.enabled = !isMuted);
+  const btn = document.getElementById('muteBtn');
+  btn.classList.toggle('active', isMuted);
+  btn.textContent = isMuted ? '🔇' : '🎤';
+}
+
+function startCallTimer(){
+  callSeconds = 0;
+  updateCallStatusTimer();
+  callTimer = setInterval(()=>{
+    callSeconds++;
+    updateCallStatusTimer();
+  }, 1000);
+}
+function updateCallStatusTimer(){
+  const m = String(Math.floor(callSeconds/60)).padStart(2,'0');
+  const s = String(callSeconds%60).padStart(2,'0');
+  const el = document.getElementById('callStatus');
+  if(el) el.textContent = `${m}:${s}`;
+}
+
+function hangupCall(){
+  if(callChannel && callState !== 'idle'){
+    callChannel.send({ type:'broadcast', event:'hangup', payload:{} });
+  }
+  cleanupCall();
+}
+
+function cleanupCall(){
+  clearTimeout(callTimeoutHandle);
+  if(callTimer){ clearInterval(callTimer); callTimer = null; }
+  if(pc){ try{ pc.close(); }catch(e){} pc = null; }
+  if(localStream){ localStream.getTracks().forEach(t=>t.stop()); localStream = null; }
+  if(callChannel){ sb.removeChannel(callChannel); callChannel = null; }
+  const audioEl = document.getElementById('remoteAudio');
+  if(audioEl) audioEl.srcObject = null;
+  callState = 'idle';
+  currentCallId = null;
+  currentCallPeerId = null;
+  isCaller = false;
+  isMuted = false;
+  pendingOfferPayload = null;
+  callSeconds = 0;
+  hideCallOverlay();
+}
+
+function endCallUI(reason){
+  if(reason) showToast(reason);
+  cleanupCall();
 }
 
 function toggleTheme(){
@@ -3205,26 +3432,5 @@ function showToast(msg){
   toastTimer = setTimeout(()=>t.classList.remove('show'), 2500);
 }
 </script>
-
-<button id="backToTop" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
-<script>
-document.addEventListener('scroll',()=>{
- const b=document.getElementById('backToTop');
- if(b) b.style.display=window.scrollY>400?'block':'none';
-});
-
-document.addEventListener('keydown',(e)=>{
- if(e.key==='/' && document.getElementById('searchInput')){
-   e.preventDefault();
-   document.getElementById('searchInput').focus();
- }
-});
-
-window.addEventListener('load',()=>{
- const logo=document.querySelector('.logo');
- if(logo) logo.classList.add('glow-logo');
-});
-</script>
-
 </body>
 </html>
