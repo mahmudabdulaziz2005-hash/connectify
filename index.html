@@ -380,6 +380,84 @@
   .commentLikeBtn:hover, .replyBtn:hover{color:var(--text);}
   .commentLikeBtn.liked{color:var(--danger);}
 
+  /* ---------- REELS ---------- */
+  #reelsView{padding:0;}
+  .reelsFeed{
+    height:calc(100vh - 168px); max-height:780px; overflow-y:auto; scroll-snap-type:y mandatory;
+    border-radius:var(--radius); background:#000; border:1px solid var(--border);
+  }
+  .reelsFeed::-webkit-scrollbar{width:0;}
+  .reelSlide{
+    position:relative; height:100%; scroll-snap-align:start; display:flex; align-items:center; justify-content:center;
+    background:#000; overflow:hidden;
+  }
+  .reelSlide video{width:100%; height:100%; object-fit:contain; background:#000;}
+  .reelOverlay{
+    position:absolute; left:0; right:0; bottom:0; padding:16px 70px 18px 16px; color:#fff;
+    background:linear-gradient(transparent, rgba(0,0,0,.75));
+  }
+  .reelOverlay .who{display:flex; align-items:center; gap:8px; margin-bottom:6px; cursor:pointer;}
+  .reelOverlay .name{font-weight:700; font-size:13px;}
+  .reelOverlay .cap{font-size:13px; line-height:1.4; white-space:pre-wrap; word-break:break-word;}
+  .reelSideActions{
+    position:absolute; right:10px; bottom:18px; display:flex; flex-direction:column; align-items:center; gap:18px; color:#fff;
+  }
+  .reelSideActions button{
+    background:rgba(0,0,0,.35); border:none; color:#fff; width:42px; height:42px; border-radius:50%;
+    display:flex; align-items:center; justify-content:center; font-size:19px;
+  }
+  .reelSideActions button.liked{color:var(--danger);}
+  .reelSideActions .cnt{font-size:11px; margin-top:3px; display:block; text-align:center; font-weight:700;}
+  .reelMuteBtn{position:absolute; top:14px; right:14px; background:rgba(0,0,0,.4); border:none; color:#fff; width:34px; height:34px; border-radius:50%; font-size:14px;}
+  .reelPlayHint{position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:50px; color:rgba(255,255,255,.85); pointer-events:none; opacity:0; transition:.2s;}
+  .reelPlayHint.show{opacity:1;}
+  .reelAddBtn{
+    position:fixed; right:24px; bottom:24px; background:var(--accent); color:#1a1208; border:none;
+    width:54px; height:54px; border-radius:50%; font-size:24px; font-weight:700; box-shadow:0 10px 24px rgba(0,0,0,.4); z-index:30;
+  }
+
+  /* ---------- FOLLOW LIST MODAL ---------- */
+  .followListBox{width:380px; max-width:100%; max-height:70vh; display:flex; flex-direction:column;}
+  .followListTabs{display:flex; border-bottom:1px solid var(--border); margin-bottom:8px;}
+  .followListTabs button{
+    flex:1; background:none; border:none; padding:10px; font-size:13px; font-weight:700; color:var(--muted);
+    border-bottom:2px solid transparent;
+  }
+  .followListTabs button.active{color:var(--accent2); border-color:var(--accent2);}
+  .followListItems{overflow-y:auto; flex:1;}
+  .followListRow{display:flex; align-items:center; gap:10px; padding:9px 4px;}
+  .followListRow .info{flex:1; min-width:0; cursor:pointer;}
+  .followListRow .name{font-weight:700; font-size:13.5px;}
+  .followListRow .uname{font-size:11.5px; color:var(--muted);}
+  .followListRow .followBtn{padding:6px 14px; font-size:11.5px; margin-top:0;}
+  .profileStats .clickable{cursor:pointer;}
+  .profileStats .clickable:hover b{text-decoration:underline;}
+
+  /* ---------- GROUP CHAT ---------- */
+  .dmTabs{display:flex; gap:4px; padding:10px 10px 0;}
+  .dmTabs button{
+    flex:1; background:none; border:none; padding:8px; font-size:12px; font-weight:700; color:var(--muted);
+    border-bottom:2px solid transparent;
+  }
+  .dmTabs button.active{color:var(--accent2); border-color:var(--accent2);}
+  .newGroupBtn{
+    margin:8px 10px 4px; background:var(--bg2); border:1px solid var(--border); color:var(--text);
+    border-radius:10px; padding:8px; font-size:12px; font-weight:700; width:calc(100% - 20px);
+  }
+  .groupAvatarStack{position:relative; width:38px; height:38px; flex-shrink:0;}
+  .groupAvatarStack .avatar{width:26px; height:26px; font-size:10px; position:absolute; border:2px solid var(--card);}
+  .groupAvatarStack .avatar:nth-child(1){top:0; left:0; z-index:2;}
+  .groupAvatarStack .avatar:nth-child(2){bottom:0; right:0; z-index:1;}
+  .groupAvatarSolo{width:38px; height:38px; border-radius:50%; background:linear-gradient(135deg,var(--accent),var(--accent2)); display:flex; align-items:center; justify-content:center; font-weight:700; color:#1a1208; font-size:14px;}
+  .dmBubbleRow .sender{font-size:10.5px; color:var(--accent2); font-weight:700; margin-bottom:2px;}
+  .memberPickList{max-height:220px; overflow-y:auto; margin:10px 0; border:1px solid var(--border); border-radius:10px;}
+  .memberPickRow{display:flex; align-items:center; gap:10px; padding:9px 10px; border-bottom:1px solid var(--border); cursor:pointer;}
+  .memberPickRow:last-child{border-bottom:none;}
+  .memberPickRow.picked{background:rgba(217,142,68,.1);}
+  .memberPickRow .chk{margin-left:auto; width:18px; height:18px; border-radius:5px; border:1.5px solid var(--border); display:flex; align-items:center; justify-content:center; font-size:11px;}
+  .memberPickRow.picked .chk{background:var(--accent); border-color:var(--accent); color:#1a1208;}
+  .groupMembersRow{font-size:11.5px; color:var(--muted); padding:0 14px 10px; cursor:pointer;}
+
   .hidden{display:none !important;}
 </style>
 </head>
@@ -456,6 +534,7 @@
       <div class="navList">
         <button class="navItem active" id="navBeranda">🏠 Beranda</button>
         <button class="navItem" id="navJelajahi">🧭 Jelajahi</button>
+        <button class="navItem" id="navReels">🎬 Reels</button>
         <button class="navItem" id="navPesan">✉️ Pesan</button>
         <button class="navItem" id="navTersimpan">🔖 Tersimpan</button>
         <button class="navItem" id="navProfil">👤 Profil saya</button>
@@ -498,6 +577,13 @@
 
     <!-- EXPLORE VIEW -->
     <div class="main hidden" id="exploreView"></div>
+
+    <!-- REELS VIEW -->
+    <div class="main hidden" id="reelsView" style="position:relative;">
+      <input type="file" id="reelFile" accept="video/*" class="hidden" onchange="onReelFile(event)" />
+      <div id="reelsFeedWrap"></div>
+      <button class="reelAddBtn" onclick="document.getElementById('reelFile').click()" title="Tambah reel">+</button>
+    </div>
 
     <!-- SAVED VIEW -->
     <div class="main hidden" id="savedView"></div>
@@ -548,6 +634,41 @@
     <div class="modalActions">
       <button class="ghostBtn" onclick="closeEditProfile()">Batal</button>
       <button class="postBtn" id="saveProfileBtn" onclick="saveProfile()">Simpan</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL FOLLOWERS / FOLLOWING -->
+<div class="modalOverlay" id="followListModal">
+  <div class="modalBox followListBox">
+    <h3 id="followListTitle">Pengikut</h3>
+    <div class="followListTabs">
+      <button id="flTabFollowers" class="active" onclick="switchFollowListTab('followers')">Pengikut</button>
+      <button id="flTabFollowing" onclick="switchFollowListTab('following')">Mengikuti</button>
+    </div>
+    <div class="followListItems" id="followListItems"><div class="emptyState">Memuat…</div></div>
+    <div class="modalActions">
+      <button class="ghostBtn" style="flex:1; justify-content:center;" onclick="closeFollowList()">Tutup</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL GRUP BARU -->
+<div class="modalOverlay" id="newGroupModal">
+  <div class="modalBox">
+    <h3>Grup baru</h3>
+    <div class="field">
+      <label>Nama grup</label>
+      <input type="text" id="newGroupName" placeholder="Contoh: Tim Proyek" />
+    </div>
+    <div class="field">
+      <label>Pilih anggota</label>
+      <input type="text" id="memberSearchInput" placeholder="Cari pengguna…" oninput="onMemberSearchInput()" />
+    </div>
+    <div class="memberPickList" id="memberPickList"><div class="emptyState" style="padding:14px;">Ketik untuk mencari pengguna.</div></div>
+    <div class="modalActions">
+      <button class="ghostBtn" onclick="closeNewGroupModal()">Batal</button>
+      <button class="postBtn" id="createGroupBtn" onclick="createGroup()">Buat grup</button>
     </div>
   </div>
 </div>
@@ -869,6 +990,9 @@ async function loadPostImagesFor(postIds){
 }
 
 function renderPostMedia(post){
+  if(post.video_url){
+    return `<video class="postImg" src="${post.video_url}" controls playsinline preload="metadata"></video>`;
+  }
   const extra = postImagesMap[post.id] || [];
   const all = post.image_url ? [post.image_url, ...extra] : extra;
   if(all.length === 0) return '';
@@ -1314,12 +1438,13 @@ let currentTab = 'feed';
 
 document.getElementById('navBeranda').addEventListener('click', ()=> switchTab('feed'));
 document.getElementById('navJelajahi').addEventListener('click', ()=> switchTab('explore'));
+document.getElementById('navReels').addEventListener('click', ()=> switchTab('reels'));
 document.getElementById('navPesan').addEventListener('click', ()=> switchTab('messages'));
 document.getElementById('navTersimpan').addEventListener('click', ()=> switchTab('saved'));
 document.getElementById('navProfil').addEventListener('click', ()=> viewUser(CURRENT_USER.id));
 
 function setActiveNav(id){
-  ['navBeranda','navJelajahi','navPesan','navProfil'].forEach(n=>document.getElementById(n).classList.remove('active'));
+  ['navBeranda','navJelajahi','navReels','navPesan','navProfil'].forEach(n=>document.getElementById(n).classList.remove('active'));
   if(id) document.getElementById(id).classList.add('active');
 }
 
@@ -1330,10 +1455,12 @@ function switchTab(tab){
   document.getElementById('messagesView').classList.toggle('hidden', tab!=='messages');
   document.getElementById('exploreView').classList.toggle('hidden', tab!=='explore');
   document.getElementById('savedView').classList.toggle('hidden', tab!=='saved');
+  document.getElementById('reelsView').classList.toggle('hidden', tab!=='reels');
   if(tab==='feed'){ setActiveNav('navBeranda'); }
   if(tab==='messages'){ setActiveNav('navPesan'); renderMessages(); }
   if(tab==='explore'){ setActiveNav('navJelajahi'); renderExplore(); }
   if(tab==='saved'){ setActiveNav('navTersimpan'); renderSaved(); }
+  if(tab==='reels'){ setActiveNav('navReels'); renderReels(); }
 }
 
 function showFeedView(){ switchTab('feed'); }
@@ -1347,6 +1474,7 @@ async function viewUser(uid){
   document.getElementById('messagesView').classList.add('hidden');
   document.getElementById('exploreView').classList.add('hidden');
   document.getElementById('savedView').classList.add('hidden');
+  document.getElementById('reelsView').classList.add('hidden');
   document.getElementById('profileView').classList.remove('hidden');
   setActiveNav(uid === CURRENT_USER.id ? 'navProfil' : null);
 
@@ -1380,8 +1508,8 @@ async function viewUser(uid){
     ${profile.bio ? `<div class="profileBio">${escapeHtml(profile.bio)}</div>` : ''}
     <div class="profileStats">
       <div><b>${postCount||0}</b> postingan</div>
-      <div><b>${followerCount||0}</b> pengikut</div>
-      <div><b>${followingCount||0}</b> mengikuti</div>
+      <div class="clickable" onclick="openFollowList('${uid}','followers')"><b>${followerCount||0}</b> pengikut</div>
+      <div class="clickable" onclick="openFollowList('${uid}','following')"><b>${followingCount||0}</b> mengikuti</div>
     </div>
     ${uid === CURRENT_USER.id
       ? `<button class="ghostBtn" onclick="openEditProfile()">Edit profil</button>`
@@ -1419,6 +1547,74 @@ async function toggleFollow(uid){
     sb.from('notifications').insert({ user_id: uid, actor_id: CURRENT_USER.id, type:'follow' });
   }
 }
+
+/* ============================================================
+   DAFTAR PENGIKUT / MENGIKUTI
+============================================================ */
+let followListCtx = { uid:null, tab:'followers' };
+
+function openFollowList(uid, tab){
+  followListCtx = { uid, tab: tab || 'followers' };
+  document.getElementById('followListModal').classList.add('show');
+  switchFollowListTab(followListCtx.tab);
+}
+function closeFollowList(){
+  document.getElementById('followListModal').classList.remove('show');
+}
+function switchFollowListTab(tab){
+  followListCtx.tab = tab;
+  document.getElementById('followListTitle').textContent = tab==='followers' ? 'Pengikut' : 'Mengikuti';
+  document.getElementById('flTabFollowers').classList.toggle('active', tab==='followers');
+  document.getElementById('flTabFollowing').classList.toggle('active', tab==='following');
+  loadFollowListItems();
+}
+
+async function loadFollowListItems(){
+  const box = document.getElementById('followListItems');
+  box.innerHTML = `<div class="emptyState">Memuat…</div>`;
+  const { uid, tab } = followListCtx;
+  const query = tab==='followers'
+    ? sb.from('follows').select('follower_id').eq('following_id', uid)
+    : sb.from('follows').select('following_id').eq('follower_id', uid);
+  const { data, error } = await query;
+  if(error){ box.innerHTML = `<div class="emptyState">Gagal memuat: ${escapeHtml(error.message)}</div>`; return; }
+  const ids = (data||[]).map(r=> tab==='followers' ? r.follower_id : r.following_id);
+  if(ids.length===0){
+    box.innerHTML = `<div class="emptyState">${tab==='followers' ? 'Belum ada pengikut.' : 'Belum mengikuti siapa pun.'}</div>`;
+    return;
+  }
+  await Promise.all(ids.map(getProfile));
+  const { data: myFollowing } = await sb.from('follows').select('following_id').eq('follower_id', CURRENT_USER.id).in('following_id', ids);
+  const iFollowSet = new Set((myFollowing||[]).map(f=>f.following_id));
+  box.innerHTML = ids.map(id=>{
+    const u = profilesCache[id] || { name:'Pengguna', username:'unknown' };
+    const isMe = id === CURRENT_USER.id;
+    const iFollow = iFollowSet.has(id);
+    return `<div class="followListRow">
+      <div class="avatar small" style="${avatarStyle(u)}" onclick="closeFollowList(); viewUser('${id}')">${avatarInner(u)}</div>
+      <div class="info" onclick="closeFollowList(); viewUser('${id}')">
+        <div class="name">${escapeHtml(u.name)}</div>
+        <div class="uname">@${escapeHtml(u.username)}</div>
+      </div>
+      ${isMe ? '' : `<button class="followBtn ${iFollow?'following':'notfollowing'}" onclick="toggleFollowInList('${id}', this)">${iFollow?'Mengikuti':'Ikuti'}</button>`}
+    </div>`;
+  }).join('');
+}
+
+async function toggleFollowInList(uid, btn){
+  const nowFollowing = btn.classList.contains('following');
+  if(nowFollowing){
+    const { error } = await sb.from('follows').delete().eq('follower_id', CURRENT_USER.id).eq('following_id', uid);
+    if(error){ showToast('Gagal: ' + error.message); return; }
+    btn.classList.remove('following'); btn.classList.add('notfollowing'); btn.textContent = 'Ikuti';
+  } else {
+    const { error } = await sb.from('follows').insert({ follower_id: CURRENT_USER.id, following_id: uid });
+    if(error){ showToast('Gagal: ' + error.message); return; }
+    btn.classList.remove('notfollowing'); btn.classList.add('following'); btn.textContent = 'Mengikuti';
+    sb.from('notifications').insert({ user_id: uid, actor_id: CURRENT_USER.id, type:'follow' });
+  }
+}
+
 
 /* ============================================================
    EDIT PROFIL
@@ -1585,16 +1781,36 @@ function subscribeNotifications(){
 ============================================================ */
 let dmActiveUserId = null;
 let dmChannel;
+let dmListMode = 'dm'; // 'dm' | 'group'
+let activeChatType = 'dm'; // 'dm' | 'group'
+let groupActiveId = null;
+let groupChannel;
 
 async function renderMessages(){
   const box = document.getElementById('messagesView');
   box.innerHTML = `
     <div class="dmLayout">
-      <div class="dmListCol" id="dmList"><div class="emptyState" style="padding:30px 14px;">Memuat…</div></div>
+      <div style="display:flex; flex-direction:column; border-right:1px solid var(--border); overflow:hidden;">
+        <div class="dmTabs">
+          <button id="dmTabDirect" class="active" onclick="switchDmListMode('dm')">Pesan</button>
+          <button id="dmTabGroup" onclick="switchDmListMode('group')">Grup</button>
+        </div>
+        <button class="newGroupBtn" onclick="openNewGroupModal()">+ Grup baru</button>
+        <div class="dmListCol" id="dmList" style="border-right:none; flex:1;"><div class="emptyState" style="padding:30px 14px;">Memuat…</div></div>
+      </div>
       <div class="dmChat" id="dmChat"><div class="dmEmpty">Pilih percakapan untuk mulai mengobrol 💬</div></div>
     </div>`;
+  dmListMode = 'dm';
   await loadDmList();
   if(dmActiveUserId) openDmWith(dmActiveUserId);
+  else if(groupActiveId) openGroupChat(groupActiveId);
+}
+
+function switchDmListMode(mode){
+  dmListMode = mode;
+  document.getElementById('dmTabDirect').classList.toggle('active', mode==='dm');
+  document.getElementById('dmTabGroup').classList.toggle('active', mode==='group');
+  if(mode==='dm') loadDmList(); else loadGroupListUI();
 }
 
 async function loadDmList(){
@@ -1602,7 +1818,7 @@ async function loadDmList(){
   const { data: msgs } = await sb.from('messages')
     .select('*').or(`sender_id.eq.${me},receiver_id.eq.${me}`).order('created_at', {ascending:false});
   const list = document.getElementById('dmList');
-  if(!list) return;
+  if(!list || dmListMode!=='dm') return;
   if(!msgs || msgs.length===0){
     list.innerHTML = `<div class="emptyState" style="padding:30px 14px;">Belum ada percakapan.<br/>Cari pengguna lalu kirim pesan.</div>`;
     return;
@@ -1618,7 +1834,7 @@ async function loadDmList(){
   list.innerHTML = ids.map(id=>{
     const u = profilesCache[id] || {name:'Pengguna', username:'unknown'};
     const c = contactsMap[id];
-    return `<div class="dmContactRow ${dmActiveUserId===id?'active':''}" onclick="openDmWith('${id}')">
+    return `<div class="dmContactRow ${activeChatType==='dm' && dmActiveUserId===id?'active':''}" onclick="openDmWith('${id}')">
       <div class="avatar small" style="${avatarStyle(u)}">${avatarInner(u)}</div>
       <div class="info"><div class="name">${escapeHtml(u.name)}</div><div class="last">${escapeHtml(c.lastMsg.text)}</div></div>
       ${c.unread>0 ? `<div class="dmBadge">${c.unread}</div>` : ''}
@@ -1627,9 +1843,207 @@ async function loadDmList(){
   updateDmBadge();
 }
 
+/* ============================================================
+   GRUP CHAT
+============================================================ */
+async function loadGroupListUI(){
+  const list = document.getElementById('dmList');
+  if(!list) return;
+  list.innerHTML = `<div class="emptyState" style="padding:30px 14px;">Memuat…</div>`;
+  const { data: memberships, error } = await sb.from('group_chat_members').select('group_id').eq('user_id', CURRENT_USER.id);
+  if(error){
+    list.innerHTML = `<div class="emptyState" style="padding:20px 14px;">Tabel grup belum tersedia di database. Lihat petunjuk SQL untuk mengaktifkan fitur grup.</div>`;
+    return;
+  }
+  const groupIds = (memberships||[]).map(m=>m.group_id);
+  if(groupIds.length===0){
+    list.innerHTML = `<div class="emptyState" style="padding:30px 14px;">Belum ada grup.<br/>Tap "+ Grup baru" untuk membuat.</div>`;
+    return;
+  }
+  const { data: groups } = await sb.from('group_chats').select('*').in('id', groupIds);
+  const { data: allMembers } = await sb.from('group_chat_members').select('*').in('group_id', groupIds);
+  const membersByGroup = {};
+  (allMembers||[]).forEach(m=>{
+    if(!membersByGroup[m.group_id]) membersByGroup[m.group_id] = [];
+    membersByGroup[m.group_id].push(m.user_id);
+  });
+  const allUids = [...new Set((allMembers||[]).map(m=>m.user_id))];
+  await Promise.all(allUids.map(getProfile));
+
+  const { data: lastMsgs } = await sb.from('group_messages').select('*').in('group_id', groupIds).order('created_at',{ascending:false});
+  const lastByGroup = {};
+  (lastMsgs||[]).forEach(m=>{ if(!lastByGroup[m.group_id]) lastByGroup[m.group_id] = m; });
+
+  list.innerHTML = (groups||[]).map(g=>{
+    const memberIds = (membersByGroup[g.id]||[]).filter(id=>id!==CURRENT_USER.id).slice(0,2);
+    const avatarsHtml = memberIds.length>0
+      ? `<div class="groupAvatarStack">${memberIds.map(id=>{
+          const u = profilesCache[id]||{name:'?'};
+          return `<div class="avatar" style="${avatarStyle(u)}">${avatarInner(u)}</div>`;
+        }).join('')}</div>`
+      : `<div class="groupAvatarSolo">${(g.name||'G').charAt(0).toUpperCase()}</div>`;
+    const last = lastByGroup[g.id];
+    return `<div class="dmContactRow ${activeChatType==='group' && groupActiveId===g.id?'active':''}" onclick="openGroupChat('${g.id}')">
+      ${avatarsHtml}
+      <div class="info"><div class="name">${escapeHtml(g.name)}</div><div class="last">${last?escapeHtml(last.text):'Belum ada pesan'}</div></div>
+    </div>`;
+  }).join('');
+}
+
+function openNewGroupModal(){
+  document.getElementById('newGroupName').value = '';
+  document.getElementById('memberSearchInput').value = '';
+  document.getElementById('memberPickList').innerHTML = `<div class="emptyState" style="padding:14px;">Ketik untuk mencari pengguna.</div>`;
+  pickedMembers = {};
+  document.getElementById('newGroupModal').classList.add('show');
+}
+function closeNewGroupModal(){
+  document.getElementById('newGroupModal').classList.remove('show');
+}
+
+let pickedMembers = {};
+let memberSearchTimer;
+function onMemberSearchInput(){
+  clearTimeout(memberSearchTimer);
+  const q = document.getElementById('memberSearchInput').value.trim();
+  if(!q){ renderMemberPickList([]); return; }
+  memberSearchTimer = setTimeout(async ()=>{
+    const { data } = await sb.from('profiles').select('*').or(`name.ilike.%${q}%,username.ilike.%${q}%`).neq('id', CURRENT_USER.id).limit(10);
+    (data||[]).forEach(u=>profilesCache[u.id]=u);
+    renderMemberPickList(data||[]);
+  }, 300);
+}
+function renderMemberPickList(results){
+  const box = document.getElementById('memberPickList');
+  const pickedIds = Object.keys(pickedMembers);
+  const pickedRows = pickedIds.map(id=>profilesCache[id]).filter(Boolean);
+  const resultIds = new Set(results.map(u=>u.id));
+  const combined = pickedRows.filter(u=>!resultIds.has(u.id)).concat(results);
+  if(combined.length===0){
+    box.innerHTML = `<div class="emptyState" style="padding:14px;">Ketik untuk mencari pengguna.</div>`;
+    return;
+  }
+  box.innerHTML = combined.map(u=>{
+    const picked = !!pickedMembers[u.id];
+    return `<div class="memberPickRow ${picked?'picked':''}" onclick="toggleMemberPick('${u.id}')">
+      <div class="avatar small" style="${avatarStyle(u)}">${avatarInner(u)}</div>
+      <div><div class="name" style="font-size:13px; font-weight:700;">${escapeHtml(u.name)}</div><div class="uname" style="font-size:11px; color:var(--muted);">@${escapeHtml(u.username)}</div></div>
+      <div class="chk">${picked?'✓':''}</div>
+    </div>`;
+  }).join('');
+}
+function toggleMemberPick(uid){
+  if(pickedMembers[uid]) delete pickedMembers[uid];
+  else pickedMembers[uid] = true;
+  document.querySelectorAll('#memberPickList .memberPickRow').forEach(row=>{
+    if(row.getAttribute('onclick')===`toggleMemberPick('${uid}')`){
+      row.classList.toggle('picked');
+      row.querySelector('.chk').textContent = row.classList.contains('picked') ? '✓' : '';
+    }
+  });
+}
+
+async function createGroup(){
+  const name = document.getElementById('newGroupName').value.trim();
+  const memberIds = Object.keys(pickedMembers);
+  if(!name) { showToast('Nama grup wajib diisi.'); return; }
+  if(memberIds.length===0){ showToast('Pilih minimal 1 anggota.'); return; }
+  const btn = document.getElementById('createGroupBtn');
+  btn.disabled = true; btn.textContent = 'Membuat…';
+  try{
+    const { data: group, error } = await sb.from('group_chats').insert({ name, created_by: CURRENT_USER.id }).select().single();
+    if(error) throw error;
+    const rows = [CURRENT_USER.id, ...memberIds].map(uid=>({ group_id: group.id, user_id: uid }));
+    const { error: memErr } = await sb.from('group_chat_members').insert(rows);
+    if(memErr) throw memErr;
+    showToast('Grup dibuat ✓');
+    closeNewGroupModal();
+    switchDmListMode('group');
+    openGroupChat(group.id);
+  } catch(err){
+    showToast('Gagal membuat grup: ' + err.message);
+  } finally {
+    btn.disabled = false; btn.textContent = 'Buat grup';
+  }
+}
+
+async function openGroupChat(groupId){
+  activeChatType = 'group';
+  groupActiveId = groupId;
+  dmActiveUserId = null;
+  if(currentTab !== 'messages'){ switchTab('messages'); return; }
+
+  const { data: group } = await sb.from('group_chats').select('*').eq('id', groupId).maybeSingle();
+  const { data: members } = await sb.from('group_chat_members').select('user_id').eq('group_id', groupId);
+  const memberIds = (members||[]).map(m=>m.user_id);
+  await Promise.all(memberIds.map(getProfile));
+  const memberNames = memberIds.map(id=>(profilesCache[id]||{name:'?'}).name).join(', ');
+
+  const chat = document.getElementById('dmChat');
+  chat.innerHTML = `
+    <div class="dmChatHead">
+      <button class="dmBackBtn" onclick="groupActiveId=null; renderMessages();">←</button>
+      <div class="groupAvatarSolo">${(group?.name||'G').charAt(0).toUpperCase()}</div>
+      <div class="who"><div class="name">${escapeHtml(group?.name||'Grup')}</div><div class="time">${memberIds.length} anggota</div></div>
+    </div>
+    <div class="groupMembersRow">${escapeHtml(memberNames)}</div>
+    <div class="dmMessages" id="dmMessages"><div class="dmEmpty">Memuat pesan…</div></div>
+    <div class="dmInputRow">
+      <input type="text" id="dmInput" placeholder="Tulis pesan ke grup…" onkeydown="if(event.key==='Enter') sendGroupMessage()" />
+      <button onclick="sendGroupMessage()">Kirim</button>
+    </div>`;
+  document.querySelectorAll('.dmContactRow').forEach(r=>r.classList.remove('active'));
+  await loadGroupMessages(groupId);
+  subscribeGroup(groupId);
+}
+
+async function loadGroupMessages(groupId){
+  const { data: msgs, error } = await sb.from('group_messages').select('*').eq('group_id', groupId).order('created_at',{ascending:true}).limit(200);
+  const box = document.getElementById('dmMessages');
+  if(!box) return;
+  if(error){ box.innerHTML = `<div class="dmEmpty">Gagal memuat pesan.</div>`; return; }
+  if(!msgs || msgs.length===0){
+    box.innerHTML = `<div class="dmEmpty">Belum ada pesan. Mulai obrolan grup 👋</div>`;
+    return;
+  }
+  const uids = [...new Set(msgs.map(m=>m.sender_id))];
+  await Promise.all(uids.map(getProfile));
+  box.innerHTML = msgs.map(m=>{
+    const me = m.sender_id === CURRENT_USER.id;
+    const u = profilesCache[m.sender_id] || { name:'Pengguna' };
+    return `<div class="dmBubbleRow ${me?'me':''}"><div class="dmBubble">${!me?`<div class="sender">${escapeHtml(u.name)}</div>`:''}${escapeHtml(m.text)}</div></div>`;
+  }).join('');
+  box.scrollTop = box.scrollHeight;
+}
+
+async function sendGroupMessage(){
+  const input = document.getElementById('dmInput');
+  const text = input.value.trim();
+  if(!text || !groupActiveId) return;
+  input.value = '';
+  const { error } = await sb.from('group_messages').insert({ group_id: groupActiveId, sender_id: CURRENT_USER.id, text });
+  if(error){ showToast('Gagal mengirim pesan: ' + error.message); return; }
+  await loadGroupMessages(groupActiveId);
+  if(dmListMode==='group') await loadGroupListUI();
+}
+
+function subscribeGroup(groupId){
+  if(groupChannel) sb.removeChannel(groupChannel);
+  groupChannel = sb.channel('group-'+groupId)
+    .on('postgres_changes', { event:'INSERT', schema:'public', table:'group_messages', filter:`group_id=eq.${groupId}` }, ()=>{
+      if(activeChatType==='group' && groupActiveId===groupId) loadGroupMessages(groupId);
+      if(dmListMode==='group') loadGroupListUI();
+    })
+    .subscribe();
+}
+
+
 async function openDmWith(uid){
   if(uid === CURRENT_USER.id) return;
+  activeChatType = 'dm';
   dmActiveUserId = uid;
+  groupActiveId = null;
+  if(groupChannel){ sb.removeChannel(groupChannel); groupChannel = null; }
   if(currentTab !== 'messages'){ switchTab('messages'); return; }
   const u = await getProfile(uid);
   const chat = document.getElementById('dmChat');
@@ -1920,6 +2334,179 @@ async function loadHashtagPosts(tag){
   results.innerHTML = `<div class="exploreTag">#${escapeHtml(tag)} · ${posts.length} postingan</div>` + posts.map(renderPost).join('');
 }
 
+
+/* ============================================================
+   REELS (VIDEO PENDEK)
+============================================================ */
+let reelsIO = null;
+let reelMuted = true;
+
+async function renderReels(){
+  const wrap = document.getElementById('reelsFeedWrap');
+  wrap.innerHTML = `<div class="emptyState">Memuat reels…</div>`;
+  const { data: reels, error } = await sb.from('posts').select('*').not('video_url','is',null).order('created_at',{ascending:false}).limit(40);
+  if(error){
+    wrap.innerHTML = `<div class="emptyState">Gagal memuat reels: ${escapeHtml(error.message)}</div>`;
+    return;
+  }
+  if(!reels || reels.length===0){
+    wrap.innerHTML = `<div class="emptyState"><div class="big">Belum ada reels</div>Tap tombol + untuk membagikan video pertamamu.</div>`;
+    return;
+  }
+  const userIds = [...new Set(reels.map(r=>r.user_id))];
+  const ids = reels.map(r=>r.id);
+  await Promise.all([
+    Promise.all(userIds.map(getProfile)),
+    loadLikesFor(ids),
+    loadCommentCountsFor(ids)
+  ]);
+  wrap.innerHTML = `<div class="reelsFeed" id="reelsFeed">${reels.map(renderReelSlide).join('')}</div>`;
+  setupReelsObserver();
+}
+
+function renderReelSlide(r){
+  const u = profilesCache[r.user_id] || { name:'Pengguna', username:'unknown' };
+  const liked = likedPostIds.has(r.id);
+  const likeCount = likeCounts[r.id] || 0;
+  const commentCount = commentCounts[r.id] || 0;
+  return `
+  <div class="reelSlide" data-reel-id="${r.id}">
+    <video src="${r.video_url}" loop muted playsinline preload="metadata" onclick="toggleReelPlay('${r.id}')"></video>
+    <div class="reelPlayHint" id="reelHint-${r.id}">▶</div>
+    <button class="reelMuteBtn" onclick="toggleReelMute(event,'${r.id}')">🔇</button>
+    <div class="reelOverlay">
+      <div class="who" onclick="viewUser('${r.user_id}')">
+        <div class="avatar small" style="${avatarStyle(u)}">${avatarInner(u)}</div>
+        <div class="name">${escapeHtml(u.name)}</div>
+      </div>
+      ${r.caption ? `<div class="cap">${escapeHtml(r.caption)}</div>` : ''}
+    </div>
+    <div class="reelSideActions">
+      <div>
+        <button class="${liked?'liked':''}" id="reelLikeBtn-${r.id}" onclick="toggleReelLike('${r.id}')">${liked?'♥':'♡'}</button>
+        <span class="cnt" id="reelLikeCnt-${r.id}">${likeCount}</span>
+      </div>
+      <div>
+        <button onclick="openReelComments('${r.id}')">💬</button>
+        <span class="cnt" id="reelCmtCnt-${r.id}">${commentCount}</span>
+      </div>
+      ${r.user_id===CURRENT_USER.id ? `<div><button onclick="deleteReel('${r.id}')">🗑️</button></div>` : ''}
+    </div>
+  </div>`;
+}
+
+function setupReelsObserver(){
+  if(reelsIO) reelsIO.disconnect();
+  const feed = document.getElementById('reelsFeed');
+  if(!feed) return;
+  reelsIO = new IntersectionObserver((entries)=>{
+    entries.forEach(entry=>{
+      const video = entry.target.querySelector('video');
+      if(!video) return;
+      if(entry.isIntersecting && entry.intersectionRatio > 0.6){
+        video.muted = reelMuted;
+        video.play().catch(()=>{});
+      } else {
+        video.pause();
+      }
+    });
+  }, { root: feed, threshold:[0,0.6,1] });
+  feed.querySelectorAll('.reelSlide').forEach(s=>reelsIO.observe(s));
+}
+
+function toggleReelPlay(reelId){
+  const slide = document.querySelector(`.reelSlide[data-reel-id="${reelId}"]`);
+  if(!slide) return;
+  const video = slide.querySelector('video');
+  const hint = document.getElementById('reelHint-'+reelId);
+  if(video.paused){ video.play().catch(()=>{}); hint.textContent='▶'; }
+  else { video.pause(); hint.textContent='❚❚'; }
+  hint.classList.add('show');
+  setTimeout(()=>hint.classList.remove('show'), 500);
+}
+
+function toggleReelMute(e, reelId){
+  e.stopPropagation();
+  reelMuted = !reelMuted;
+  document.querySelectorAll('.reelSlide video').forEach(v=> v.muted = reelMuted);
+  e.target.textContent = reelMuted ? '🔇' : '🔊';
+}
+
+async function toggleReelLike(reelId){
+  await toggleLikeGeneric(reelId);
+  const liked = likedPostIds.has(reelId);
+  const btn = document.getElementById('reelLikeBtn-'+reelId);
+  const cnt = document.getElementById('reelLikeCnt-'+reelId);
+  if(btn){ btn.classList.toggle('liked', liked); btn.textContent = liked ? '♥' : '♡'; }
+  if(cnt) cnt.textContent = likeCounts[reelId] || 0;
+}
+
+// generic like toggle reused by reels (writes to the same `likes` table as posts)
+async function toggleLikeGeneric(postId){
+  const liked = likedPostIds.has(postId);
+  if(liked){
+    likedPostIds.delete(postId);
+    likeCounts[postId] = Math.max(0,(likeCounts[postId]||1)-1);
+    const { error } = await sb.from('likes').delete().eq('post_id', postId).eq('user_id', CURRENT_USER.id);
+    if(error) showToast('Gagal: ' + error.message);
+  } else {
+    likedPostIds.add(postId);
+    likeCounts[postId] = (likeCounts[postId]||0)+1;
+    const { error } = await sb.from('likes').insert({ post_id: postId, user_id: CURRENT_USER.id });
+    if(error) showToast('Gagal: ' + error.message);
+    else notifyPostOwner(postId, 'like');
+  }
+}
+
+function openReelComments(reelId){
+  viewExplorePostAsReelComment(reelId);
+}
+async function viewExplorePostAsReelComment(reelId){
+  // tampilkan komentar lewat toast-prompt sederhana
+  const text = prompt('Tulis komentar untuk reel ini:');
+  if(!text || !text.trim()) return;
+  const { error } = await sb.from('comments').insert({ post_id: reelId, user_id: CURRENT_USER.id, text: text.trim() });
+  if(error){ showToast('Gagal komentar: ' + error.message); return; }
+  notifyPostOwner(reelId, 'comment');
+  commentCounts[reelId] = (commentCounts[reelId]||0)+1;
+  const cnt = document.getElementById('reelCmtCnt-'+reelId);
+  if(cnt) cnt.textContent = commentCounts[reelId];
+  showToast('Komentar terkirim ✓');
+}
+
+async function deleteReel(reelId){
+  if(!confirm('Hapus reel ini?')) return;
+  const { error } = await sb.from('posts').delete().eq('id', reelId);
+  if(error){ showToast('Gagal menghapus: ' + error.message); return; }
+  showToast('Reel dihapus');
+  await renderReels();
+}
+
+function onReelFile(e){
+  const file = e.target.files[0];
+  if(!file) return;
+  e.target.value = '';
+  uploadReel(file);
+}
+
+async function uploadReel(file){
+  showToast('Mengunggah reel…');
+  try{
+    if(!file.type.startsWith('video/')) throw new Error('File harus berupa video.');
+    const caption = prompt('Tulis caption untuk reel ini (opsional):') || '';
+    const ext = file.name.split('.').pop();
+    const path = `reels/${CURRENT_USER.id}_${Date.now()}.${ext}`;
+    const { error: upErr } = await sb.storage.from('media').upload(path, file);
+    if(upErr) throw upErr;
+    const { data: pub } = sb.storage.from('media').getPublicUrl(path);
+    const { error } = await sb.from('posts').insert({ user_id: CURRENT_USER.id, caption, video_url: pub.publicUrl, image_url:'' });
+    if(error) throw error;
+    showToast('Reel dibagikan ✓');
+    await renderReels();
+  } catch(err){
+    showToast('Gagal mengunggah reel: ' + err.message);
+  }
+}
 
 function toggleTheme(){
   document.body.classList.toggle('light');
