@@ -1203,6 +1203,7 @@ async function loadFeed(){
 
   if(finalItems.length === 0){
     list.innerHTML = `<div class="emptyState"><div class="big">Belum ada kilasan</div>Jadilah yang pertama membagikan momen.</div>`;
+    await loadStories();
     return;
   }
 
