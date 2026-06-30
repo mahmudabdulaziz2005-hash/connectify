@@ -3,7 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Kilas</title>
+<title>Kilas Pro</title>
+<meta name="theme-color" content="#7c5cff">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
   :root{
@@ -573,6 +574,16 @@
   /* reels feed height adapts so bottom nav doesn't cover controls on mobile */
   @media(max-width:900px){.reelsFeed{height:calc(100vh - 220px);} .reelAddBtn{bottom:96px;}}
 </style>
+
+<style>
+#backToTop{
+ position:fixed;right:20px;bottom:90px;z-index:999;
+ width:46px;height:46px;border:none;border-radius:50%;
+ display:none;font-size:18px;cursor:pointer;
+}
+.glow-logo{filter:drop-shadow(0 0 10px rgba(124,92,255,.35));}
+</style>
+
 </head>
 <body>
 
@@ -3081,5 +3092,26 @@ function showToast(msg){
   toastTimer = setTimeout(()=>t.classList.remove('show'), 2500);
 }
 </script>
+
+<button id="backToTop" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
+<script>
+document.addEventListener('scroll',()=>{
+ const b=document.getElementById('backToTop');
+ if(b) b.style.display=window.scrollY>400?'block':'none';
+});
+
+document.addEventListener('keydown',(e)=>{
+ if(e.key==='/' && document.getElementById('searchInput')){
+   e.preventDefault();
+   document.getElementById('searchInput').focus();
+ }
+});
+
+window.addEventListener('load',()=>{
+ const logo=document.querySelector('.logo');
+ if(logo) logo.classList.add('glow-logo');
+});
+</script>
+
 </body>
 </html>
