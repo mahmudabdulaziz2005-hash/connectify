@@ -287,6 +287,87 @@
   }
   #toast.show{opacity:1; transform:translateX(-50%) translateY(0);}
 
+  /* ---------- STORIES ---------- */
+  .storiesBar{display:flex; gap:14px; overflow-x:auto; padding:4px 2px 14px; margin-bottom:4px;}
+  .storiesBar::-webkit-scrollbar{height:0;}
+  .storyItem{display:flex; flex-direction:column; align-items:center; gap:6px; cursor:pointer; flex-shrink:0; width:64px;}
+  .storyRing{width:60px; height:60px; border-radius:50%; padding:2.5px; background:linear-gradient(135deg,var(--accent),var(--accent2));}
+  .storyRing.seen{background:var(--border);}
+  .storyRing .avatar{width:100%; height:100%; border:2px solid var(--bg);}
+  .storyItem .slabel{font-size:11px; color:var(--muted); text-align:center; max-width:64px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+  .addStoryBtn{position:relative;}
+  .addStoryBtn .plus{
+    position:absolute; bottom:14px; right:0; width:18px; height:18px; border-radius:50%;
+    background:var(--accent); color:#1a1208; font-size:13px; font-weight:700; display:flex; align-items:center; justify-content:center;
+    border:2px solid var(--bg);
+  }
+  .storyViewerOverlay{
+    position:fixed; inset:0; background:#000; z-index:400; display:none; align-items:center; justify-content:center;
+  }
+  .storyViewerOverlay.show{display:flex;}
+  .storyViewerBox{width:100%; max-width:420px; height:100%; max-height:740px; position:relative; background:#111; border-radius:14px; overflow:hidden;}
+  .storyProgWrap{position:absolute; top:8px; left:8px; right:8px; display:flex; gap:4px; z-index:5;}
+  .storyProgBar{flex:1; height:3px; background:rgba(255,255,255,.3); border-radius:3px; overflow:hidden;}
+  .storyProgBar i{display:block; height:100%; width:0%; background:#fff;}
+  .storyProgBar.done i{width:100%;}
+  .storyViewerHead{position:absolute; top:18px; left:10px; right:10px; display:flex; align-items:center; gap:10px; z-index:5; color:#fff;}
+  .storyViewerHead .name{font-weight:700; font-size:13px;}
+  .storyViewerHead .time{font-size:11px; opacity:.7;}
+  .storyCloseBtn{margin-left:auto; background:none; border:none; color:#fff; font-size:20px;}
+  .storyImg{width:100%; height:100%; object-fit:contain; background:#000;}
+  .storyTapZone{position:absolute; top:0; bottom:0; width:35%;}
+  .storyTapZone.left{left:0;}
+  .storyTapZone.right{right:0;}
+  .storyDeleteBtn{
+    position:absolute; bottom:16px; left:50%; transform:translateX(-50%); z-index:5;
+    background:rgba(224,101,79,.85); color:#fff; border:none; padding:8px 16px; border-radius:999px; font-size:12px; font-weight:700;
+  }
+
+  /* ---------- HASHTAG / EXPLORE ---------- */
+  .hashtag{color:var(--accent2); font-weight:600; cursor:pointer;}
+  .hashtag:hover{text-decoration:underline;}
+  .exploreGrid{display:grid; grid-template-columns:repeat(3,1fr); gap:4px;}
+  .exploreTile{aspect-ratio:1/1; overflow:hidden; border-radius:6px; cursor:pointer; background:var(--card); position:relative;}
+  .exploreTile img{width:100%; height:100%; object-fit:cover;}
+  .exploreTile .noimg{display:flex; align-items:center; justify-content:center; height:100%; padding:8px; font-size:11px; color:var(--muted); text-align:center;}
+  .exploreSearchRow{display:flex; gap:8px; margin-bottom:16px;}
+  .exploreSearchRow input{
+    flex:1; padding:10px 14px; border-radius:999px; border:1px solid var(--border); background:var(--bg2); color:var(--text); font-size:13px; outline:none;
+  }
+  .exploreSearchRow input:focus{border-color:var(--accent);}
+  .exploreTag{font-family:var(--font-display); font-size:20px; color:var(--accent2); margin-bottom:14px;}
+
+  /* ---------- CAROUSEL (multi-foto) ---------- */
+  .postImgWrap{position:relative;}
+  .carouselTrack{display:flex; overflow-x:auto; scroll-snap-type:x mandatory; -webkit-overflow-scrolling:touch;}
+  .carouselTrack::-webkit-scrollbar{height:0;}
+  .carouselTrack .postImg{flex:0 0 100%; scroll-snap-align:start;}
+  .carouselDots{position:absolute; bottom:10px; left:50%; transform:translateX(-50%); display:flex; gap:5px;}
+  .carouselDots span{width:5px; height:5px; border-radius:50%; background:rgba(255,255,255,.5);}
+  .carouselDots span.active{background:#fff;}
+  .carouselCount{position:absolute; top:10px; right:10px; background:rgba(0,0,0,.55); color:#fff; font-size:11px; padding:2px 8px; border-radius:999px;}
+  .imgPreviewWrap.multi{display:flex; gap:8px; overflow-x:auto;}
+  .imgPreviewWrap.multi .thumb{position:relative; flex-shrink:0; width:96px; height:96px;}
+  .imgPreviewWrap.multi .thumb img{width:100%; height:100%; object-fit:cover; border-radius:10px;}
+  .imgPreviewWrap.multi .removeImg{top:4px; right:4px; width:22px; height:22px;}
+
+  /* ---------- EDIT CAPTION / COMMENT ---------- */
+  .editCaptionBox textarea, .editCommentBox input{
+    width:100%; background:var(--bg2); border:1px solid var(--accent); border-radius:10px; padding:8px 10px;
+    color:var(--text); font-size:14px; font-family:inherit; outline:none;
+  }
+  .editCaptionBox{padding:0 16px 12px;}
+  .editActionsRow{display:flex; gap:8px; margin-top:8px;}
+  .editActionsRow button{padding:6px 14px; border-radius:8px; font-size:12px; font-weight:700; border:none;}
+  .editActionsRow .saveSm{background:var(--accent); color:#1a1208;}
+  .editActionsRow .cancelSm{background:var(--bg2); border:1px solid var(--border); color:var(--text);}
+  .commentRow .editedTag{font-size:10px; color:var(--muted); margin-left:4px;}
+  .commentMenuBtn{background:none; border:none; color:var(--muted); font-size:14px; padding:2px 6px; align-self:flex-start;}
+  .commentEditBox{flex:1; display:flex; gap:6px;}
+  .commentEditBox input{flex:1;}
+  .commentEditBox button{background:var(--accent); border:none; color:#1a1208; font-weight:700; border-radius:8px; padding:6px 10px; font-size:11px;}
+  .postText .editedTag{font-size:11px; color:var(--muted); font-weight:400; margin-left:4px;}
+
   .hidden{display:none !important;}
 </style>
 </head>
@@ -362,6 +443,7 @@
     <div class="sidebar">
       <div class="navList">
         <button class="navItem active" id="navBeranda">🏠 Beranda</button>
+        <button class="navItem" id="navJelajahi">🧭 Jelajahi</button>
         <button class="navItem" id="navPesan">✉️ Pesan</button>
         <button class="navItem" id="navProfil">👤 Profil saya</button>
       </div>
@@ -370,6 +452,8 @@
 
     <!-- MAIN -->
     <div class="main" id="mainContent">
+      <div class="storiesBar" id="storiesBar"></div>
+      <input type="file" id="storyFile" accept="image/*" class="hidden" onchange="onStoryFile(event)" />
       <div class="card" id="composerCard">
         <div class="composerTop">
           <div class="avatar small" id="composerAvatar"></div>
@@ -379,7 +463,7 @@
           <img id="imgPreview" src="" />
           <button class="removeImg" onclick="removeComposerImage()">✕</button>
         </div>
-        <input type="file" id="composerFile" accept="image/*" class="hidden" onchange="onComposerFile(event)" />
+        <input type="file" id="composerFile" accept="image/*" multiple class="hidden" onchange="onComposerFile(event)" />
         <div class="composerActions">
           <button class="ghostBtn" onclick="document.getElementById('composerFile').click()">🖼️ Foto</button>
           <button class="postBtn" id="composerSubmit" onclick="submitPost()">Bagikan</button>
@@ -398,6 +482,9 @@
 
     <!-- MESSAGES VIEW -->
     <div class="main hidden" id="messagesView"></div>
+
+    <!-- EXPLORE VIEW -->
+    <div class="main hidden" id="exploreView"></div>
 
     <!-- RIGHT COLUMN -->
     <div class="rightCol">
@@ -418,6 +505,12 @@
 </div>
 
 <div id="toast"></div>
+
+<!-- STORY VIEWER -->
+<div class="storyViewerOverlay" id="storyViewerOverlay">
+  <div class="storyViewerBox" id="storyViewerBox"></div>
+</div>
+
 
 <!-- MODAL EDIT PROFIL -->
 <div class="modalOverlay" id="editProfileModal">
@@ -454,8 +547,9 @@ const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 let CURRENT_USER = null;
 let CURRENT_PROFILE = null;
 let authMode = 'login'; // 'login' | 'register'
-let composerImageFile = null;
+let composerImageFiles = [];
 let profilesCache = {};
+let postCaptionCache = {};
 
 /* ============================================================
    INIT
@@ -486,13 +580,21 @@ function showAuthScreen(){
 
 async function handleLoggedIn(user){
   CURRENT_USER = user;
-  const { data: profile } = await sb.from('profiles').select('*').eq('id', user.id).maybeSingle();
+  let { data: profile } = await sb.from('profiles').select('*').eq('id', user.id).maybeSingle();
   if(!profile){
-    // safety net jika trigger profil gagal — minta lengkapi nanti, tapi tetap masuk
-    CURRENT_PROFILE = { id:user.id, name: user.email.split('@')[0], username: user.email.split('@')[0], avatar_url:'' };
-  } else {
-    CURRENT_PROFILE = profile;
+    // profil belum pernah dibuat (misal proses signup sebelumnya gagal/terputus) — buat sekarang
+    const fallbackUsername = (user.email.split('@')[0] + '_' + user.id.slice(0,4)).toLowerCase();
+    const { data: created, error: createErr } = await sb.from('profiles')
+      .insert({ id:user.id, name:user.email.split('@')[0], username:fallbackUsername, bio:'', avatar_url:'' })
+      .select().maybeSingle();
+    if(createErr){
+      showToast('Gagal menyiapkan profil: ' + createErr.message);
+      profile = { id:user.id, name:user.email.split('@')[0], username:fallbackUsername, avatar_url:'' };
+    } else {
+      profile = created;
+    }
   }
+  CURRENT_PROFILE = profile;
   document.getElementById('authScreen').style.display = 'none';
   document.getElementById('app').style.display = 'block';
   renderSelfUI();
@@ -604,45 +706,70 @@ async function getProfile(uid){
    COMPOSER
 ============================================================ */
 function onComposerFile(e){
-  const file = e.target.files[0];
-  if(!file) return;
-  composerImageFile = file;
-  const reader = new FileReader();
-  reader.onload = ()=>{
-    document.getElementById('imgPreview').src = reader.result;
-    document.getElementById('imgPreviewWrap').classList.remove('hidden');
-  };
-  reader.readAsDataURL(file);
+  const files = Array.from(e.target.files || []);
+  if(!files.length) return;
+  composerImageFiles = composerImageFiles.concat(files).slice(0,10);
+  renderComposerPreview();
+  e.target.value = '';
 }
-function removeComposerImage(){
-  composerImageFile = null;
+function renderComposerPreview(){
+  const wrap = document.getElementById('imgPreviewWrap');
+  if(composerImageFiles.length === 0){ wrap.classList.add('hidden'); wrap.innerHTML=''; return; }
+  wrap.classList.remove('hidden');
+  wrap.classList.toggle('multi', composerImageFiles.length>1);
+  if(composerImageFiles.length === 1){
+    const url = URL.createObjectURL(composerImageFiles[0]);
+    wrap.innerHTML = `<img src="${url}" /><button class="removeImg" onclick="removeComposerImage(0)">✕</button>`;
+  } else {
+    wrap.innerHTML = composerImageFiles.map((f,i)=>{
+      const url = URL.createObjectURL(f);
+      return `<div class="thumb"><img src="${url}" /><button class="removeImg" onclick="removeComposerImage(${i})">✕</button></div>`;
+    }).join('');
+  }
+}
+function removeComposerImage(idx){
+  if(typeof idx === 'number') composerImageFiles.splice(idx,1);
+  else composerImageFiles = [];
   document.getElementById('composerFile').value = '';
-  document.getElementById('imgPreviewWrap').classList.add('hidden');
+  renderComposerPreview();
+}
+
+function parseHashtags(text){
+  if(!text) return '';
+  return escapeHtml(text).replace(/(^|\s)#([a-zA-Z0-9_]+)/g, (m,pre,tag)=>{
+    return `${pre}<span class="hashtag" onclick="viewHashtag('${tag.toLowerCase()}')">#${tag}</span>`;
+  });
 }
 
 async function submitPost(){
   const textEl = document.getElementById('composerText');
   const caption = textEl.value.trim();
-  if(!caption && !composerImageFile){ showToast('Tulis sesuatu atau tambahkan foto dulu.'); return; }
+  if(!caption && composerImageFiles.length===0){ showToast('Tulis sesuatu atau tambahkan foto dulu.'); return; }
 
   const btn = document.getElementById('composerSubmit');
   btn.disabled = true; btn.textContent = 'Mengirim…';
 
   try{
-    let image_url = '';
-    if(composerImageFile){
-      const ext = composerImageFile.name.split('.').pop();
-      const path = `posts/${CURRENT_USER.id}_${Date.now()}.${ext}`;
-      const { error: upErr } = await sb.storage.from('media').upload(path, composerImageFile);
+    const uploadedUrls = [];
+    for(const file of composerImageFiles){
+      const ext = file.name.split('.').pop();
+      const path = `posts/${CURRENT_USER.id}_${Date.now()}_${Math.random().toString(36).slice(2,7)}.${ext}`;
+      const { error: upErr } = await sb.storage.from('media').upload(path, file);
       if(upErr) throw upErr;
       const { data: pub } = sb.storage.from('media').getPublicUrl(path);
-      image_url = pub.publicUrl;
+      uploadedUrls.push(pub.publicUrl);
     }
 
-    const { error } = await sb.from('posts').insert({
-      user_id: CURRENT_USER.id, caption, image_url
-    });
+    const { data: newPost, error } = await sb.from('posts').insert({
+      user_id: CURRENT_USER.id, caption, image_url: uploadedUrls[0] || ''
+    }).select().single();
     if(error) throw error;
+
+    if(uploadedUrls.length > 1){
+      const rows = uploadedUrls.map((url,i)=>({ post_id:newPost.id, image_url:url, position:i }));
+      const { error: imgErr } = await sb.from('post_images').insert(rows);
+      if(imgErr) showToast('Postingan tersimpan, tapi sebagian foto gagal: ' + imgErr.message);
+    }
 
     textEl.value = '';
     removeComposerImage();
@@ -679,10 +806,49 @@ async function loadFeed(){
   await Promise.all([
     Promise.all(userIds.map(getProfile)),
     loadLikesFor(postIds),
-    loadCommentCountsFor(postIds)
+    loadCommentCountsFor(postIds),
+    loadPostImagesFor(postIds)
   ]);
 
   list.innerHTML = posts.map(renderPost).join('');
+  await loadStories();
+}
+
+let postImagesMap = {};
+async function loadPostImagesFor(postIds){
+  postImagesMap = {};
+  if(postIds.length === 0) return;
+  const { data } = await sb.from('post_images').select('*').in('post_id', postIds).order('position', {ascending:true});
+  (data||[]).forEach(img=>{
+    if(!postImagesMap[img.post_id]) postImagesMap[img.post_id] = [];
+    postImagesMap[img.post_id].push(img.image_url);
+  });
+}
+
+function renderPostMedia(post){
+  const extra = postImagesMap[post.id] || [];
+  const all = post.image_url ? [post.image_url, ...extra] : extra;
+  if(all.length === 0) return '';
+  if(all.length === 1){
+    return `<img class="postImg" src="${all[0]}" loading="lazy" />`;
+  }
+  return `<div class="postImgWrap">
+    <div class="carouselTrack" id="carousel-${post.id}" onscroll="onCarouselScroll('${post.id}')">
+      ${all.map(u=>`<img class="postImg" src="${u}" loading="lazy" />`).join('')}
+    </div>
+    <div class="carouselCount">1/${all.length}</div>
+    <div class="carouselDots" id="dots-${post.id}">${all.map((_,i)=>`<span class="${i===0?'active':''}"></span>`).join('')}</div>
+  </div>`;
+}
+
+function onCarouselScroll(postId){
+  const track = document.getElementById('carousel-'+postId);
+  if(!track) return;
+  const idx = Math.round(track.scrollLeft / track.clientWidth);
+  const dots = document.querySelectorAll(`#dots-${postId} span`);
+  dots.forEach((d,i)=>d.classList.toggle('active', i===idx));
+  const countEl = track.closest('.postImgWrap')?.querySelector('.carouselCount');
+  if(countEl) countEl.textContent = `${idx+1}/${dots.length}`;
 }
 
 function renderPost(post){
@@ -691,6 +857,7 @@ function renderPost(post){
   const liked = likedPostIds.has(post.id);
   const likeCount = likeCounts[post.id] || 0;
   const commentCount = (commentCounts[post.id] || 0);
+  postCaptionCache[post.id] = post.caption || '';
   return `
   <div class="post" id="post-${post.id}">
     <div class="postHead">
@@ -703,12 +870,15 @@ function renderPost(post){
       <div class="postMenuWrap">
         <button class="postMenuBtn" onclick="togglePostMenu('${post.id}')">⋯</button>
         <div class="postMenuDrop" id="menu-${post.id}">
+          <button style="color:var(--text);" onclick="startEditCaption('${post.id}')">Edit caption</button>
           <button onclick="deletePost('${post.id}')">Hapus postingan</button>
         </div>
       </div>` : ''}
     </div>
-    ${post.caption ? `<div class="postText">${escapeHtml(post.caption)}</div>` : ''}
-    ${post.image_url ? `<img class="postImg" src="${post.image_url}" loading="lazy" />` : ''}
+    <div id="postTextWrap-${post.id}">
+      ${post.caption ? `<div class="postText" id="postText-${post.id}">${parseHashtags(post.caption)}${post.edited?'<span class="editedTag">(diedit)</span>':''}</div>` : `<div id="postText-${post.id}"></div>`}
+    </div>
+    ${renderPostMedia(post)}
     <div class="postActions">
       <button class="actBtn ${liked?'liked':''}" id="likeBtn-${post.id}" onclick="toggleLike('${post.id}')">
         ${liked?'♥':'♡'} <span id="likeCount-${post.id}">${likeCount}</span>
@@ -725,6 +895,36 @@ function renderPost(post){
       </div>
     </div>
   </div>`;
+}
+
+function startEditCaption(postId){
+  document.getElementById('menu-'+postId)?.classList.remove('show');
+  const wrap = document.getElementById('postTextWrap-'+postId);
+  const current = postCaptionCache[postId] || '';
+  wrap.innerHTML = `<div class="editCaptionBox">
+    <textarea id="editCapInput-${postId}" rows="3">${escapeHtml(current)}</textarea>
+    <div class="editActionsRow">
+      <button class="saveSm" onclick="saveEditCaption('${postId}')">Simpan</button>
+      <button class="cancelSm" onclick="cancelEditCaption('${postId}')">Batal</button>
+    </div>
+  </div>`;
+}
+
+function cancelEditCaption(postId){
+  const wrap = document.getElementById('postTextWrap-'+postId);
+  const caption = postCaptionCache[postId] || '';
+  wrap.innerHTML = caption ? `<div class="postText" id="postText-${postId}">${parseHashtags(caption)}</div>` : `<div id="postText-${postId}"></div>`;
+}
+
+async function saveEditCaption(postId){
+  const input = document.getElementById('editCapInput-'+postId);
+  const caption = input.value.trim();
+  const { error } = await sb.from('posts').update({ caption, edited:true }).eq('id', postId);
+  if(error){ showToast('Gagal menyimpan: ' + error.message); return; }
+  postCaptionCache[postId] = caption;
+  const wrap = document.getElementById('postTextWrap-'+postId);
+  wrap.innerHTML = caption ? `<div class="postText" id="postText-${postId}">${parseHashtags(caption)}<span class="editedTag">(diedit)</span></div>` : `<div id="postText-${postId}"></div>`;
+  showToast('Caption diperbarui ✓');
 }
 
 function togglePostMenu(postId){
@@ -805,8 +1005,67 @@ async function loadComments(postId){
   await Promise.all(uids.map(getProfile));
   list.innerHTML = cmts.map(c=>{
     const u = profilesCache[c.user_id] || {name:'Pengguna'};
-    return `<div class="commentRow"><div class="bubble"><span class="cname">${escapeHtml(u.name)}</span>${escapeHtml(c.text)}</div></div>`;
+    const isMine = c.user_id === CURRENT_USER.id;
+    return `<div class="commentRow" id="comment-${c.id}">
+      <div class="bubble" id="commentBubble-${c.id}">
+        <span class="cname">${escapeHtml(u.name)}</span>${escapeHtml(c.text)}${c.edited?'<span class="editedTag">(diedit)</span>':''}
+      </div>
+      ${isMine ? `
+      <div class="postMenuWrap">
+        <button class="commentMenuBtn" onclick="toggleCommentMenu('${c.id}')">⋯</button>
+        <div class="postMenuDrop" id="cmenu-${c.id}">
+          <button style="color:var(--text);" onclick="startEditComment('${c.id}','${postId}')">Edit</button>
+          <button onclick="deleteComment('${c.id}','${postId}')">Hapus</button>
+        </div>
+      </div>` : ''}
+    </div>`;
   }).join('');
+  commentTextCache = {}; commentNameCache = {};
+  cmts.forEach(c=>{
+    commentTextCache[c.id] = c.text;
+    commentNameCache[c.id] = (profilesCache[c.user_id]||{name:'Pengguna'}).name;
+  });
+}
+
+let commentTextCache = {};
+let commentNameCache = {};
+function toggleCommentMenu(commentId){
+  document.querySelectorAll('.postMenuDrop').forEach(d=>{ if(d.id !== 'cmenu-'+commentId) d.classList.remove('show'); });
+  document.getElementById('cmenu-'+commentId).classList.toggle('show');
+}
+
+function startEditComment(commentId, postId){
+  document.getElementById('cmenu-'+commentId)?.classList.remove('show');
+  const bubble = document.getElementById('commentBubble-'+commentId);
+  const current = commentTextCache[commentId] || '';
+  bubble.outerHTML = `<div class="commentEditBox" id="commentBubble-${commentId}">
+    <input type="text" id="editCmtInput-${commentId}" value="${escapeHtml(current)}" onkeydown="if(event.key==='Enter') saveEditComment('${commentId}')" />
+    <button onclick="saveEditComment('${commentId}')">Simpan</button>
+    <button onclick="loadComments('${postId}')">Batal</button>
+  </div>`;
+}
+
+async function saveEditComment(commentId){
+  const input = document.getElementById('editCmtInput-'+commentId);
+  const text = input.value.trim();
+  if(!text) return;
+  const { error } = await sb.from('comments').update({ text, edited:true }).eq('id', commentId);
+  if(error){ showToast('Gagal menyimpan: ' + error.message); return; }
+  commentTextCache[commentId] = text;
+  const name = commentNameCache[commentId] || 'Pengguna';
+  document.getElementById('commentBubble-'+commentId).outerHTML =
+    `<div class="bubble" id="commentBubble-${commentId}"><span class="cname">${escapeHtml(name)}</span>${escapeHtml(text)}<span class="editedTag">(diedit)</span></div>`;
+  showToast('Komentar diperbarui ✓');
+}
+
+async function deleteComment(commentId, postId){
+  if(!confirm('Hapus komentar ini?')) return;
+  const { error } = await sb.from('comments').delete().eq('id', commentId);
+  if(error){ showToast('Gagal menghapus: ' + error.message); return; }
+  commentCounts[postId] = Math.max(0,(commentCounts[postId]||1)-1);
+  const cc = document.getElementById('commentCount-'+postId);
+  if(cc) cc.textContent = commentCounts[postId];
+  await loadComments(postId);
 }
 
 async function submitComment(postId){
@@ -828,11 +1087,12 @@ async function submitComment(postId){
 let currentTab = 'feed';
 
 document.getElementById('navBeranda').addEventListener('click', ()=> switchTab('feed'));
+document.getElementById('navJelajahi').addEventListener('click', ()=> switchTab('explore'));
 document.getElementById('navPesan').addEventListener('click', ()=> switchTab('messages'));
 document.getElementById('navProfil').addEventListener('click', ()=> viewUser(CURRENT_USER.id));
 
 function setActiveNav(id){
-  ['navBeranda','navPesan','navProfil'].forEach(n=>document.getElementById(n).classList.remove('active'));
+  ['navBeranda','navJelajahi','navPesan','navProfil'].forEach(n=>document.getElementById(n).classList.remove('active'));
   if(id) document.getElementById(id).classList.add('active');
 }
 
@@ -841,8 +1101,10 @@ function switchTab(tab){
   document.getElementById('mainContent').classList.toggle('hidden', tab!=='feed');
   document.getElementById('profileView').classList.add('hidden');
   document.getElementById('messagesView').classList.toggle('hidden', tab!=='messages');
+  document.getElementById('exploreView').classList.toggle('hidden', tab!=='explore');
   if(tab==='feed'){ setActiveNav('navBeranda'); }
   if(tab==='messages'){ setActiveNav('navPesan'); renderMessages(); }
+  if(tab==='explore'){ setActiveNav('navJelajahi'); renderExplore(); }
 }
 
 function showFeedView(){ switchTab('feed'); }
@@ -904,7 +1166,8 @@ async function viewUser(uid){
   }
   await Promise.all([
     loadLikesFor(posts.map(p=>p.id)),
-    loadCommentCountsFor(posts.map(p=>p.id))
+    loadCommentCountsFor(posts.map(p=>p.id)),
+    loadPostImagesFor(posts.map(p=>p.id))
   ]);
   postsBox.innerHTML = posts.map(renderPost).join('');
 }
@@ -1206,8 +1469,223 @@ async function updateDmBadge(){
 }
 
 /* ============================================================
-   TEMA
+   STORIES
 ============================================================ */
+let storyGroups = []; // [{user_id, stories:[...]}]
+let seenStoryIds = new Set(JSON.parse(localStorage.getItem('jejak_seen_stories') || '[]'));
+let storyViewerCtx = null;
+
+async function loadStories(){
+  const cutoff = new Date(Date.now() - 24*3600*1000).toISOString();
+  const { data, error } = await sb.from('stories').select('*').gt('created_at', cutoff).order('created_at', {ascending:true});
+  if(error){ renderStoriesBar([]); return; }
+  const byUser = {};
+  (data||[]).forEach(s=>{
+    if(!byUser[s.user_id]) byUser[s.user_id] = [];
+    byUser[s.user_id].push(s);
+  });
+  const uids = Object.keys(byUser);
+  await Promise.all(uids.map(getProfile));
+  storyGroups = uids.map(uid=>({ user_id:uid, stories:byUser[uid] }));
+  storyGroups.sort((a,b)=> a.user_id===CURRENT_USER.id ? -1 : b.user_id===CURRENT_USER.id ? 1 : 0);
+  renderStoriesBar();
+}
+
+function renderStoriesBar(){
+  const bar = document.getElementById('storiesBar');
+  if(!bar) return;
+  const myGroup = storyGroups.find(g=>g.user_id===CURRENT_USER.id);
+  const others = storyGroups.filter(g=>g.user_id!==CURRENT_USER.id);
+
+  const myHtml = `
+    <div class="storyItem addStoryBtn" onclick="${myGroup ? `openStoryViewer('${CURRENT_USER.id}')` : `document.getElementById('storyFile').click()`}">
+      <div class="storyRing ${myGroup && allSeen(myGroup) ? 'seen':''}">
+        <div class="avatar" style="${avatarStyle(CURRENT_PROFILE)}">${avatarInner(CURRENT_PROFILE)}</div>
+      </div>
+      <span class="plus" onclick="event.stopPropagation(); document.getElementById('storyFile').click();">+</span>
+      <div class="slabel">Ceritamu</div>
+    </div>`;
+
+  const othersHtml = others.map(g=>{
+    const u = profilesCache[g.user_id] || {name:'Pengguna'};
+    return `<div class="storyItem" onclick="openStoryViewer('${g.user_id}')">
+      <div class="storyRing ${allSeen(g)?'seen':''}">
+        <div class="avatar" style="${avatarStyle(u)}">${avatarInner(u)}</div>
+      </div>
+      <div class="slabel">${escapeHtml(u.name.split(' ')[0])}</div>
+    </div>`;
+  }).join('');
+
+  bar.innerHTML = myHtml + othersHtml;
+}
+
+function allSeen(group){
+  return group.stories.every(s=>seenStoryIds.has(s.id));
+}
+
+function onStoryFile(e){
+  const file = e.target.files[0];
+  if(!file) return;
+  uploadStory(file);
+  e.target.value = '';
+}
+
+async function uploadStory(file){
+  showToast('Mengunggah story…');
+  try{
+    const ext = file.name.split('.').pop();
+    const path = `stories/${CURRENT_USER.id}_${Date.now()}.${ext}`;
+    const { error: upErr } = await sb.storage.from('media').upload(path, file);
+    if(upErr) throw upErr;
+    const { data: pub } = sb.storage.from('media').getPublicUrl(path);
+    const { error } = await sb.from('stories').insert({ user_id: CURRENT_USER.id, image_url: pub.publicUrl });
+    if(error) throw error;
+    showToast('Story dibagikan ✓');
+    await loadStories();
+  } catch(err){
+    showToast('Gagal mengunggah story: ' + err.message);
+  }
+}
+
+function openStoryViewer(uid){
+  const group = storyGroups.find(g=>g.user_id===uid);
+  if(!group || group.stories.length===0) return;
+  storyViewerCtx = { uid, idx:0, group, timer:null };
+  document.getElementById('storyViewerOverlay').classList.add('show');
+  renderStorySlide();
+}
+
+function renderStorySlide(){
+  const ctx = storyViewerCtx;
+  if(!ctx) return;
+  clearTimeout(ctx.timer);
+  const story = ctx.group.stories[ctx.idx];
+  const u = profilesCache[ctx.uid] || {name:'Pengguna'};
+  seenStoryIds.add(story.id);
+  localStorage.setItem('jejak_seen_stories', JSON.stringify([...seenStoryIds]));
+
+  const box = document.getElementById('storyViewerBox');
+  box.innerHTML = `
+    <div class="storyProgWrap">
+      ${ctx.group.stories.map((s,i)=>`<div class="storyProgBar ${i<ctx.idx?'done':''}" id="sprog-${i}"><i></i></div>`).join('')}
+    </div>
+    <div class="storyViewerHead">
+      <div class="avatar small" style="${avatarStyle(u)}">${avatarInner(u)}</div>
+      <div><div class="name">${escapeHtml(u.name)}</div><div class="time">${timeAgo(story.created_at)}</div></div>
+      <button class="storyCloseBtn" onclick="closeStoryViewer()">✕</button>
+    </div>
+    <img class="storyImg" src="${story.image_url}" />
+    <div class="storyTapZone left" onclick="prevStory()"></div>
+    <div class="storyTapZone right" onclick="nextStory()"></div>
+    ${ctx.uid===CURRENT_USER.id ? `<button class="storyDeleteBtn" onclick="deleteStory('${story.id}')">Hapus story ini</button>` : ''}
+  `;
+  const curBar = document.getElementById('sprog-'+ctx.idx);
+  if(curBar){
+    const iEl = curBar.querySelector('i');
+    iEl.style.transition = 'none'; iEl.style.width = '0%';
+    requestAnimationFrame(()=>{ iEl.style.transition = 'width 5s linear'; iEl.style.width = '100%'; });
+  }
+  ctx.timer = setTimeout(()=>nextStory(), 5000);
+  renderStoriesBar();
+}
+
+function nextStory(){
+  const ctx = storyViewerCtx;
+  if(!ctx) return;
+  if(ctx.idx < ctx.group.stories.length-1){ ctx.idx++; renderStorySlide(); }
+  else closeStoryViewer();
+}
+function prevStory(){
+  const ctx = storyViewerCtx;
+  if(!ctx) return;
+  if(ctx.idx > 0){ ctx.idx--; renderStorySlide(); }
+}
+function closeStoryViewer(){
+  if(storyViewerCtx) clearTimeout(storyViewerCtx.timer);
+  storyViewerCtx = null;
+  document.getElementById('storyViewerOverlay').classList.remove('show');
+  renderStoriesBar();
+}
+
+async function deleteStory(storyId){
+  if(!confirm('Hapus story ini?')) return;
+  const { error } = await sb.from('stories').delete().eq('id', storyId);
+  if(error){ showToast('Gagal menghapus: ' + error.message); return; }
+  showToast('Story dihapus');
+  closeStoryViewer();
+  await loadStories();
+}
+
+/* ============================================================
+   EXPLORE / HASHTAG
+============================================================ */
+async function renderExplore(tagQuery){
+  const box = document.getElementById('exploreView');
+  box.innerHTML = `
+    <div class="exploreSearchRow">
+      <input type="text" id="exploreSearchInput" placeholder="Cari hashtag, contoh: kuliah" onkeydown="if(event.key==='Enter') searchExploreTag()" value="${tagQuery?escapeHtml(tagQuery):''}" />
+      <button class="postBtn" onclick="searchExploreTag()">Cari</button>
+    </div>
+    <div id="exploreResults"><div class="emptyState">Memuat…</div></div>`;
+  if(tagQuery){
+    await loadHashtagPosts(tagQuery);
+  } else {
+    await loadExploreGrid();
+  }
+}
+
+function searchExploreTag(){
+  const q = document.getElementById('exploreSearchInput').value.trim().replace(/^#/,'');
+  if(q) viewHashtag(q.toLowerCase());
+  else loadExploreGrid();
+}
+
+async function loadExploreGrid(){
+  const results = document.getElementById('exploreResults');
+  const { data: posts, error } = await sb.from('posts').select('*').order('created_at', {ascending:false}).limit(60);
+  if(error || !posts || posts.length===0){
+    results.innerHTML = `<div class="emptyState">Belum ada postingan untuk dijelajahi.</div>`;
+    return;
+  }
+  results.innerHTML = `<div class="exploreGrid">${posts.map(p=>`
+    <div class="exploreTile" onclick="viewExplorePost('${p.id}')">
+      ${p.image_url ? `<img src="${p.image_url}" loading="lazy" />` : `<div class="noimg">${escapeHtml((p.caption||'').slice(0,60))}</div>`}
+    </div>`).join('')}</div>`;
+}
+
+async function viewExplorePost(postId){
+  switchTab('feed');
+  setTimeout(()=>{
+    const el = document.getElementById('post-'+postId);
+    if(el) el.scrollIntoView({behavior:'smooth', block:'center'});
+  }, 200);
+}
+
+function viewHashtag(tag){
+  switchTab('explore');
+  renderExplore(tag);
+}
+
+async function loadHashtagPosts(tag){
+  const results = document.getElementById('exploreResults');
+  const { data: posts, error } = await sb.from('posts').select('*').ilike('caption', `%#${tag}%`).order('created_at', {ascending:false}).limit(60);
+  if(error){ results.innerHTML = `<div class="emptyState">Gagal memuat.</div>`; return; }
+  if(!posts || posts.length===0){
+    results.innerHTML = `<div class="exploreTag">#${escapeHtml(tag)}</div><div class="emptyState">Belum ada postingan dengan hashtag ini.</div>`;
+    return;
+  }
+  const userIds = [...new Set(posts.map(p=>p.user_id))];
+  const postIds = posts.map(p=>p.id);
+  await Promise.all([
+    Promise.all(userIds.map(getProfile)),
+    loadLikesFor(postIds),
+    loadCommentCountsFor(postIds),
+    loadPostImagesFor(postIds)
+  ]);
+  results.innerHTML = `<div class="exploreTag">#${escapeHtml(tag)} · ${posts.length} postingan</div>` + posts.map(renderPost).join('');
+}
+
+
 function toggleTheme(){
   document.body.classList.toggle('light');
   document.getElementById('themeBtn').textContent = document.body.classList.contains('light') ? '☀️' : '🌙';
