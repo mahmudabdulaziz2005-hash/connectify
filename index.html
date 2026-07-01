@@ -606,6 +606,122 @@ textarea.bio-input{
   .profile-header .avatar{width:72px;height:72px;font-size:24px;}
   .profile-stats{gap:16px;font-size:12.5px;}
 }
+
+/* ============================================================
+   STAGE 3 — STORY, REELS, PENCARIAN, NOTIFIKASI
+   ============================================================ */
+
+/* ---- stories bar ---- */
+.stories-bar{display:flex;gap:14px;overflow-x:auto;padding:4px 2px 18px;margin-bottom:4px;}
+.stories-bar::-webkit-scrollbar{display:none;}
+.story-ring{display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;flex-shrink:0;width:64px;}
+.story-avatar-wrap{width:60px;height:60px;border-radius:50%;padding:2.5px;display:flex;align-items:center;justify-content:center;position:relative;}
+.story-avatar-wrap.has-story{background:var(--accent-grad);}
+.story-avatar-wrap.no-story{background:var(--border);}
+.story-ring.viewed .story-avatar-wrap.has-story{background:var(--border);}
+.story-avatar-wrap .avatar{width:100%;height:100%;border:2.5px solid var(--bg);font-size:18px;}
+.story-add-badge{
+  position:absolute;bottom:-2px;right:-2px;width:20px;height:20px;border-radius:50%;
+  background:var(--accent-grad);color:#1A0F0A;display:flex;align-items:center;justify-content:center;
+  font-size:14px;font-weight:800;border:2px solid var(--bg);
+}
+.story-name{font-size:11.5px;color:var(--text-dim);max-width:64px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+
+/* ---- story viewer ---- */
+.story-viewer-overlay{
+  position:fixed;inset:0;background:#000;z-index:200;display:none;align-items:center;justify-content:center;
+}
+.story-viewer-overlay.open{display:flex;}
+.story-viewer-box{position:relative;width:100%;max-width:420px;height:100%;max-height:840px;background:#000;}
+.story-progress-row{position:absolute;top:10px;left:10px;right:10px;display:flex;gap:4px;z-index:3;}
+.story-progress-bar{flex:1;height:2.5px;background:rgba(255,255,255,0.3);border-radius:2px;overflow:hidden;}
+.story-progress-fill{height:100%;width:0%;background:#fff;}
+.story-viewer-head{position:absolute;top:22px;left:12px;right:12px;display:flex;align-items:center;gap:10px;z-index:3;}
+.story-viewer-head .avatar{width:32px;height:32px;font-size:12px;border:1.5px solid rgba(255,255,255,0.5);}
+.story-viewer-who{flex:1;color:#fff;}
+.story-viewer-who .name{font-size:13px;font-weight:700;}
+.story-viewer-who .time{font-size:11px;opacity:.75;}
+.story-viewer-close{background:none;border:none;color:#fff;padding:6px;}
+.story-viewer-media-wrap{width:100%;height:100%;display:flex;align-items:center;justify-content:center;}
+.story-media{max-width:100%;max-height:100%;object-fit:contain;}
+.story-viewer-nav{position:absolute;top:0;bottom:0;width:34%;z-index:2;}
+.story-viewer-nav.left{left:0;}
+.story-viewer-nav.right{right:0;}
+.story-viewer-footer{
+  position:absolute;bottom:18px;left:12px;right:12px;color:#fff;font-size:13.5px;
+  text-shadow:0 1px 4px rgba(0,0,0,0.6);z-index:3;
+}
+
+/* ---- search ---- */
+.search-input-wrap{position:relative;margin-bottom:14px;}
+.search-input-wrap svg{position:absolute;left:14px;top:50%;transform:translateY(-50%);width:18px;height:18px;color:var(--text-faint);}
+.search-input-wrap input{
+  width:100%;padding:12px 14px 12px 40px;background:var(--surface);border:1px solid var(--border);
+  border-radius:24px;color:var(--text);font-size:14px;
+}
+.search-input-wrap input:focus{border-color:var(--accent);}
+.search-tabs{display:flex;gap:8px;margin-bottom:14px;}
+.search-tab{padding:8px 16px;border-radius:18px;background:var(--surface);border:1px solid var(--border);color:var(--text-dim);font-size:13px;font-weight:600;}
+.search-tab.active{background:var(--accent-grad);color:#1A0F0A;border-color:transparent;}
+.search-results{display:flex;flex-direction:column;gap:4px;}
+.search-result-item{display:flex;align-items:center;gap:12px;padding:10px 8px;border-radius:12px;cursor:pointer;}
+.search-result-item:hover{background:var(--surface);}
+.search-result-item .avatar{width:42px;height:42px;font-size:14px;}
+.search-result-item .who .name{font-weight:700;font-size:13.5px;}
+.search-result-item .who .handle{font-size:12px;color:var(--text-faint);}
+.hashtag-icon{
+  width:42px;height:42px;border-radius:50%;background:var(--surface-strong);color:var(--accent);
+  display:flex;align-items:center;justify-content:center;font-weight:800;font-size:18px;flex-shrink:0;
+}
+.search-empty{text-align:center;color:var(--text-faint);font-size:13px;padding:30px 10px;}
+
+/* ---- reels ---- */
+.reels-viewport{
+  height:calc(100vh - 140px);max-height:800px;overflow-y:auto;scroll-snap-type:y mandatory;
+  border-radius:var(--radius-lg);position:relative;
+}
+.reels-viewport::-webkit-scrollbar{display:none;}
+.reel-card{
+  scroll-snap-align:start;height:100%;position:relative;background:#000;border-radius:var(--radius-lg);
+  overflow:hidden;margin-bottom:10px;display:flex;align-items:center;justify-content:center;
+}
+.reel-video{width:100%;height:100%;object-fit:cover;}
+.reel-caption-overlay{position:absolute;left:14px;right:70px;bottom:18px;color:#fff;z-index:2;}
+.reel-who{display:flex;align-items:center;gap:8px;font-weight:700;font-size:13.5px;margin-bottom:6px;}
+.reel-who .avatar{width:30px;height:30px;font-size:11px;border:1.5px solid rgba(255,255,255,.6);}
+.reel-caption-text{font-size:13px;opacity:.9;text-shadow:0 1px 4px rgba(0,0,0,.6);}
+.reel-side-actions{position:absolute;right:10px;bottom:18px;display:flex;flex-direction:column;gap:18px;z-index:2;align-items:center;}
+.reel-action-btn{
+  background:rgba(0,0,0,0.35);border:none;color:#fff;width:44px;height:44px;border-radius:50%;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-size:11px;font-weight:700;
+}
+.reel-action-btn svg{width:22px;height:22px;}
+.reel-action-btn.liked{color:var(--danger);}
+.reel-action-btn.liked svg{fill:var(--danger);stroke:var(--danger);}
+.reel-action-btn.active{color:var(--accent-2);}
+.reel-fab-upload{
+  position:absolute;top:14px;right:14px;width:44px;height:44px;border-radius:50%;
+  background:var(--accent-grad);color:#1A0F0A;border:none;display:flex;align-items:center;justify-content:center;
+  box-shadow:var(--shadow);z-index:5;font-size:22px;font-weight:800;
+}
+
+/* ---- notifications ---- */
+.notif-list{display:flex;flex-direction:column;}
+.notif-item{display:flex;align-items:center;gap:12px;padding:12px 8px;border-radius:12px;cursor:pointer;position:relative;}
+.notif-item:hover{background:var(--surface);}
+.notif-item.unread{background:var(--surface);}
+.notif-item.unread::before{content:"";position:absolute;left:0;top:50%;transform:translateY(-50%);width:6px;height:6px;border-radius:50%;background:var(--accent);}
+.notif-item .avatar{width:42px;height:42px;font-size:14px;flex-shrink:0;}
+.notif-icon{color:var(--text-faint);flex-shrink:0;}
+.notif-icon svg{width:18px;height:18px;}
+.notif-text{font-size:13.5px;line-height:1.4;}
+.notif-text b{font-weight:700;}
+.notif-time{font-size:11.5px;color:var(--text-faint);margin-top:2px;font-family:var(--font-mono);}
+
+@media (max-width:600px){
+  .reels-viewport{height:calc(100vh - 130px);border-radius:0;}
+  .story-viewer-box{max-width:100%;max-height:100%;}
+}
 </style>
 </head>
 <body>
@@ -878,6 +994,16 @@ textarea.bio-input{
 
     <main class="content" id="mainContent">
       <div class="route-panel hidden" id="panel-home">
+        <div class="stories-bar" id="storiesBar">
+          <div class="story-ring own" id="ownStoryRing">
+            <div class="story-avatar-wrap no-story">
+              <div class="avatar" id="ownStoryAvatar">N</div>
+              <span class="story-add-badge">+</span>
+            </div>
+            <span class="story-name">Ceritamu</span>
+          </div>
+        </div>
+        <input type="file" accept="image/*,video/*" class="file-input-hidden" id="storyFileInput">
         <div class="composer-trigger" id="composerTrigger">
           <div class="avatar" id="composerAvatarMini">N</div>
           <div class="fake-input">Apa yang sedang terjadi, <span id="composerTriggerName">kamu</span>?</div>
@@ -888,6 +1014,28 @@ textarea.bio-input{
       </div>
 
       <div class="route-panel hidden" id="panel-profile"></div>
+
+      <div class="route-panel hidden" id="panel-search">
+        <div class="search-input-wrap">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+          <input type="text" id="searchInput" placeholder="Cari pengguna atau #hashtag…" maxlength="60">
+        </div>
+        <div class="search-tabs">
+          <button class="search-tab active" data-search-tab="users">Pengguna</button>
+          <button class="search-tab" data-search-tab="hashtags">Hashtag</button>
+        </div>
+        <div id="searchResults" class="search-results"><div class="search-empty">Ketik untuk mulai mencari.</div></div>
+        <div id="hashtagPostsResults" class="posts-grid hidden"></div>
+      </div>
+
+      <div class="route-panel hidden" id="panel-reels">
+        <div class="reels-viewport" id="reelsViewport"></div>
+        <button class="reel-fab-upload" id="btnUploadReel" title="Unggah reel">+</button>
+      </div>
+
+      <div class="route-panel hidden" id="panel-notifications">
+        <div class="notif-list" id="notifList"><div class="comment-empty">Memuat notifikasi…</div></div>
+      </div>
 
       <div class="empty-state" id="routeEmptyState">
         <div class="pulse-mark"></div>
@@ -1024,6 +1172,110 @@ textarea.bio-input{
       <button class="btn btn-primary" id="btnSaveProfile">
         <span class="btn-spinner"></span><span class="btn-label">Simpan perubahan</span>
       </button>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     STORY VIEWER — fullscreen (Tahap 3)
+     ============================================================ -->
+<div class="story-viewer-overlay" id="storyViewerOverlay">
+  <div class="story-viewer-box">
+    <div class="story-progress-row" id="storyProgressRow"></div>
+    <div class="story-viewer-head">
+      <div class="avatar" id="storyViewerAvatar">N</div>
+      <div class="story-viewer-who">
+        <div class="name" id="storyViewerName">—</div>
+        <div class="time" id="storyViewerTime">—</div>
+      </div>
+      <button class="story-viewer-close" id="storyViewerClose">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div class="story-viewer-media-wrap" id="storyViewerMediaWrap"></div>
+    <div class="story-viewer-nav left" id="storyNavPrev"></div>
+    <div class="story-viewer-nav right" id="storyNavNext"></div>
+    <div class="story-viewer-footer" id="storyViewerFooter"></div>
+  </div>
+</div>
+
+<!-- ============================================================
+     STORY CREATOR MODAL (Tahap 3)
+     ============================================================ -->
+<div class="modal-overlay" id="storyCreatorModal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h3>Buat cerita</h3>
+      <button class="modal-close" data-close-modal="storyCreatorModal">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="dropzone" id="storyDropzone">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="9" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+        <div>Klik untuk pilih foto atau video</div>
+      </div>
+      <div class="image-preview-wrap hidden" id="storyPreviewWrap">
+        <img id="storyPreviewImg" alt="Pratinjau cerita">
+        <video id="storyPreviewVideo" class="hidden" muted controls style="width:100%;display:block;"></video>
+      </div>
+      <input type="text" id="storyCaptionInput" placeholder="Tambahkan teks (opsional)" maxlength="200" style="width:100%;margin-top:12px;padding:11px 14px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-size:13.5px;">
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-primary" id="btnSubmitStory">
+        <span class="btn-spinner"></span><span class="btn-label">Bagikan cerita</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     REEL UPLOAD MODAL (Tahap 3)
+     ============================================================ -->
+<div class="modal-overlay" id="reelUploadModal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h3>Unggah reel</h3>
+      <button class="modal-close" data-close-modal="reelUploadModal">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="dropzone" id="reelDropzone">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="9" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+        <div>Klik untuk pilih video</div>
+      </div>
+      <video id="reelPreviewVideo" class="hidden" controls muted style="width:100%;border-radius:12px;margin-top:10px;display:block;"></video>
+      <input type="file" accept="video/*" class="file-input-hidden" id="reelFileInput">
+      <textarea id="reelCaptionInput" placeholder="Tulis caption… gunakan #hashtag bila perlu." maxlength="2200" style="width:100%;margin-top:12px;min-height:70px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);padding:11px 14px;font-size:13.5px;resize:vertical;"></textarea>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-primary" id="btnSubmitReel">
+        <span class="btn-spinner"></span><span class="btn-label">Bagikan reel</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     REEL COMMENTS MODAL (Tahap 3)
+     ============================================================ -->
+<div class="modal-overlay" id="reelCommentsModal">
+  <div class="modal-box wide">
+    <div class="modal-header">
+      <h3>Komentar Reel</h3>
+      <button class="modal-close" data-close-modal="reelCommentsModal">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div class="modal-body" id="reelCommentsList">
+      <div class="comment-empty">Memuat komentar…</div>
+    </div>
+    <div class="modal-footer">
+      <div class="comment-input-row">
+        <input type="text" id="reelCommentInput" placeholder="Tulis komentar…" maxlength="500">
+        <button id="btnSubmitReelComment">Kirim</button>
+      </div>
     </div>
   </div>
 </div>
@@ -2108,6 +2360,685 @@ textarea.bio-input{
       showAuthView("login");
     }
   })();
+
+  /* ============================================================
+     STAGE 3 — STORY, REELS, PENCARIAN, NOTIFIKASI
+     Modul ini murni tambahan. Tidak ada baris kode Tahap 1-2 yang
+     diubah — hanya state, fungsi, dan event listener baru yang
+     memanfaatkan helper yang sudah ada (escapeHTML, toast, timeAgo,
+     openModal/closeModal, rateLimiter, setLoading, supabase, state).
+     ============================================================ */
+
+  state.stories = { items: [], viewedIds: new Set(), loaded:false, activeUserId:null, activeIndex:-1, timer:null };
+  state.reels   = { items: [], page:0, pageSize:5, loading:false, done:false, activeCommentsReelId:null };
+  state.search  = { tab:"users", debounce:null };
+  state.notifications = { items:[], unread:0 };
+
+  let storyFile = null, storyFileType = null;
+  let reelFile = null;
+  let reelObserver = null;
+  let reelCommentsChannel = null;
+  let notifChannel = null;
+
+  /* ---------- 6. STORIES ---------- */
+
+  async function loadStories(){
+    if(!state.user) return;
+    try{
+      const since = new Date(Date.now() - 24*60*60*1000).toISOString();
+      const { data, error } = await supabase
+        .from("stories")
+        .select("*, profiles!stories_user_id_fkey(username, full_name, avatar_url)")
+        .gt("created_at", since)
+        .order("created_at", { ascending:true });
+      if(error) throw error;
+
+      const byUser = new Map();
+      (data||[]).forEach(s=>{
+        if(!byUser.has(s.user_id)) byUser.set(s.user_id, []);
+        byUser.get(s.user_id).push(s);
+      });
+
+      let viewedIds = new Set();
+      const storyIds = (data||[]).map(s=>s.id);
+      if(storyIds.length){
+        const { data: views } = await supabase.from("story_views").select("story_id").eq("viewer_id", state.user.id).in("story_id", storyIds);
+        viewedIds = new Set((views||[]).map(v=>v.story_id));
+      }
+
+      const groups = [];
+      byUser.forEach((stories, uid)=>{
+        const allViewed = stories.every(s=>viewedIds.has(s.id));
+        groups.push({ userId: uid, profile: stories[0].profiles, stories, allViewed });
+      });
+
+      state.stories.items = groups;
+      state.stories.viewedIds = viewedIds;
+
+      const own = groups.find(g=>g.userId === state.user.id);
+      const others = groups.filter(g=>g.userId !== state.user.id).sort((a,b)=> (a.allViewed===b.allViewed) ? 0 : (a.allViewed ? 1 : -1));
+      renderStoriesBar(own, others);
+    }catch(_e){ /* tabel stories belum tersedia — aman diabaikan */ }
+  }
+
+  function renderStoriesBar(own, others){
+    const bar = document.getElementById("storiesBar");
+    const wrap = document.querySelector("#ownStoryRing .story-avatar-wrap");
+    wrap.classList.toggle("has-story", !!own);
+    wrap.classList.toggle("no-story", !own);
+    const initials = (state.profile ? (state.profile.full_name||state.profile.username||"N") : "N").trim().slice(0,1).toUpperCase();
+    document.getElementById("ownStoryAvatar").innerHTML = (state.profile && state.profile.avatar_url) ? `<img src="${escapeHTML(state.profile.avatar_url)}" alt="">` : initials;
+
+    bar.querySelectorAll(".story-ring:not(.own)").forEach(el=>el.remove());
+    others.forEach(g=>{
+      const name = (g.profile && (g.profile.full_name||g.profile.username)) || "Pengguna";
+      const av = (g.profile && g.profile.avatar_url) ? `<img src="${escapeHTML(g.profile.avatar_url)}" alt="">` : name.trim().slice(0,1).toUpperCase();
+      const el = document.createElement("div");
+      el.className = "story-ring" + (g.allViewed ? " viewed" : "");
+      el.innerHTML = `<div class="story-avatar-wrap has-story"><div class="avatar">${av}</div></div><span class="story-name">${escapeHTML(name.split(" ")[0])}</span>`;
+      el.addEventListener("click", ()=> openStoryViewerForUser(g.userId));
+      bar.appendChild(el);
+    });
+  }
+
+  document.getElementById("ownStoryRing").addEventListener("click", ()=>{
+    const own = state.stories.items.find(g=>g.userId === (state.user && state.user.id));
+    if(own && own.stories.length) openStoryViewerForUser(state.user.id);
+    else openStoryCreator();
+  });
+
+  function openStoryCreator(){
+    storyFile = null; storyFileType = null;
+    document.getElementById("storyCaptionInput").value = "";
+    document.getElementById("storyPreviewWrap").classList.add("hidden");
+    document.getElementById("storyDropzone").classList.remove("hidden");
+    document.getElementById("storyPreviewImg").classList.add("hidden");
+    document.getElementById("storyPreviewVideo").classList.add("hidden");
+    openModal("storyCreatorModal");
+  }
+  document.getElementById("storyDropzone").addEventListener("click", ()=> document.getElementById("storyFileInput").click());
+  document.getElementById("storyFileInput").addEventListener("change", (e)=>{
+    const file = e.target.files[0];
+    if(!file) return;
+    if(!file.type.startsWith("image/") && !file.type.startsWith("video/")){ toast("File harus berupa foto atau video.", "error"); return; }
+    storyFile = file;
+    storyFileType = file.type.startsWith("video/") ? "video" : "image";
+    const reader = new FileReader();
+    reader.onload = ()=>{
+      document.getElementById("storyDropzone").classList.add("hidden");
+      document.getElementById("storyPreviewWrap").classList.remove("hidden");
+      const img = document.getElementById("storyPreviewImg");
+      const vid = document.getElementById("storyPreviewVideo");
+      if(storyFileType === "image"){
+        img.src = reader.result; img.classList.remove("hidden"); vid.classList.add("hidden");
+      } else {
+        vid.src = reader.result; vid.classList.remove("hidden"); img.classList.add("hidden");
+      }
+    };
+    reader.readAsDataURL(file);
+  });
+
+  document.getElementById("btnSubmitStory").addEventListener("click", async ()=>{
+    if(!state.user){ toast("Masuk untuk membuat cerita.", "error"); return; }
+    if(!storyFile){ toast("Pilih foto atau video terlebih dahulu.", "error"); return; }
+    if(!rateLimiter("story", 8, 60000)){ toast("Terlalu sering membuat cerita.", "error"); return; }
+    const btn = document.getElementById("btnSubmitStory");
+    setLoading(btn, true);
+    try{
+      const ext = (storyFile.name.split(".").pop() || (storyFileType==="video"?"mp4":"jpg")).toLowerCase();
+      const path = `${state.user.id}/${Date.now()}.${ext}`;
+      const { error: upErr } = await supabase.storage.from("stories").upload(path, storyFile);
+      if(upErr) throw upErr;
+      const { data: pub } = supabase.storage.from("stories").getPublicUrl(path);
+      const caption = document.getElementById("storyCaptionInput").value.trim();
+      const { error } = await supabase.from("stories").insert({
+        user_id: state.user.id, media_url: pub.publicUrl, media_type: storyFileType, caption: caption || null
+      });
+      if(error) throw error;
+      toast("Cerita berhasil dibagikan.", "success");
+      closeModal("storyCreatorModal");
+      loadStories();
+    }catch(err){
+      toast(err.message || "Gagal membagikan cerita.", "error");
+    }finally{
+      setLoading(btn, false);
+    }
+  });
+
+  /* ---- story viewer ---- */
+  function renderStoryProgress(count){
+    document.getElementById("storyProgressRow").innerHTML =
+      Array.from({length:count}).map(()=>`<div class="story-progress-bar"><div class="story-progress-fill"></div></div>`).join("");
+  }
+
+  function openStoryViewerForUser(userId){
+    const group = state.stories.items.find(g=>g.userId === userId);
+    if(!group || !group.stories.length) return;
+    state.stories.activeUserId = userId;
+    document.getElementById("storyViewerOverlay").classList.add("open");
+    renderStoryProgress(group.stories.length);
+    showStorySlide(group, 0);
+  }
+
+  function showStorySlide(group, index){
+    clearTimeout(state.stories.timer);
+    if(index < 0 || index >= group.stories.length){
+      const idx = state.stories.items.findIndex(g=>g.userId===group.userId);
+      const neighbor = index < 0 ? state.stories.items[idx-1] : state.stories.items[idx+1];
+      if(neighbor) return openStoryViewerForUser(neighbor.userId);
+      return closeStoryViewer();
+    }
+    state.stories.activeIndex = index;
+    const story = group.stories[index];
+    const prof = group.profile || {};
+    const name = prof.full_name || prof.username || "Pengguna";
+    document.getElementById("storyViewerAvatar").innerHTML = prof.avatar_url ? `<img src="${escapeHTML(prof.avatar_url)}" alt="">` : name.trim().slice(0,1).toUpperCase();
+    document.getElementById("storyViewerName").textContent = name;
+    document.getElementById("storyViewerTime").textContent = timeAgo(story.created_at);
+
+    const mediaWrap = document.getElementById("storyViewerMediaWrap");
+    mediaWrap.innerHTML = story.media_type === "video"
+      ? `<video src="${escapeHTML(story.media_url)}" autoplay playsinline muted class="story-media"></video>`
+      : `<img src="${escapeHTML(story.media_url)}" alt="" class="story-media">`;
+    document.getElementById("storyViewerFooter").textContent = story.caption || "";
+
+    const bars = document.querySelectorAll("#storyProgressRow .story-progress-fill");
+    bars.forEach((b,i)=>{ b.style.transition = "none"; b.style.width = i < index ? "100%" : "0%"; });
+    const duration = story.media_type === "video" ? 15000 : 6000;
+    if(bars[index]){
+      void bars[index].offsetWidth;
+      requestAnimationFrame(()=>{
+        bars[index].style.transition = `width ${duration}ms linear`;
+        bars[index].style.width = "100%";
+      });
+    }
+
+    markStoryViewed(story.id);
+    state.stories.timer = setTimeout(()=> showStorySlide(group, index+1), duration);
+  }
+
+  function markStoryViewed(storyId){
+    if(!state.user || state.stories.viewedIds.has(storyId)) return;
+    state.stories.viewedIds.add(storyId);
+    supabase.from("story_views").insert({ story_id: storyId, viewer_id: state.user.id }).then(()=>{});
+  }
+
+  function closeStoryViewer(){
+    clearTimeout(state.stories.timer);
+    document.getElementById("storyViewerOverlay").classList.remove("open");
+    document.getElementById("storyViewerMediaWrap").innerHTML = "";
+    loadStories();
+  }
+  document.getElementById("storyViewerClose").addEventListener("click", closeStoryViewer);
+  document.getElementById("storyNavPrev").addEventListener("click", ()=>{
+    const group = state.stories.items.find(g=>g.userId===state.stories.activeUserId);
+    if(group) showStorySlide(group, state.stories.activeIndex-1);
+  });
+  document.getElementById("storyNavNext").addEventListener("click", ()=>{
+    const group = state.stories.items.find(g=>g.userId===state.stories.activeUserId);
+    if(group) showStorySlide(group, state.stories.activeIndex+1);
+  });
+
+  /* ---------- 7. REELS ---------- */
+
+  async function loadReels(reset){
+    if(state.reels.loading) return;
+    if(reset){
+      state.reels.items = []; state.reels.page = 0; state.reels.done = false;
+      document.getElementById("reelsViewport").innerHTML = "";
+    }
+    if(state.reels.done) return;
+    state.reels.loading = true;
+    try{
+      const from = state.reels.page * state.reels.pageSize;
+      const to = from + state.reels.pageSize - 1;
+      const { data, error } = await supabase
+        .from("reels")
+        .select("*, profiles!reels_user_id_fkey(username, full_name, avatar_url)")
+        .order("created_at", { ascending:false })
+        .range(from, to);
+      if(error) throw error;
+      if(!data || data.length < state.reels.pageSize) state.reels.done = true;
+
+      let likedIds = new Set();
+      if(state.user && data && data.length){
+        const { data: liked } = await supabase.from("reel_likes").select("reel_id").eq("user_id", state.user.id).in("reel_id", data.map(r=>r.id));
+        likedIds = new Set((liked||[]).map(r=>r.reel_id));
+      }
+
+      const viewport = document.getElementById("reelsViewport");
+      (data||[]).forEach(reel=>{
+        state.reels.items.push(reel);
+        const wrap = document.createElement("div");
+        wrap.innerHTML = reelCardHTML(reel, likedIds.has(reel.id));
+        viewport.appendChild(wrap.firstElementChild);
+      });
+      state.reels.page++;
+      observeReelVideos();
+      if(state.reels.items.length === 0){
+        viewport.innerHTML = `<div class="empty-state"><div class="pulse-mark"></div><h3>Belum ada reel</h3><p>Jadilah yang pertama mengunggah reel.</p></div>`;
+      }
+    }catch(_e){
+      if(state.reels.items.length === 0){
+        document.getElementById("reelsViewport").innerHTML = `<div class="empty-state"><div class="pulse-mark"></div><h3>Reel belum tersedia</h3><p>Coba lagi nanti.</p></div>`;
+      }
+    }finally{
+      state.reels.loading = false;
+    }
+  }
+
+  function reelCardHTML(reel, likedByMe){
+    const prof = reel.profiles || {};
+    const name = prof.full_name || prof.username || "Pengguna";
+    const avatarHTML = prof.avatar_url ? `<img src="${escapeHTML(prof.avatar_url)}" alt="">` : name.trim().slice(0,1).toUpperCase();
+    return `
+    <div class="reel-card" data-reel-id="${reel.id}">
+      <video class="reel-video" src="${escapeHTML(reel.video_url)}" loop muted playsinline></video>
+      <div class="reel-caption-overlay">
+        <div class="reel-who" data-goto-user="${escapeHTML(prof.username||"")}">
+          <div class="avatar">${avatarHTML}</div><span>${escapeHTML(prof.username||name)}</span>
+        </div>
+        ${reel.caption ? `<div class="reel-caption-text">${escapeHTML(reel.caption)}</div>` : ""}
+      </div>
+      <div class="reel-side-actions">
+        <button class="reel-action-btn ${likedByMe?"liked":""}" data-action="reel-like">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.8 4.6a5.5 5.5 0 00-7.8 0L12 5.6l-1-1a5.5 5.5 0 00-7.8 7.8l1 1L12 21l7.8-7.8 1-1a5.5 5.5 0 000-7.8z"/></svg>
+          <span class="reel-like-count">${reel.like_count||0}</span>
+        </button>
+        <button class="reel-action-btn" data-action="reel-comment">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+          <span class="reel-comment-count">${reel.comment_count||0}</span>
+        </button>
+        <button class="reel-action-btn" data-action="reel-mute">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 5L6 9H2v6h4l5 4V5z"/></svg>
+        </button>
+        <a class="reel-action-btn" href="${escapeHTML(reel.video_url)}" download data-action="reel-download">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 21h16"/></svg>
+        </a>
+      </div>
+    </div>`;
+  }
+
+  function observeReelVideos(){
+    if(!reelObserver){
+      reelObserver = new IntersectionObserver((entries)=>{
+        entries.forEach(entry=>{
+          const video = entry.target;
+          if(entry.isIntersecting && entry.intersectionRatio > 0.6) video.play().catch(()=>{});
+          else video.pause();
+        });
+      }, { threshold:[0,0.6,1] });
+    }
+    document.querySelectorAll(".reel-video").forEach(v=>{
+      if(!v.dataset.observed){ v.dataset.observed = "1"; reelObserver.observe(v); }
+    });
+  }
+
+  document.getElementById("reelsViewport").addEventListener("scroll", ()=>{
+    const el = document.getElementById("reelsViewport");
+    if(el.scrollTop + el.clientHeight >= el.scrollHeight - 500) loadReels(false);
+  });
+
+  document.getElementById("reelsViewport").addEventListener("click", (e)=>{
+    const gotoUser = e.target.closest("[data-goto-user]");
+    if(gotoUser && gotoUser.dataset.gotoUser){ window.location.hash = "/u/" + encodeURIComponent(gotoUser.dataset.gotoUser); return; }
+    const card = e.target.closest(".reel-card");
+    if(!card) return;
+    const reelId = card.dataset.reelId;
+    const actionBtn = e.target.closest("[data-action]");
+    if(!actionBtn) return;
+    const action = actionBtn.dataset.action;
+    if(action === "reel-like") toggleReelLike(actionBtn, reelId);
+    else if(action === "reel-comment") openReelComments(reelId);
+    else if(action === "reel-mute"){
+      const video = card.querySelector(".reel-video");
+      video.muted = !video.muted;
+      actionBtn.classList.toggle("active", !video.muted);
+    }
+  });
+
+  async function toggleReelLike(btn, reelId){
+    if(!state.user){ toast("Masuk untuk menyukai reel.", "error"); return; }
+    const wasLiked = btn.classList.contains("liked");
+    btn.classList.toggle("liked", !wasLiked);
+    const countEl = btn.querySelector(".reel-like-count");
+    countEl.textContent = Math.max(0, parseInt(countEl.textContent||"0",10) + (wasLiked?-1:1));
+    try{
+      if(wasLiked) await supabase.from("reel_likes").delete().eq("user_id", state.user.id).eq("reel_id", reelId);
+      else await supabase.from("reel_likes").insert({ user_id: state.user.id, reel_id: reelId });
+    }catch(_e){
+      btn.classList.toggle("liked", wasLiked);
+      countEl.textContent = Math.max(0, parseInt(countEl.textContent||"0",10) + (wasLiked?1:-1));
+      toast("Gagal memperbarui suka.", "error");
+    }
+  }
+
+  function bumpReelCount(reelId, kind, delta){
+    document.querySelectorAll(`[data-reel-id="${reelId}"]`).forEach(card=>{
+      const el = card.querySelector(kind === "like" ? ".reel-like-count" : ".reel-comment-count");
+      if(el) el.textContent = Math.max(0, parseInt(el.textContent||"0",10) + delta);
+    });
+  }
+
+  supabase.channel("public-reel-likes-feed")
+    .on("postgres_changes", { event:"INSERT", schema:"public", table:"reel_likes" }, (payload)=> bumpReelCount(payload.new.reel_id, "like", +1))
+    .on("postgres_changes", { event:"DELETE", schema:"public", table:"reel_likes" }, (payload)=> bumpReelCount(payload.old.reel_id, "like", -1))
+    .subscribe();
+
+  /* ---- reel upload ---- */
+  document.getElementById("btnUploadReel").addEventListener("click", ()=>{
+    if(!state.user){ toast("Masuk untuk mengunggah reel.", "error"); return; }
+    reelFile = null;
+    document.getElementById("reelCaptionInput").value = "";
+    document.getElementById("reelPreviewVideo").classList.add("hidden");
+    document.getElementById("reelDropzone").classList.remove("hidden");
+    openModal("reelUploadModal");
+  });
+  document.getElementById("reelDropzone").addEventListener("click", ()=> document.getElementById("reelFileInput").click());
+  document.getElementById("reelFileInput").addEventListener("change", (e)=>{
+    const file = e.target.files[0];
+    if(!file) return;
+    if(!file.type.startsWith("video/")){ toast("File harus berupa video.", "error"); return; }
+    reelFile = file;
+    const url = URL.createObjectURL(file);
+    const vid = document.getElementById("reelPreviewVideo");
+    vid.src = url;
+    vid.classList.remove("hidden");
+    document.getElementById("reelDropzone").classList.add("hidden");
+  });
+  document.getElementById("btnSubmitReel").addEventListener("click", async ()=>{
+    if(!state.user){ toast("Masuk untuk mengunggah reel.", "error"); return; }
+    if(!reelFile){ toast("Pilih video terlebih dahulu.", "error"); return; }
+    if(!rateLimiter("reel", 5, 60000)){ toast("Terlalu sering mengunggah reel.", "error"); return; }
+    const btn = document.getElementById("btnSubmitReel");
+    setLoading(btn, true);
+    try{
+      const ext = (reelFile.name.split(".").pop() || "mp4").toLowerCase();
+      const path = `${state.user.id}/${Date.now()}.${ext}`;
+      const { error: upErr } = await supabase.storage.from("reels").upload(path, reelFile);
+      if(upErr) throw upErr;
+      const { data: pub } = supabase.storage.from("reels").getPublicUrl(path);
+      const caption = document.getElementById("reelCaptionInput").value.trim();
+      const { error } = await supabase.from("reels").insert({ user_id: state.user.id, video_url: pub.publicUrl, caption: caption || null });
+      if(error) throw error;
+      toast("Reel berhasil dibagikan.", "success");
+      closeModal("reelUploadModal");
+      loadReels(true);
+    }catch(err){
+      toast(err.message || "Gagal mengunggah reel.", "error");
+    }finally{
+      setLoading(btn, false);
+    }
+  });
+
+  /* ---- reel comments ---- */
+  async function openReelComments(reelId){
+    state.reels.activeCommentsReelId = reelId;
+    openModal("reelCommentsModal");
+    const listEl = document.getElementById("reelCommentsList");
+    listEl.innerHTML = `<div class="comment-empty">Memuat komentar…</div>`;
+    await loadReelComments(reelId);
+    subscribeReelComments(reelId);
+  }
+  async function loadReelComments(reelId){
+    const listEl = document.getElementById("reelCommentsList");
+    try{
+      const { data: comments, error } = await supabase
+        .from("reel_comments")
+        .select("*, profiles!reel_comments_user_id_fkey(username, full_name, avatar_url)")
+        .eq("reel_id", reelId)
+        .order("created_at", { ascending:true });
+      if(error) throw error;
+      listEl.innerHTML = (comments && comments.length) ? comments.map(commentItemHTML).join("") : `<div class="comment-empty">Belum ada komentar. Jadilah yang pertama!</div>`;
+    }catch(_e){
+      listEl.innerHTML = `<div class="comment-empty">Gagal memuat komentar.</div>`;
+    }
+  }
+  function subscribeReelComments(reelId){
+    if(reelCommentsChannel) supabase.removeChannel(reelCommentsChannel);
+    reelCommentsChannel = supabase.channel("reel-comments-"+reelId)
+      .on("postgres_changes", { event:"INSERT", schema:"public", table:"reel_comments", filter:`reel_id=eq.${reelId}` }, async (payload)=>{
+        if(state.reels.activeCommentsReelId !== reelId) return;
+        const { data: withProfile } = await supabase.from("reel_comments").select("*, profiles!reel_comments_user_id_fkey(username, full_name, avatar_url)").eq("id", payload.new.id).maybeSingle();
+        const listEl = document.getElementById("reelCommentsList");
+        if(listEl.querySelector(".comment-empty")) listEl.innerHTML = "";
+        listEl.insertAdjacentHTML("beforeend", commentItemHTML(withProfile || payload.new));
+        listEl.scrollTop = listEl.scrollHeight;
+        bumpReelCount(reelId, "comment", +1);
+      }).subscribe();
+  }
+  document.getElementById("btnSubmitReelComment").addEventListener("click", submitReelComment);
+  document.getElementById("reelCommentInput").addEventListener("keydown", (e)=>{ if(e.key === "Enter") submitReelComment(); });
+  async function submitReelComment(){
+    const input = document.getElementById("reelCommentInput");
+    const content = input.value.trim();
+    if(!content || !state.reels.activeCommentsReelId) return;
+    if(!state.user){ toast("Masuk untuk berkomentar.", "error"); return; }
+    if(!rateLimiter("reelComment", 10, 60000)){ toast("Terlalu sering berkomentar.", "error"); return; }
+    const btn = document.getElementById("btnSubmitReelComment");
+    btn.disabled = true; input.value = "";
+    try{
+      const { error } = await supabase.from("reel_comments").insert({ reel_id: state.reels.activeCommentsReelId, user_id: state.user.id, content });
+      if(error) throw error;
+    }catch(_e){
+      toast("Gagal mengirim komentar.", "error");
+    }finally{
+      btn.disabled = false;
+    }
+  }
+
+  /* ---------- 8. PENCARIAN ---------- */
+
+  document.querySelectorAll("[data-search-tab]").forEach(tab=>{
+    tab.addEventListener("click", ()=>{
+      document.querySelectorAll("[data-search-tab]").forEach(t=>t.classList.remove("active"));
+      tab.classList.add("active");
+      state.search.tab = tab.dataset.searchTab;
+      document.getElementById("hashtagPostsResults").classList.add("hidden");
+      document.getElementById("searchResults").classList.remove("hidden");
+      runSearch(document.getElementById("searchInput").value.trim());
+    });
+  });
+
+  document.getElementById("searchInput").addEventListener("input", (e)=>{
+    clearTimeout(state.search.debounce);
+    const q = e.target.value.trim();
+    state.search.debounce = setTimeout(()=> runSearch(q), 300);
+  });
+
+  async function runSearch(query){
+    const resultsEl = document.getElementById("searchResults");
+    document.getElementById("hashtagPostsResults").classList.add("hidden");
+    resultsEl.classList.remove("hidden");
+    if(!query){ resultsEl.innerHTML = `<div class="search-empty">Ketik untuk mulai mencari.</div>`; return; }
+    resultsEl.innerHTML = `<div class="search-empty">Mencari…</div>`;
+    try{
+      if(state.search.tab === "users"){
+        const { data, error } = await supabase.from("profiles")
+          .select("id, username, full_name, avatar_url")
+          .or(`username.ilike.%${query}%,full_name.ilike.%${query}%`)
+          .limit(20);
+        if(error) throw error;
+        resultsEl.innerHTML = (data && data.length) ? data.map(searchUserItemHTML).join("") : `<div class="search-empty">Tidak ada pengguna ditemukan.</div>`;
+      } else {
+        const tag = query.replace(/^#/, "").toLowerCase();
+        const { data, error } = await supabase.from("hashtags")
+          .select("id, tag, post_count")
+          .ilike("tag", `%${tag}%`)
+          .order("post_count", { ascending:false })
+          .limit(20);
+        if(error) throw error;
+        resultsEl.innerHTML = (data && data.length) ? data.map(searchHashtagItemHTML).join("") : `<div class="search-empty">Tidak ada hashtag ditemukan.</div>`;
+      }
+    }catch(_e){
+      resultsEl.innerHTML = `<div class="search-empty">Gagal memuat hasil pencarian.</div>`;
+    }
+  }
+
+  function searchUserItemHTML(p){
+    const name = p.full_name || p.username;
+    const av = p.avatar_url ? `<img src="${escapeHTML(p.avatar_url)}" alt="">` : name.trim().slice(0,1).toUpperCase();
+    return `<div class="search-result-item" data-goto-user="${escapeHTML(p.username)}">
+      <div class="avatar">${av}</div>
+      <div class="who"><div class="name">${escapeHTML(name)}</div><div class="handle">@${escapeHTML(p.username)}</div></div>
+    </div>`;
+  }
+  function searchHashtagItemHTML(h){
+    return `<div class="search-result-item" data-hashtag="${escapeHTML(h.tag)}">
+      <div class="hashtag-icon">#</div>
+      <div class="who"><div class="name">#${escapeHTML(h.tag)}</div><div class="handle">${h.post_count||0} postingan</div></div>
+    </div>`;
+  }
+
+  document.getElementById("searchResults").addEventListener("click", (e)=>{
+    const userItem = e.target.closest("[data-goto-user]");
+    if(userItem){ window.location.hash = "/u/" + encodeURIComponent(userItem.dataset.gotoUser); return; }
+    const tagItem = e.target.closest("[data-hashtag]");
+    if(tagItem) loadHashtagPosts(tagItem.dataset.hashtag);
+  });
+
+  async function loadHashtagPosts(tag){
+    const grid = document.getElementById("hashtagPostsResults");
+    document.getElementById("searchResults").classList.add("hidden");
+    grid.classList.remove("hidden");
+    grid.innerHTML = `<div class="empty-state"><div class="pulse-mark"></div><h3>Memuat #${escapeHTML(tag)}…</h3></div>`;
+    try{
+      const { data: hashtagRow } = await supabase.from("hashtags").select("id").eq("tag", tag).maybeSingle();
+      if(!hashtagRow){ grid.innerHTML = `<div class="empty-state"><h3>Belum ada postingan</h3></div>`; return; }
+      const { data: links } = await supabase.from("post_hashtags").select("post_id, posts(id, image_url, caption)").eq("hashtag_id", hashtagRow.id).limit(60);
+      const posts = (links||[]).map(l=>l.posts).filter(Boolean);
+      grid.innerHTML = posts.length ? posts.map(p => p.image_url
+        ? `<div class="grid-item"><img src="${escapeHTML(p.image_url)}" alt="" loading="lazy"></div>`
+        : `<div class="grid-item no-image">${escapeHTML((p.caption||"").slice(0,60))}</div>`
+      ).join("") : `<div class="empty-state"><h3>Belum ada postingan untuk #${escapeHTML(tag)}</h3></div>`;
+    }catch(_e){
+      grid.innerHTML = `<div class="empty-state"><h3>Gagal memuat postingan</h3></div>`;
+    }
+  }
+
+  /* ---------- 9. NOTIFIKASI ---------- */
+
+  async function loadNotifications(){
+    if(!state.user) return;
+    const listEl = document.getElementById("notifList");
+    try{
+      const { data, error } = await supabase.from("notifications")
+        .select("*, actor:profiles!notifications_actor_id_fkey(username, full_name, avatar_url)")
+        .eq("recipient_id", state.user.id)
+        .order("created_at", { ascending:false })
+        .limit(50);
+      if(error) throw error;
+      state.notifications.items = data || [];
+      state.notifications.unread = (data||[]).filter(n=>!n.is_read).length;
+      updateNotifBadge();
+      listEl.innerHTML = (data && data.length) ? data.map(notifItemHTML).join("") : `<div class="comment-empty">Belum ada notifikasi.</div>`;
+      if(!notifChannel) subscribeNotifications();
+    }catch(_e){
+      listEl.innerHTML = `<div class="comment-empty">Gagal memuat notifikasi.</div>`;
+    }
+  }
+
+  function notifText(n){
+    const actor = n.actor ? (n.actor.full_name || n.actor.username) : "Seseorang";
+    switch(n.type){
+      case "like": return `<b>${escapeHTML(actor)}</b> menyukai postinganmu.`;
+      case "comment": return `<b>${escapeHTML(actor)}</b> mengomentari postinganmu.`;
+      case "follow": return `<b>${escapeHTML(actor)}</b> mulai mengikutimu.`;
+      case "reel_like": return `<b>${escapeHTML(actor)}</b> menyukai reel-mu.`;
+      case "reel_comment": return `<b>${escapeHTML(actor)}</b> mengomentari reel-mu.`;
+      default: return `<b>${escapeHTML(actor)}</b> berinteraksi denganmu.`;
+    }
+  }
+  function notifIcon(type){
+    if(type === "like" || type === "reel_like") return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.8 4.6a5.5 5.5 0 00-7.8 0L12 5.6l-1-1a5.5 5.5 0 00-7.8 7.8l1 1L12 21l7.8-7.8 1-1a5.5 5.5 0 000-7.8z"/></svg>`;
+    if(type === "comment" || type === "reel_comment") return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>`;
+    return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-8 8-8s8 3.6 8 8"/></svg>`;
+  }
+  function notifItemHTML(n){
+    const actor = n.actor || {};
+    const av = actor.avatar_url ? `<img src="${escapeHTML(actor.avatar_url)}" alt="">` : (actor.full_name||actor.username||"N").trim().slice(0,1).toUpperCase();
+    return `<div class="notif-item ${n.is_read?"":"unread"}" data-notif-id="${n.id}" data-type="${n.type}" data-post-id="${n.post_id||""}" data-actor="${escapeHTML(actor.username||"")}">
+      <div class="avatar">${av}</div>
+      <div class="notif-icon">${notifIcon(n.type)}</div>
+      <div class="notif-text">${notifText(n)}<div class="notif-time">${timeAgo(n.created_at)}</div></div>
+    </div>`;
+  }
+
+  function updateNotifBadge(){
+    const badge = document.getElementById("notifBadge");
+    if(state.notifications.unread > 0){
+      badge.textContent = state.notifications.unread > 99 ? "99+" : state.notifications.unread;
+      badge.classList.remove("hidden");
+    } else {
+      badge.classList.add("hidden");
+    }
+  }
+
+  function subscribeNotifications(){
+    notifChannel = supabase.channel("notifications-"+state.user.id)
+      .on("postgres_changes", { event:"INSERT", schema:"public", table:"notifications", filter:`recipient_id=eq.${state.user.id}` }, async (payload)=>{
+        const { data: withActor } = await supabase.from("notifications").select("*, actor:profiles!notifications_actor_id_fkey(username, full_name, avatar_url)").eq("id", payload.new.id).maybeSingle();
+        const n = withActor || payload.new;
+        state.notifications.items.unshift(n);
+        state.notifications.unread++;
+        updateNotifBadge();
+        const listEl = document.getElementById("notifList");
+        if(listEl.querySelector(".comment-empty")) listEl.innerHTML = "";
+        listEl.insertAdjacentHTML("afterbegin", notifItemHTML(n));
+        toast("Notifikasi baru", "success");
+      }).subscribe();
+  }
+
+  document.getElementById("notifList").addEventListener("click", (e)=>{
+    const item = e.target.closest(".notif-item");
+    if(!item) return;
+    const notifId = item.dataset.notifId;
+    if(item.classList.contains("unread")){
+      item.classList.remove("unread");
+      state.notifications.unread = Math.max(0, state.notifications.unread-1);
+      updateNotifBadge();
+      supabase.from("notifications").update({ is_read:true }).eq("id", notifId).then(()=>{});
+    }
+    const type = item.dataset.type;
+    if(type === "follow"){
+      if(item.dataset.actor) window.location.hash = "/u/" + encodeURIComponent(item.dataset.actor);
+    } else if(type === "like" || type === "comment"){
+      if(item.dataset.postId){ window.location.hash = "/home"; openComments(item.dataset.postId); }
+    } else if(type === "reel_like" || type === "reel_comment"){
+      window.location.hash = "/reels";
+    }
+  });
+
+  /* ---------- 10. ROUTER EXTENSION ----------
+     Tidak mengubah fungsi renderRoute asli — cukup "menumpuk" di
+     atasnya lewat listener hashchange tambahan + MutationObserver
+     saat app-root menjadi aktif (login berhasil / sesi dipulihkan). */
+
+  function stage3HandleRoute(routeStr){
+    if(!state.user) return;
+    let name = routeStr;
+    if(routeStr.indexOf("u/") === 0) name = "userProfile";
+
+    const panelIds = { search:"panel-search", reels:"panel-reels", notifications:"panel-notifications" };
+    Object.values(panelIds).forEach(id => document.getElementById(id).classList.add("hidden"));
+
+    if(panelIds[name]){
+      document.getElementById("routeEmptyState").classList.add("hidden");
+      document.getElementById(panelIds[name]).classList.remove("hidden");
+      if(name === "reels" && state.reels.items.length === 0 && !state.reels.loading) loadReels(true);
+      else if(name === "notifications") loadNotifications();
+    }
+    if(name === "home" && !state.stories.loaded){
+      state.stories.loaded = true;
+      loadStories();
+    }
+  }
+
+  window.addEventListener("hashchange", ()=> stage3HandleRoute(currentRouteFromHash()));
+  const stage3AppRootEl = document.getElementById("app-root");
+  new MutationObserver(()=>{
+    if(stage3AppRootEl.classList.contains("active")) stage3HandleRoute(currentRouteFromHash());
+  }).observe(stage3AppRootEl, { attributes:true, attributeFilter:["class"] });
 
 })();
 </script>
