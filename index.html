@@ -1016,19 +1016,19 @@
 
                 // Menjalankan simulasi splash screen menuju autentikasi atau core-app
                 setTimeout(() => {
-                    try {
-                        if (this.Auth.checkAutoLogin()) {
+                    this.Auth.checkAutoLogin().then((loggedIn) => {
+                        if (loggedIn) {
                             this.Navigation.switchMainView('view-core-app');
                             this.Navigation.to('sub-view-home');
                         } else {
                             this.Navigation.switchMainView('view-auth');
                             this.Auth.switchSubView('login');
                         }
-                    } catch (err) {
+                    }).catch((err) => {
                         console.error('VibeNet: Error saat transisi dari splash screen.', err);
                         this.Navigation.switchMainView('view-auth');
                         this.Auth.switchSubView('login');
-                    }
+                    });
                 }, 2200);
             },
 
@@ -1145,22 +1145,51 @@
                     else el.type = 'password';
                 },
                 checkAutoLogin: function() {
-                    const session = localStorage.getItem('vibenet_session');
-                    if (session) {
-                        const user = AppEngine.state.db.users.find(u => u.id === session);
-                        if (user) {
-                            AppEngine.state.currentUser = user;
+                    // Menunggu client Supabase siap (maks ~3 detik), lalu cek sesi aktif
+                    return new Promise((resolve) => {
+                        const tryCheck = (retriesLeft) => {
+                            if (!AppEngine.supabase) {
+                                if (retriesLeft <= 0) { resolve(false); return; }
+                                setTimeout(() => tryCheck(retriesLeft - 1), 200);
+                                return;
+                            }
+                            AppEngine.supabase.auth.getSession().then(({ data, error }) => {
+                                if (error || !data.session) { resolve(false); return; }
+                                AppEngine.Auth.loadProfileForUser(data.session.user).then(resolve);
+                            }).catch(() => resolve(false));
+                        };
+                        tryCheck(15);
+                    });
+                },
+                // Mengambil data profil dari tabel 'profiles' dan memetakannya ke bentuk
+                // yang sudah dipakai di seluruh aplikasi (avatar, cover, bio, dst)
+                loadProfileForUser: function(authUser) {
+                    return AppEngine.supabase.from('profiles').select('*').eq('id', authUser.id).single()
+                        .then(({ data, error }) => {
+                            if (error || !data) return false;
+                            AppEngine.state.currentUser = {
+                                id: data.id,
+                                name: data.name,
+                                username: data.username,
+                                email: data.email,
+                                avatar: data.avatar_url,
+                                cover: data.cover_url,
+                                bio: data.bio,
+                                website: data.website,
+                                followers: [],
+                                following: [],
+                                achievements: []
+                            };
                             return true;
-                        }
-                    }
-                    return false;
+                        })
+                        .catch(() => false);
                 },
                 sanitizeInput: function(str) {
                     const temp = document.createElement('div');
                     temp.textContent = str;
                     return temp.innerHTML;
                 },
-                handleLogin: function(e) {
+                handleLogin: async function(e) {
                     e.preventDefault();
                     const userVal = this.sanitizeInput(document.getElementById('login-username').value.trim());
                     const passVal = document.getElementById('login-password').value;
@@ -1171,30 +1200,51 @@
                     submitBtn.disabled = true;
                     errorBox.style.display = 'none';
 
-                    const matchedUser = AppEngine.state.db.users.find(u => 
-                        (u.username === userVal || u.email === userVal) && u.password === passVal
-                    );
-
-                    setTimeout(() => {
-                        if (matchedUser) {
-                            AppEngine.state.currentUser = matchedUser;
-                            localStorage.setItem('vibenet_session', matchedUser.id);
-                            AppEngine.Navigation.switchMainView('view-core-app');
-                            AppEngine.Navigation.to('sub-view-home');
-                        } else {
-                            errorBox.textContent = "Kredensial salah. Silakan periksa kembali username dan sandi Anda.";
-                            errorBox.style.display = 'block';
-                        }
+                    if (!AppEngine.supabase) {
+                        errorBox.textContent = "Koneksi ke server belum siap. Tunggu sebentar lalu coba lagi.";
+                        errorBox.style.display = 'block';
                         submitBtn.disabled = false;
-                    }, 800);
+                        return;
+                    }
+
+                    try {
+                        // Supabase Auth login pakai email. Kalau user mengetik username, cari dulu emailnya.
+                        let emailToUse = userVal;
+                        if (!userVal.includes('@')) {
+                            const { data: profileMatch, error: findErr } = await AppEngine.supabase
+                                .from('profiles')
+                                .select('email')
+                                .eq('username', userVal)
+                                .maybeSingle();
+                            if (findErr || !profileMatch) throw new Error('Akun tidak ditemukan');
+                            emailToUse = profileMatch.email;
+                        }
+
+                        const { data, error } = await AppEngine.supabase.auth.signInWithPassword({
+                            email: emailToUse,
+                            password: passVal
+                        });
+                        if (error || !data.user) throw error || new Error('Login gagal');
+
+                        const loaded = await this.loadProfileForUser(data.user);
+                        if (!loaded) throw new Error('Profil tidak ditemukan');
+
+                        AppEngine.Navigation.switchMainView('view-core-app');
+                        AppEngine.Navigation.to('sub-view-home');
+                    } catch (err) {
+                        console.error('VibeNet: Login gagal.', err);
+                        errorBox.textContent = "Kredensial salah. Silakan periksa kembali username dan sandi Anda.";
+                        errorBox.style.display = 'block';
+                    } finally {
+                        submitBtn.disabled = false;
+                    }
                 },
-                handleRegister: function(e) {
+                handleRegister: async function(e) {
                     e.preventDefault();
                     const name = this.sanitizeInput(document.getElementById('reg-name').value.trim());
                     const email = this.sanitizeInput(document.getElementById('reg-email').value.trim());
                     const username = this.sanitizeInput(document.getElementById('reg-username').value.trim().toLowerCase());
                     const password = document.getElementById('reg-password').value;
-                    const errorBox = document.getElementById('reg-register');
                     const submitBtn = document.getElementById('btn-register-submit');
 
                     submitBtn.disabled = true;
@@ -1206,35 +1256,62 @@
                         return;
                     }
 
-                    const checkExist = AppEngine.state.db.users.some(u => u.username === username || u.email === email);
-                    if (checkExist) {
-                        alert("Username atau email sudah terdaftar di dalam sistem.");
+                    if (!AppEngine.supabase) {
+                        alert("Koneksi ke server belum siap. Tunggu sebentar lalu coba lagi.");
                         submitBtn.disabled = false;
                         return;
                     }
 
-                    const newUser = {
-                        id: "usr_" + Date.now(),
-                        name: name,
-                        username: username,
-                        email: email,
-                        password: password,
-                        avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150",
-                        cover: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800",
-                        bio: "Anggota baru ekosistem pintar VibeNet ✨",
-                        website: "",
-                        followers: [],
-                        following: [],
-                        achievements: ["Siber Citizen"],
-                        activity: []
-                    };
+                    try {
+                        // Cek apakah username sudah dipakai
+                        const { data: existing } = await AppEngine.supabase
+                            .from('profiles')
+                            .select('id')
+                            .eq('username', username)
+                            .maybeSingle();
+                        if (existing) {
+                            alert("Username atau email sudah terdaftar di dalam sistem.");
+                            submitBtn.disabled = false;
+                            return;
+                        }
 
-                    AppEngine.state.db.users.push(newUser);
-                    AppEngine.Storage.saveAll();
+                        // Daftarkan akun ke Supabase Auth
+                        const { data: signUpData, error: signUpError } = await AppEngine.supabase.auth.signUp({
+                            email: email,
+                            password: password
+                        });
+                        if (signUpError) throw signUpError;
+                        if (!signUpData.user) throw new Error('Registrasi gagal, coba lagi.');
 
-                    alert("Registrasi sukses! Silakan masuk menggunakan akun baru Anda.");
-                    this.switchSubView('login');
-                    submitBtn.disabled = false;
+                        // Buat baris profil terkait di tabel 'profiles'
+                        const { error: profileError } = await AppEngine.supabase.from('profiles').insert({
+                            id: signUpData.user.id,
+                            name: name,
+                            username: username,
+                            email: email
+                        });
+                        if (profileError) throw profileError;
+
+                        // Jika project Supabase tidak mewajibkan konfirmasi email, sesi langsung aktif -> auto masuk
+                        if (signUpData.session) {
+                            const loaded = await this.loadProfileForUser(signUpData.user);
+                            if (loaded) {
+                                alert("Registrasi sukses! Kamu langsung masuk.");
+                                AppEngine.Navigation.switchMainView('view-core-app');
+                                AppEngine.Navigation.to('sub-view-home');
+                                submitBtn.disabled = false;
+                                return;
+                            }
+                        }
+
+                        alert("Registrasi sukses! Jika project Supabase kamu mewajibkan konfirmasi email, cek inbox kamu dulu sebelum login.");
+                        this.switchSubView('login');
+                    } catch (err) {
+                        console.error('VibeNet: Registrasi gagal.', err);
+                        alert("Registrasi gagal: " + (err.message || 'Terjadi kesalahan tak terduga.'));
+                    } finally {
+                        submitBtn.disabled = false;
+                    }
                 },
                 handleRecovery: function(e) {
                     e.preventDefault();
@@ -1252,6 +1329,9 @@
                     }, 1000);
                 },
                 logout: function() {
+                    if (AppEngine.supabase) {
+                        AppEngine.supabase.auth.signOut().catch(() => {});
+                    }
                     localStorage.removeItem('vibenet_session');
                     AppEngine.state.currentUser = null;
                     AppEngine.Navigation.switchMainView('view-auth');
@@ -1697,6 +1777,7 @@
             renderStream: function() {
                 const target = document.getElementById('timeline-stream-target');
                 if (!target) return;
+                if (!AppEngine.state.currentUser) return;
                 target.innerHTML = '';
 
                 const posts = AppEngine.state.db.posts;
