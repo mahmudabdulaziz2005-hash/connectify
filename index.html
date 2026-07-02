@@ -782,6 +782,74 @@
             }
         }
 
+        /* ==========================================================================
+           PERBAIKAN: BANNER PERINGATAN PENYIMPANAN LOKAL (LocalStorage)
+           Beda dari toast biasa (yang sengaja dimatikan di showToast()), banner ini
+           SELALU ditampilkan kalau "Simpan Lokal" gagal -- karena ini menyangkut
+           risiko kehilangan data project, bukan sekadar notifikasi kosmetik.
+           ========================================================================== */
+        #storageWarningBanner {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 20000;
+            display: none;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 20px;
+            background: linear-gradient(90deg, #7c2d12, #92400e);
+            color: #fff5eb;
+            font-size: 12px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
+        }
+
+        #storageWarningBanner.visible {
+            display: flex;
+        }
+
+        #storageWarningBanner i.fa-triangle-exclamation {
+            font-size: 15px;
+            color: #fbbf24;
+            flex-shrink: 0;
+        }
+
+        #storageWarningBanner .storage-warning-text {
+            flex: 1;
+            line-height: 1.5;
+        }
+
+        #storageWarningBanner .storage-warning-text strong {
+            font-weight: 700;
+        }
+
+        #storageWarningBanner button {
+            font-family: var(--font-main);
+            font-size: 11px;
+            font-weight: 600;
+            color: #fff5eb;
+            background: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 5px;
+            padding: 6px 12px;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: var(--transition-smooth);
+        }
+
+        #storageWarningBanner button:hover {
+            background: rgba(255, 255, 255, 0.28);
+        }
+
+        #storageWarningBanner .storage-warning-close {
+            background: transparent;
+            border: none;
+            font-size: 16px;
+            padding: 0 4px;
+            line-height: 1;
+        }
+
         /* Custom Modal Framework */
         .modal-overlay {
             position: fixed;
@@ -875,12 +943,312 @@
         .context-menu-item:hover {
             background: var(--accent-color);
         }
+
+        /* ==========================================================================
+           RESPONSIVE ADJUSTMENTS
+           Skala tampilan menyesuaikan lebar layar: PC besar (default di atas),
+           laptop/layar sedang (<=1366px & <=1024px), lalu HP (<=768px & <=480px).
+           ========================================================================== */
+
+        /* ---------- LAPTOP BESAR / LAYAR SEDANG (<=1366px) ---------- */
+        @media (max-width: 1366px) {
+            :root {
+                --panel-width: 280px;
+                --sidebar-width: 68px;
+                --timeline-height: 240px;
+            }
+        }
+
+        /* ---------- LAPTOP KECIL / TABLET LANSKAP (<=1024px) ---------- */
+        @media (max-width: 1024px) {
+            :root {
+                --panel-width: 250px;
+                --sidebar-width: 60px;
+                --timeline-height: 200px;
+            }
+
+            body, html {
+                font-size: 12px;
+            }
+
+            .tool-btn {
+                width: 42px;
+                height: 42px;
+            }
+
+            .tool-btn span {
+                display: none;
+                /* sembunyikan label teks di bawah ikon supaya sidebar tetap ramping */
+            }
+
+            .menu-item {
+                padding: 6px 8px;
+            }
+
+            .brand-logo {
+                font-size: 14px;
+            }
+
+            .timeline-track-container {
+                grid-template-columns: 150px 1fr;
+            }
+        }
+
+        /* ---------- TABLET POTRAIT / HP LANSKAP (<=768px) ---------- */
+        @media (max-width: 768px) {
+
+            /* Header dibuat ringkas & bisa discroll horizontal supaya menu tidak pecah */
+            .app-header {
+                padding: 0 8px;
+                gap: 6px;
+            }
+
+            .header-left {
+                overflow-x: auto;
+                -ms-overflow-style: none;
+                scrollbar-width: none;
+                flex: 1;
+                min-width: 0;
+            }
+
+            .header-left::-webkit-scrollbar {
+                display: none;
+            }
+
+            .brand-logo span.brand-full-text {
+                display: none;
+            }
+
+            .menu-bar {
+                flex-shrink: 0;
+            }
+
+            .menu-item {
+                white-space: nowrap;
+                padding: 6px 8px;
+                font-size: 12px;
+            }
+
+            #languageSelector {
+                display: none;
+                /* disembunyikan di HP supaya header tidak sesak, tetap bisa diubah lewat menu View bila perlu */
+            }
+
+            #autosaveIndicator span.autosave-text {
+                display: none;
+            }
+
+            /* Workspace utama: kolom sidebar & panel kanan dilepas dari grid,
+               keduanya berubah jadi overlay/drawer yang muncul di atas kanvas. */
+            .main-workspace,
+            .main-workspace.timeline-active {
+                grid-template-columns: 1fr;
+                grid-template-rows: 1fr;
+            }
+
+            /* Sidebar tool kiri -> bilah navigasi bawah (horizontal, fixed) */
+            .sidebar-tools {
+                position: fixed;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                top: auto;
+                width: 100%;
+                height: 58px;
+                flex-direction: row;
+                align-items: center;
+                justify-content: flex-start;
+                overflow-x: auto;
+                border-right: none;
+                border-top: 1px solid var(--border-color);
+                padding: 6px 8px;
+                z-index: 200;
+            }
+
+            .tool-btn {
+                flex-shrink: 0;
+                width: 44px;
+                height: 44px;
+            }
+
+            /* Drawer konteks (upload/shape/text/ai) -> bottom sheet full width */
+            .drawer-panel {
+                left: 0;
+                right: 0;
+                top: auto;
+                bottom: 58px;
+                width: 100%;
+                height: 55vh;
+                max-height: 55vh;
+                transform: translateY(100%);
+                border-right: none;
+                border-top: 1px solid var(--border-color);
+                border-radius: 12px 12px 0 0;
+                z-index: 195;
+            }
+
+            .drawer-panel.open {
+                transform: translateY(0);
+            }
+
+            /* Panel kanan (Properti/Layer) -> overlay penuh yang muncul dari kanan,
+               ditutup lewat tombol close atau tombol toggle di canvas-toolbar. */
+            .properties-sidebar {
+                position: fixed;
+                top: var(--header-height);
+                right: 0;
+                bottom: 58px;
+                width: min(85vw, 320px);
+                height: auto;
+                border-left: 1px solid var(--border-color);
+                transform: translateX(100%);
+                transition: var(--transition-smooth);
+                z-index: 210;
+                box-shadow: -10px 0 30px rgba(0, 0, 0, 0.5);
+            }
+
+            .properties-sidebar.mobile-open {
+                transform: translateX(0);
+            }
+
+            /* Tombol toggle panel properti (khusus mobile) */
+            .mobile-panel-toggle {
+                display: flex !important;
+            }
+
+            .mobile-panel-close {
+                display: flex !important;
+            }
+
+            /* Backdrop gelap saat drawer/panel mobile terbuka */
+            .mobile-overlay-backdrop {
+                display: none;
+                position: fixed;
+                inset: 0;
+                background: rgba(0, 0, 0, 0.5);
+                z-index: 190;
+            }
+
+            .mobile-overlay-backdrop.visible {
+                display: block;
+            }
+
+            /* Kanvas & timeline mengisi ruang tersisa, beri jarak bawah untuk nav bar */
+            .center-editor-container {
+                padding-bottom: 58px;
+            }
+
+            .canvas-toolbar {
+                flex-wrap: wrap;
+                gap: 6px;
+                padding: 6px 10px;
+                height: auto;
+            }
+
+            .canvas-toolbar > div {
+                flex-wrap: wrap;
+            }
+
+            #currentProjectDimensionsDisplay {
+                display: none;
+                /* info dimensi disembunyikan di layar sempit, fokus ke kontrol utama */
+            }
+
+            .selection-toolbar {
+                flex-wrap: wrap;
+                padding: 6px 10px;
+            }
+
+            /* Timeline: tetap di alur normal, tapi tinggi dibatasi & mengambang
+               di atas bottom nav supaya tidak tertutup. */
+            .timeline-panel {
+                position: fixed;
+                left: 0;
+                right: 0;
+                bottom: 58px;
+                grid-column: auto;
+                width: 100%;
+                height: 42vh;
+                z-index: 150;
+                border-radius: 12px 12px 0 0;
+                display: none;
+            }
+
+            .main-workspace.timeline-active .timeline-panel {
+                display: grid;
+            }
+
+            .timeline-track-container {
+                grid-template-columns: 110px 1fr;
+            }
+
+            .timeline-track-header {
+                font-size: 10px;
+                padding: 4px 6px;
+            }
+
+            /* Modal & dropdown menyesuaikan lebar HP */
+            .modal-box {
+                width: 92vw !important;
+                max-width: 92vw !important;
+            }
+        }
+
+        /* ---------- HP LAYAR KECIL (<=480px) ---------- */
+        @media (max-width: 480px) {
+            .properties-sidebar {
+                width: 100vw;
+            }
+
+            .drawer-panel {
+                height: 65vh;
+                max-height: 65vh;
+            }
+
+            .timeline-panel {
+                height: 48vh;
+            }
+
+            .tabs-header .tab-link {
+                font-size: 11px;
+                padding: 10px 6px;
+            }
+
+            .brand-logo {
+                font-size: 13px;
+            }
+
+            .menu-item {
+                padding: 6px 6px;
+                font-size: 11px;
+            }
+        }
     </style>
 </head>
 
 <body>
 
     <div id="toastContainer"></div>
+
+    <!-- PERBAIKAN: Banner peringatan "Simpan Lokal" gagal (mis. localStorage penuh).
+         Tersembunyi (display:none) secara default, dimunculkan lewat
+         studioUi.showStorageWarning() saat StudioProjectManager.saveToLocalStorage()
+         gagal menyimpan. -->
+    <div id="storageWarningBanner">
+        <i class="fa-solid fa-triangle-exclamation"></i>
+        <div class="storage-warning-text" id="storageWarningText">
+            <strong>Penyimpanan lokal penuh.</strong> Perubahan terbaru pada proyek ini
+            TIDAK tersimpan otomatis di browser. Ekspor proyek sebagai JSON sekarang
+            supaya tidak hilang.
+        </div>
+        <button onclick="studioProject.exportProjectJson()">
+            <i class="fa-solid fa-download"></i> Ekspor Proyek (JSON)
+        </button>
+        <button class="storage-warning-close" onclick="studioUi.hideStorageWarning()" title="Tutup">
+            <i class="fa-solid fa-xmark"></i>
+        </button>
+    </div>
+
 
     <div id="customContextMenu" class="context-menu">
         <div class="context-menu-item" onclick="studioProject.duplicateActiveLayer()"><i class="fa-regular fa-copy"></i>
@@ -906,7 +1274,7 @@
         <header class="app-header">
             <div class="header-left">
                 <div class="brand-logo">
-                    <i class="fa-solid fa-bezier-curve"></i> NexusStudio Pro
+                    <i class="fa-solid fa-bezier-curve"></i> NexusStudio<span class="brand-full-text"> Pro</span>
                 </div>
                 <nav class="menu-bar">
                     <div class="menu-item" data-lang-key="menuFile">File
@@ -972,12 +1340,15 @@
                     <option value="en">English (US)</option>
                 </select>
                 <div id="autosaveIndicator" style="font-size: 11px; color: var(--success-color);">
-                    <i class="fa-solid fa-cloud-inversion"></i> Terpaut Autosave
+                    <i class="fa-solid fa-cloud-inversion"></i> <span class="autosave-text">Terpaut Autosave</span>
                 </div>
             </div>
         </header>
 
         <main class="main-workspace timeline-active" id="mainWorkspaceLayout">
+
+            <div class="mobile-overlay-backdrop" id="mobileOverlayBackdrop" onclick="studioUi.closeMobileOverlays()">
+            </div>
 
             <section class="sidebar-tools">
                 <div class="tool-btn active" id="toolBtnSelect" onclick="studioUi.switchTool('select')"
@@ -1139,7 +1510,7 @@
                         <span id="canvasZoomIndicator">100%</span>
                         <button onclick="studioCanvasEngine.zoomOut()"><i
                                 class="fa-solid fa-magnifying-glass-minus"></i></button>
-                        <button onclick="studioCanvasEngine.resetZoom()" style="font-size:11px; margin-left:4px;">Fit
+                        <button onclick="studioCanvasEngine.fitToScreen()" style="font-size:11px; margin-left:4px;">Fit
                             Screen</button>
                     </div>
                     <div style="font-weight:500; font-size:12px; color:var(--text-muted); display:flex; align-items:center; gap:16px;">
@@ -1157,6 +1528,11 @@
                         </button>
                         <button id="btnToggleFullscreen" title="Mode Layar Penuh" onclick="studioUi.toggleFullscreen()">
                             <i class="fa-solid fa-expand" id="fullscreenIcon"></i>
+                        </button>
+                        <button id="btnMobilePropertiesToggle" class="mobile-panel-toggle" title="Panel Properti"
+                            onclick="studioUi.toggleMobilePropertiesPanel()"
+                            style="display:none; background:var(--accent-color); border-radius:4px; width:28px; height:28px; align-items:center; justify-content:center;">
+                            <i class="fa-solid fa-sliders"></i>
                         </button>
                     </div>
                 </div>
@@ -1198,6 +1574,10 @@
                         id="tabLinkProperties" data-lang-key="tabProps">Properti</div>
                     <div class="tab-link" onclick="studioUi.switchPropertyTab('layers')" id="tabLinkLayers"
                         data-lang-key="tabLayers">Layer</div>
+                    <div class="mobile-panel-close" onclick="studioUi.toggleMobilePropertiesPanel()"
+                        style="display:none; align-items:center; justify-content:center; width:40px; cursor:pointer; color:var(--text-muted); flex:none;">
+                        <i class="fa-solid fa-xmark"></i>
+                    </div>
                 </div>
 
                 <div class="tab-content active" id="tabContentProperties">
@@ -1732,6 +2112,21 @@
 
         const studioHistory = new StudioHistoryManager();
 
+        // FITUR BARU: "clipboard" internal aplikasi untuk shortcut Ctrl+C/Ctrl+X/Ctrl+V.
+        // Bukan clipboard sistem operasi (browser tidak izinkan akses bebas ke sana),
+        // jadi copy/paste hanya berfungsi di dalam sesi NexusStudio ini saja.
+        let studioClipboard = [];
+
+        // FITUR BARU: registry aset yang sudah diunggah lewat panel "Upload" (gambar,
+        // video, audio). Sebelumnya galeri hanya menyimpan nama & tipe file sebagai
+        // STRING TEKS BIASA -- data berkas aslinya langsung dibuang begitu ditampilkan,
+        // jadi tidak mungkin menampilkan pratinjau visual/audio sungguhan, dan tombol
+        // "Tambahkan" pun tidak pernah punya data nyata untuk dimasukkan ke kanvas.
+        // Sekarang tiap aset disimpan di sini (keyed by ID unik) beserta Object URL-nya,
+        // supaya bisa dipakai baik untuk pratinjau (thumbnail/video/audio player) maupun
+        // saat benar-benar ditambahkan sebagai layer.
+        let studioUploadedAssetsRegistry = {};
+
         /**
          * ==========================================================================
          * USER EXPERIENCE & INTERFACE INTERACTION LAYOUT ENGINE (studioUi)
@@ -1857,6 +2252,72 @@
                 }, 4000);
             }
 
+            // ==========================================================================
+            // PERBAIKAN: Peringatan "Simpan Lokal Gagal" (mis. localStorage penuh/kena
+            // batas kuota browser, atau mode Private/Incognito yang memblokir localStorage
+            // sama sekali). Sebelumnya kegagalan ini HANYA dicatat ke console.error() --
+            // pengguna tidak pernah diberi tahu bahwa perubahan mereka TIDAK tersimpan,
+            // sehingga project bisa hilang total tanpa peringatan begitu tab ditutup/
+            // di-refresh.
+            //
+            // Ini SENGAJA dibuat terpisah dari sistem showToast() di atas (yang memang
+            // dimatikan total) karena risiko kehilangan data cukup penting untuk selalu
+            // terlihat oleh pengguna, bukan notifikasi kosmetik yang boleh disembunyikan.
+            // Banner ini juga TIDAK auto-hilang sendiri (beda dari toast) supaya tidak
+            // terlewat -- pengguna harus sadar & menutupnya sendiri, atau otomatis
+            // tertutup begitu penyimpanan berhasil lagi.
+            // ==========================================================================
+            showStorageWarning(isQuotaError = true) {
+                const banner = document.getElementById('storageWarningBanner');
+                const textEl = document.getElementById('storageWarningText');
+                if (!banner) return;
+
+                if (textEl) {
+                    textEl.innerHTML = isQuotaError
+                        ? `<strong>Penyimpanan lokal penuh.</strong> Perubahan terbaru pada proyek ini
+                           TIDAK tersimpan otomatis di browser. Ekspor proyek sebagai JSON sekarang
+                           supaya tidak hilang, lalu hapus aset gambar yang tidak perlu untuk
+                           mengosongkan ruang.`
+                        : `<strong>Gagal menyimpan proyek secara lokal.</strong> Perubahan terbaru
+                           mungkin tidak tersimpan (localStorage diblokir browser, mis. mode
+                           Private/Incognito). Sebaiknya ekspor proyek sebagai JSON sebagai cadangan.`;
+                }
+
+                banner.classList.add('visible');
+                console.error(`[Simpan Lokal Gagal] ${isQuotaError ? 'Kuota localStorage penuh.' : 'localStorage tidak dapat diakses.'}`);
+            }
+
+            hideStorageWarning() {
+                const banner = document.getElementById('storageWarningBanner');
+                if (banner) banner.classList.remove('visible');
+            }
+
+            // Perkiraan kapasitas localStorage terpakai saat ini oleh proyek NexusStudio,
+            // dipakai untuk peringatan DINI sebelum benar-benar penuh (lihat pemanggilan
+            // di StudioProjectManager.saveToLocalStorage()).
+            checkStorageUsageWarning(payloadString) {
+                // Kebanyakan browser membatasi localStorage per-origin di kisaran 5-10MB.
+                // String JS disimpan sebagai UTF-16 (~2 byte/karakter), jadi perkiraan
+                // ukuran sebenarnya kira-kira 2x panjang string. Ambang 4MB dipilih supaya
+                // peringatan muncul SEBELUM benar-benar mentok limit (bukan sesudahnya).
+                const approxBytes = payloadString.length * 2;
+                const approxMB = approxBytes / (1024 * 1024);
+                const thresholdMB = 4;
+
+                if (approxMB >= thresholdMB) {
+                    const banner = document.getElementById('storageWarningBanner');
+                    const textEl = document.getElementById('storageWarningText');
+                    if (banner && textEl) {
+                        textEl.innerHTML = `<strong>Penyimpanan lokal hampir penuh</strong>
+                            (kira-kira ${approxMB.toFixed(1)}MB dari batas umum browser ~5-10MB).
+                            Ekspor proyek sebagai JSON sebagai cadangan sebelum kehabisan ruang.`;
+                        banner.classList.add('visible');
+                    }
+                } else {
+                    this.hideStorageWarning();
+                }
+            }
+
             toggleDrawer(type) {
                 const drawer = document.getElementById('sidebarDrawerPanel');
                 const allContents = ['upload', 'shape', 'text', 'ai', 'paintbucket'];
@@ -1868,17 +2329,52 @@
                 if (this.activeDrawer === type) {
                     drawer.classList.remove('open');
                     this.activeDrawer = null;
+                    this.updateMobileBackdrop();
                 } else {
                     document.getElementById(`drawerContent${type.charAt(0).toUpperCase() + type.slice(1)}`).style.display = 'block';
                     document.getElementById('drawerTitle').innerText = type.toUpperCase() + " CONTROL PANEL";
                     drawer.classList.add('open');
                     this.activeDrawer = type;
+                    this.updateMobileBackdrop();
                 }
             }
 
             closeDrawer() {
                 document.getElementById('sidebarDrawerPanel').classList.remove('open');
                 this.activeDrawer = null;
+                this.updateMobileBackdrop();
+            }
+
+            // ==========================================================================
+            // RESPONSIVE (MOBILE): panel Properti/Layer di layar HP disembunyikan
+            // secara default (lihat CSS @media max-width:768px) dan hanya muncul
+            // sebagai overlay ketika tombol sliders di canvas-toolbar ditekan.
+            // ==========================================================================
+            toggleMobilePropertiesPanel() {
+                const panel = document.querySelector('.properties-sidebar');
+                panel.classList.toggle('mobile-open');
+                this.updateMobileBackdrop();
+            }
+
+            // Menutup drawer kiri & panel properti mobile sekaligus, dipanggil saat
+            // backdrop gelap di belakang overlay diklik/tap.
+            closeMobileOverlays() {
+                document.getElementById('sidebarDrawerPanel').classList.remove('open');
+                this.activeDrawer = null;
+                const panel = document.querySelector('.properties-sidebar');
+                if (panel) panel.classList.remove('mobile-open');
+                this.updateMobileBackdrop();
+            }
+
+            // Menampilkan/menyembunyikan backdrop gelap sesuai ada tidaknya overlay
+            // (drawer kiri atau panel properti) yang sedang terbuka di layar HP.
+            updateMobileBackdrop() {
+                const backdrop = document.getElementById('mobileOverlayBackdrop');
+                if (!backdrop) return;
+                const drawerOpen = document.getElementById('sidebarDrawerPanel').classList.contains('open');
+                const panel = document.querySelector('.properties-sidebar');
+                const panelOpen = panel && panel.classList.contains('mobile-open');
+                backdrop.classList.toggle('visible', drawerOpen || panelOpen);
             }
 
             // ==========================================================================
@@ -2426,20 +2922,64 @@
                 menu.style.display = 'block';
             }
 
+            // ==========================================================================
+            // PERBAIKAN: sebelumnya tiap aset di galeri "Aset Terunggah" HANYA menampilkan
+            // ikon generik (fa-file-image/fa-file-video/fa-file-audio) untuk SEMUA tipe
+            // berkas -- tidak ada pratinjau visual/audio sungguhan sama sekali, walau
+            // labelnya "Mendukung Gambar, Video & Audio". Sekarang tiap tipe berkas
+            // ditampilkan dengan pratinjau yang sesuai:
+            //   - Gambar  -> thumbnail nyata (elemen <img>)
+            //   - Video   -> cuplikan frame pertama (elemen <video>) + ikon Play di atasnya
+            //   - Audio   -> pemutar audio mini yang bisa langsung diputar (elemen <audio>)
+            // Data berkas asli (Object URL) disimpan di studioUploadedAssetsRegistry supaya
+            // bisa dipakai ulang saat tombol "Tambahkan" ditekan.
+            // ==========================================================================
             handleBatchUploadedFiles(files) {
+                const gallery = document.getElementById('uploadedAssetsGallery');
                 Array.from(files).forEach(file => {
-                    const gallery = document.getElementById('uploadedAssetsGallery');
+                    const assetId = 'asset_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6);
+                    const objectUrl = URL.createObjectURL(file);
+                    studioUploadedAssetsRegistry[assetId] = { file, url: objectUrl, type: file.type, name: file.name };
+
                     const div = document.createElement('div');
                     div.style.cssText = "background: var(--bg-surface); padding: 6px; border-radius:4px; text-align:center; font-size:10px; border:1px solid var(--border-color); overflow:hidden;";
 
-                    let typeIcon = 'fa-file-image';
-                    if (file.type.startsWith('video/')) typeIcon = 'fa-file-video';
-                    if (file.type.startsWith('audio/')) typeIcon = 'fa-file-audio';
+                    let previewHtml;
+                    if (file.type.startsWith('image/')) {
+                        previewHtml = `<img src="${objectUrl}" alt="${file.name}"
+                            style="width:100%; height:64px; object-fit:cover; border-radius:3px; display:block; background:#000;">`;
+                    } else if (file.type.startsWith('video/')) {
+                        // preload="metadata" cukup untuk membuat browser menampilkan frame
+                        // pertama video sebagai pratinjau statis, tanpa perlu mengunduh seluruh
+                        // videonya dulu. Ikon Play ditumpuk di atasnya sebagai penanda visual.
+                        previewHtml = `
+                            <div style="position:relative; width:100%; height:64px; border-radius:3px; overflow:hidden; background:#000;">
+                                <video src="${objectUrl}" muted preload="metadata" playsinline
+                                    style="width:100%; height:100%; object-fit:cover; display:block; pointer-events:none;"></video>
+                                <i class="fa-solid fa-circle-play"
+                                    style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); font-size:20px; color:#fff; text-shadow:0 1px 6px rgba(0,0,0,0.7); pointer-events:none;"></i>
+                            </div>`;
+                    } else if (file.type.startsWith('audio/')) {
+                        // Audio tidak punya bentuk "thumbnail" visual, jadi pratinjaunya berupa
+                        // pemutar mini yang bisa langsung diklik-putar di dalam galeri.
+                        // stopPropagation supaya klik di kontrol audio tidak ikut memicu
+                        // aksi lain di kartu aset.
+                        previewHtml = `
+                            <div style="width:100%; height:64px; border-radius:3px; background:var(--bg-tertiary); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; padding:4px 0;">
+                                <i class="fa-solid fa-waveform-lines" style="font-size:16px; color:var(--accent-color);"></i>
+                                <audio src="${objectUrl}" controls onclick="event.stopPropagation();"
+                                    style="width:90%; height:22px;"></audio>
+                            </div>`;
+                    } else {
+                        previewHtml = `<div style="height:64px; display:flex; align-items:center; justify-content:center;">
+                            <i class="fa-solid fa-file" style="font-size:22px; color:var(--text-muted);"></i>
+                        </div>`;
+                    }
 
                     div.innerHTML = `
-                        <i class="fa-solid ${typeIcon}" style="font-size:20px; color:var(--accent-color); margin-bottom:4px;"></i>
-                        <div style="text-overflow:ellipsis; white-space:nowrap; overflow:hidden;">${file.name}</div>
-                        <button class="btn-secondary-block" style="font-size:9px; padding:2px; margin-top:4px;" onclick="studioProject.injectAssetToProjectLayer('${file.name}', '${file.type}')">Tambahkan</button>
+                        ${previewHtml}
+                        <div style="text-overflow:ellipsis; white-space:nowrap; overflow:hidden; margin-top:6px;" title="${file.name}">${file.name}</div>
+                        <button class="btn-secondary-block" style="font-size:9px; padding:2px; margin-top:4px;" onclick="studioProject.injectAssetToProjectLayer('${assetId}')">Tambahkan</button>
                     `;
                     gallery.appendChild(div);
                 });
@@ -2469,6 +3009,17 @@
                     this.resizeCanvas();
                     this.render();
                     this.attachInteractionListeners();
+                    // KUNCI PERBAIKAN: sebelumnya kanvas dibiarkan tampil di ukuran piksel asli
+                    // (mis. 1920x1080) tanpa penyesuaian apapun, sehingga di layar yang lebih
+                    // kecil gambar langsung terpotong/harus discroll sejak awal dibuka. Sekarang
+                    // otomatis dipas-kan (fit) ke area kerja begitu editor pertama kali dimuat.
+                    this.fitToScreen();
+                    // Jaga kanvas tetap pas kalau ukuran jendela browser berubah (mis. resize
+                    // window atau device orientation berubah di tablet/mobile).
+                    window.addEventListener('resize', () => {
+                        clearTimeout(this._fitResizeTimer);
+                        this._fitResizeTimer = setTimeout(() => this.fitToScreen(), 150);
+                    });
                 }
             }
 
@@ -2971,6 +3522,31 @@
                 this.canvas.height = studioState.canvasHeight || 1920;
             }
 
+            // ==========================================================================
+            // PERBAIKAN BUG: fungsi ini dipanggil dari StudioUiEngine.submitCreateNewProject()
+            // setiap kali user membuat/mengganti proyek dengan rasio atau dimensi kanvas baru
+            // (baik lewat dropdown preset 16:9/9:16/1:1/4K, maupun input Lebar/Tinggi custom),
+            // TAPI sebelumnya TIDAK PERNAH didefinisikan sama sekali di kelas ini. Akibatnya
+            // browser langsung melempar error "resizeWorkspaceCanvasContainer is not a
+            // function" di tengah proses, yang membuat:
+            //   1) Resolusi asli elemen <canvas> (atribut width/height) TIDAK PERNAH benar-benar
+            //      diperbarui mengikuti dimensi/rasio baru -- kanvas tetap memakai resolusi lama
+            //      walau label "Dimensi Proyek" di UI sudah menampilkan angka yang benar.
+            //   2) Kode setelahnya (renderAndSyncWorkspace() & toast konfirmasi) ikut batal
+            //      dijalankan karena error tadi menghentikan seluruh fungsi di tengah jalan.
+            //   3) Skala tampilan (zoom fit-to-screen) tidak pernah dihitung ulang untuk
+            //      rasio/ukuran baru, sehingga tombol "Fit Screen" pun ikut menampilkan
+            //      kanvas dengan proporsi yang salah/tidak pas dengan area kerja.
+            // Fungsi ini memperbaiki seluruh alur tersebut sekaligus: kanvas di-resize ke
+            // resolusi asli yang baru, lalu otomatis di-fit ulang ke area kerja yang tersedia.
+            // ==========================================================================
+            resizeWorkspaceCanvasContainer() {
+                if (!this.canvas) return;
+                this.resizeCanvas();
+                this.fitToScreen();
+                this.render();
+            }
+
             // Memetakan nama Blend Mode Photoshop-style ke nilai ctx.globalCompositeOperation
             // bawaan Canvas API. Kebetulan nama-namanya sama persis untuk sebagian besar mode,
             // kecuali 'normal' yang di Canvas API disebut 'source-over'.
@@ -3235,26 +3811,11 @@
             render() {
                 if (!this.canvas || !this.ctx) return;
 
-                // 1. Bersihkan seluruh area kanvas terlebih dahulu
-                this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-
-                // 2. Ambil warna latar belakang dari state (misal: merah)
-                const bgColor = (typeof studioState !== 'undefined' && studioState.backgroundColor)
-                    ? studioState.backgroundColor
-                    : '#ffffff';
-
-                // 3. KUNCI PERBAIKAN: Isi warna latar belakang menggunakan RESOLUSI ASLI KANVAS
-                this.ctx.fillStyle = bgColor;
-                this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
-
-                // 4. Ambil data semua layer top-level (tanpa induk grup) dari Project Manager,
-                // lalu render berurutan -- termasuk Blend Mode, Mask Layer, Clipping Mask, dan
-                // Layer Group sekaligus lewat pipeline offscreen compositing di atas.
-                if (typeof studioProject !== 'undefined' && studioProject.layers) {
-                    const currentTime = typeof studioState !== 'undefined' ? studioState.currentTime : 0;
-                    const topLevelLayers = studioProject.layers.filter(l => !l.groupId);
-                    this.renderLayerSequence(topLevelLayers, this.ctx, currentTime);
-                }
+                // KUNCI PERBAIKAN: gambar konten (background + seluruh layer) sekarang lewat
+                // renderContentOnly() yang bisa dipakai ulang -- baik untuk kanvas layar (yang
+                // lanjut ditimpa overlay UI di bawah) maupun untuk kanvas ekspor "bersih" tanpa
+                // overlay apapun (lihat getCleanExportCanvas()).
+                this.renderContentOnly(this.ctx, this.canvas.width, this.canvas.height);
 
                 // KUNCI PERBAIKAN: overlay Grid & Guides (fitur baru, non-destruktif --
                 // hanya bantuan visual di kanvas, tidak ikut ke hasil ekspor gambar).
@@ -3346,6 +3907,48 @@
                     this.ctx.fillRect(r.x + r.w, r.y, this.canvas.width - (r.x + r.w), r.h);
                     this.ctx.restore();
                 }
+            }
+
+            // KUNCI PERBAIKAN: inti penggambaran background + seluruh layer, dipisah dari
+            // render() supaya bisa dipakai ulang oleh getCleanExportCanvas() tanpa ikut
+            // menggambar overlay UI (kotak seleksi, handle, grid, guides, marquee, dst).
+            // Sebelumnya exportAsImage() langsung meng-toBlob() kanvas LAYAR apa adanya,
+            // sehingga kotak seleksi biru & titik handle ikut terekam di file hasil unduhan.
+            renderContentOnly(ctx, width, height) {
+                // 1. Bersihkan seluruh area kanvas terlebih dahulu
+                ctx.clearRect(0, 0, width, height);
+
+                // 2. Ambil warna latar belakang dari state (misal: merah)
+                const bgColor = (typeof studioState !== 'undefined' && studioState.backgroundColor)
+                    ? studioState.backgroundColor
+                    : '#ffffff';
+
+                // 3. Isi warna latar belakang menggunakan RESOLUSI ASLI KANVAS
+                ctx.fillStyle = bgColor;
+                ctx.fillRect(0, 0, width, height);
+
+                // 4. Ambil data semua layer top-level (tanpa induk grup) dari Project Manager,
+                // lalu render berurutan -- termasuk Blend Mode, Mask Layer, Clipping Mask, dan
+                // Layer Group sekaligus lewat pipeline offscreen compositing di atas.
+                if (typeof studioProject !== 'undefined' && studioProject.layers) {
+                    const currentTime = typeof studioState !== 'undefined' ? studioState.currentTime : 0;
+                    const topLevelLayers = studioProject.layers.filter(l => !l.groupId);
+                    this.renderLayerSequence(topLevelLayers, ctx, currentTime);
+                }
+            }
+
+            // Membuat kanvas offscreen baru berisi HANYA hasil komposit layer (background +
+            // seluruh layer, lengkap dengan filter/opacity/blend/mask/rotasi), tanpa elemen
+            // UI apapun (seleksi, handle, grid, guides, dll). Dipakai oleh exportAsImage()
+            // supaya file yang diunduh persis seperti hasil editan, bukan tangkapan layar editor.
+            getCleanExportCanvas() {
+                if (!this.canvas) return null;
+                const exportCanvas = document.createElement('canvas');
+                exportCanvas.width = this.canvas.width;
+                exportCanvas.height = this.canvas.height;
+                const exportCtx = exportCanvas.getContext('2d');
+                this.renderContentOnly(exportCtx, exportCanvas.width, exportCanvas.height);
+                return exportCanvas;
             }
 
             // Merangkai satu string CSS filter dari seluruh nilai slider yang tersimpan
@@ -3575,12 +4178,47 @@
                 this.applyZoom();
             }
 
+            // KUNCI PERBAIKAN: sebelumnya tombol "Fit Screen" cuma memanggil resetZoom()
+            // (selalu ke 100%), padahal resolusi proyek (mis. 1920x1080) sering jauh lebih
+            // besar dari area kerja kanvas yang tersisa di layar -- akibatnya gambar terpotong
+            // dan harus discroll untuk melihat bagian atas/bawahnya (persis seperti yang
+            // dilaporkan). fitToScreen() menghitung skala yang pas berdasarkan ukuran nyata
+            // wadah `.canvas-view-area`, supaya seluruh kanvas selalu terlihat utuh.
+            fitToScreen() {
+                if (!this.canvas) return;
+                const viewArea = document.querySelector('.canvas-view-area');
+                const nativeWidth = (typeof studioState !== 'undefined' && studioState.canvasWidth) || this.canvas.width;
+                const nativeHeight = (typeof studioState !== 'undefined' && studioState.canvasHeight) || this.canvas.height;
+                if (!viewArea || !nativeWidth || !nativeHeight) {
+                    this.resetZoom();
+                    return;
+                }
+
+                const padding = 64; // ruang nafas di sekeliling kanvas supaya tidak mepet tepi
+                const availW = Math.max(viewArea.clientWidth - padding, 50);
+                const availH = Math.max(viewArea.clientHeight - padding, 50);
+                const scale = Math.min(availW / nativeWidth, availH / nativeHeight, 2.0);
+
+                this.zoomScale = Math.max(scale, 0.05);
+                this.applyZoom();
+            }
+
             // Fungsi pembantu untuk menerapkan perubahan skala langsung ke elemen HTML Kanvas
             applyZoom() {
                 if (!this.canvas) return;
-                this.canvas.style.transform = `scale(${this.zoomScale})`;
-                this.canvas.style.transformOrigin = 'center center'; // Menjaga kanvas tetap presisi di tengah workspace
-                this.canvas.style.transition = 'transform 0.2s ease'; // Efek animasi halus saat membesar/mengecil
+
+                // KUNCI PERBAIKAN: sebelumnya dipakai CSS `transform: scale()`, yang HANYA
+                // mengubah tampilan visual tanpa mengubah ukuran kotak tata-letak (layout box)
+                // kanvas -- jadi `.canvas-wrapper` tetap "menganggap" dirinya seukuran resolusi
+                // asli proyek (mis. 1920x1080px) walau divisualkan lebih kecil, sehingga wadah
+                // di sekitarnya overflow dan sebagian gambar jadi tidak terlihat / harus discroll.
+                // Sekarang width/height CSS kanvas diatur eksplisit ke ukuran piksel yang
+                // sebenarnya ingin ditampilkan, jadi tata-letak & tampilan selalu konsisten.
+                const nativeWidth = (typeof studioState !== 'undefined' && studioState.canvasWidth) || this.canvas.width;
+                const nativeHeight = (typeof studioState !== 'undefined' && studioState.canvasHeight) || this.canvas.height;
+                this.canvas.style.width = `${nativeWidth * this.zoomScale}px`;
+                this.canvas.style.height = `${nativeHeight * this.zoomScale}px`;
+                this.canvas.style.transition = 'width 0.2s ease, height 0.2s ease';
 
                 // KUNCI PERBAIKAN: label ini sebelumnya tidak pernah di-update sama sekali,
                 // jadi selalu menampilkan "100%" statis walau zoom sudah berubah. Sekarang
@@ -3935,6 +4573,119 @@
                         fontWeight: options.fontWeight || 'normal'
                     }
                 });
+            }
+
+            // ==========================================================================
+            // PERBAIKAN: dipanggil oleh tombol "Tambahkan" di tiap kartu galeri "Aset
+            // Terunggah" (panel Upload), tapi sebelumnya TIDAK PERNAH didefinisikan sama
+            // sekali -- klik tombolnya selalu gagal total tanpa pemberitahuan apa pun.
+            // Ditambah lagi, sebelum perbaikan pratinjau, tombol itu hanya dikirimi nama
+            // & tipe file sebagai teks biasa (data berkas aslinya sudah dibuang), jadi
+            // bahkan kalau fungsinya ada pun tidak mungkin benar-benar memasukkan
+            // isi berkas ke kanvas. Sekarang assetId dipetakan ke data asli (File +
+            // Object URL) lewat studioUploadedAssetsRegistry:
+            //   - Gambar -> langsung jadi layer gambar biasa yang bisa diedit penuh.
+            //   - Video  -> kanvas ini belum mendukung rendering video real-time
+            //     (belum ada tipe layer 'video' di drawLayerContent), jadi frame
+            //     PERTAMA video diambil sebagai cuplikan (poster) dan dijadikan layer
+            //     gambar statis -- lebih berguna daripada gagal total tanpa keterangan.
+            //   - Audio  -> tidak mungkin jadi layer visual di kanvas gambar/video ini,
+            //     jadi cukup diberi tahu lewat notifikasi supaya jelas alasannya
+            //     (dengarkan langsung lewat pemutar mini di kartu galerinya).
+            // ==========================================================================
+            injectAssetToProjectLayer(assetId) {
+                const asset = (typeof studioUploadedAssetsRegistry !== 'undefined') ? studioUploadedAssetsRegistry[assetId] : null;
+                if (!asset) {
+                    if (typeof studioUi !== 'undefined') studioUi.showToast("Aset tidak ditemukan, coba unggah ulang.", "error");
+                    return;
+                }
+
+                if (asset.type.startsWith('image/')) {
+                    const img = new Image();
+                    img.onload = () => {
+                        // Batasi lebar awal maksimal 800px supaya gambar besar tidak
+                        // langsung menutupi seluruh kanvas -- proporsional dengan aturan
+                        // ukuran default layer gambar lain di createBaseLayer().
+                        const maxW = 800;
+                        const scale = img.naturalWidth > maxW ? maxW / img.naturalWidth : 1;
+                        this.addLayer({
+                            name: asset.name,
+                            type: 'image',
+                            width: Math.round(img.naturalWidth * scale),
+                            height: Math.round(img.naturalHeight * scale),
+                            mediaElement: img
+                        });
+                        // addLayer() sudah memanggil saveToLocalStorage(), tapi mediaSrc
+                        // perlu ditambahkan manual setelahnya supaya gambar ini tetap bisa
+                        // dipulihkan lagi setelah halaman di-refresh (lihat saveToLocalStorage/
+                        // loadFromLocalStorage yang mengandalkan field mediaSrc).
+                        const newLayer = this.layers[this.layers.length - 1];
+                        if (newLayer) {
+                            newLayer.mediaSrc = asset.url;
+                            this.saveToLocalStorage();
+                        }
+                    };
+                    img.onerror = () => {
+                        if (typeof studioUi !== 'undefined') studioUi.showToast(`Gagal memuat gambar "${asset.name}".`, "error");
+                    };
+                    img.src = asset.url;
+                    return;
+                }
+
+                if (asset.type.startsWith('video/')) {
+                    const video = document.createElement('video');
+                    video.muted = true;
+                    video.preload = 'auto';
+                    video.addEventListener('loadeddata', () => {
+                        const off = document.createElement('canvas');
+                        off.width = video.videoWidth || 800;
+                        off.height = video.videoHeight || 450;
+                        const octx = off.getContext('2d');
+                        try {
+                            octx.drawImage(video, 0, 0, off.width, off.height);
+                        } catch (err) {
+                            console.error("Gagal mengambil cuplikan frame video:", err);
+                            if (typeof studioUi !== 'undefined') studioUi.showToast(`Gagal mengambil cuplikan dari "${asset.name}".`, "error");
+                            return;
+                        }
+                        const posterUrl = off.toDataURL('image/png');
+                        const posterImg = new Image();
+                        posterImg.onload = () => {
+                            const maxW = 800;
+                            const scale = posterImg.naturalWidth > maxW ? maxW / posterImg.naturalWidth : 1;
+                            this.addLayer({
+                                name: `${asset.name} (cuplikan video)`,
+                                type: 'image',
+                                width: Math.round(posterImg.naturalWidth * scale),
+                                height: Math.round(posterImg.naturalHeight * scale),
+                                mediaElement: posterImg
+                            });
+                            const newLayer = this.layers[this.layers.length - 1];
+                            if (newLayer) {
+                                newLayer.mediaSrc = posterUrl;
+                                this.saveToLocalStorage();
+                            }
+                            if (typeof studioUi !== 'undefined') {
+                                studioUi.showToast(`Cuplikan frame pertama dari "${asset.name}" ditambahkan sebagai gambar (kanvas belum mendukung video langsung).`, "info");
+                            }
+                        };
+                        posterImg.src = posterUrl;
+                    });
+                    video.addEventListener('error', () => {
+                        if (typeof studioUi !== 'undefined') studioUi.showToast(`Gagal memuat video "${asset.name}".`, "error");
+                    });
+                    video.src = asset.url;
+                    return;
+                }
+
+                if (asset.type.startsWith('audio/')) {
+                    if (typeof studioUi !== 'undefined') {
+                        studioUi.showToast(`File audio "${asset.name}" belum bisa ditambahkan sebagai layer kanvas -- gunakan pemutar mini di kartu asetnya untuk mendengarkan.`, "info");
+                    }
+                    return;
+                }
+
+                if (typeof studioUi !== 'undefined') studioUi.showToast("Tipe berkas ini belum didukung untuk ditambahkan ke kanvas.", "error");
             }
 
             // ==========================================================================
@@ -4539,8 +5290,16 @@
             // KUNCI PERBAIKAN: Method ini dipanggil oleh menu "Ekspor Hasil > Unduh Gambar
             // PNG/JPG/WEBP", tapi sebelumnya TIDAK PERNAH ada sama sekali di kode -- makanya
             // tombol unduh gambar tidak berfungsi (error "exportAsImage is not a function").
+            //
+            // KUNCI PERBAIKAN #2: sebelumnya method ini meng-toBlob() kanvas LAYAR (this.canvas)
+            // apa adanya -- yang berarti kotak seleksi biru & titik-titik handle resize layer
+            // yang sedang aktif ikut terekam permanen di file hasil unduhan. Sekarang dipakai
+            // studioCanvasEngine.getCleanExportCanvas(), kanvas offscreen terpisah yang HANYA
+            // berisi hasil komposit layer (tanpa overlay UI apapun).
             exportAsImage(mimeType = 'image/png') {
-                const canvas = (typeof studioCanvasEngine !== 'undefined') ? studioCanvasEngine.canvas : null;
+                const canvas = (typeof studioCanvasEngine !== 'undefined' && studioCanvasEngine.getCleanExportCanvas)
+                    ? studioCanvasEngine.getCleanExportCanvas()
+                    : null;
                 if (!canvas) {
                     if (typeof studioUi !== 'undefined') studioUi.showToast("Kanvas belum siap.", "error");
                     return;
@@ -4618,8 +5377,9 @@
                 if (typeof studioHistory !== 'undefined') {
                     studioHistory.recordSnapshot();
                 }
+                let payload;
                 try {
-                    localStorage.setItem('NEXUS_STUDIO_PROJECT', JSON.stringify({
+                    payload = JSON.stringify({
                         layers: this.layers.map(l => {
                             const copy = { ...l };
                             // KUNCI PERBAIKAN: sebelumnya mediaElement (objek Image asli) langsung
@@ -4632,15 +5392,55 @@
                             delete copy.mediaElement; // Elemen HTML asli harus dibuang sebelum di-JSON-kan
                             return copy;
                         })
-                    }));
+                    });
+                    localStorage.setItem('NEXUS_STUDIO_PROJECT', payload);
+
+                    // PERBAIKAN: sebelumnya kegagalan penyimpanan (localStorage penuh/diblokir)
+                    // HANYA dicatat ke console.error() -- pengguna tidak pernah tahu perubahan
+                    // mereka gagal tersimpan. Sekarang: kalau BERHASIL, pastikan banner
+                    // peringatan lama (kalau ada) ikut disembunyikan, lalu cek proaktif apakah
+                    // ukuran data sudah mendekati batas kuota browser supaya pengguna diberi
+                    // peringatan SEBELUM benar-benar kehabisan ruang, bukan sesudahnya.
+                    if (typeof studioUi !== 'undefined' && typeof studioUi.checkStorageUsageWarning === 'function') {
+                        studioUi.checkStorageUsageWarning(payload);
+                    }
                 } catch (e) {
                     console.error("Gagal mencadangkan layer:", e);
+                    // PERBAIKAN: tampilkan peringatan yang TIDAK BISA TERLEWAT ke pengguna --
+                    // beda dari showToast() yang memang sengaja dimatikan di seluruh aplikasi,
+                    // risiko kehilangan data project (localStorage penuh / diblokir browser)
+                    // cukup penting untuk selalu ditampilkan lewat banner khusus, lengkap
+                    // dengan tombol pintasan "Ekspor Proyek (JSON)" sebagai jalan keluar cepat.
+                    const isQuotaError = !!(e && (
+                        e.name === 'QuotaExceededError' ||
+                        e.code === 22 ||
+                        e.code === 1014 ||
+                        (e.message && e.message.toLowerCase().includes('quota'))
+                    ));
+                    if (typeof studioUi !== 'undefined' && typeof studioUi.showStorageWarning === 'function') {
+                        studioUi.showStorageWarning(isQuotaError);
+                    }
                 }
             }
 
             // Memuat kembali proyek otomatis dari memori penyimpanan lokal browser
             loadFromLocalStorage() {
-                const data = localStorage.getItem('NEXUS_STUDIO_PROJECT');
+                // PERBAIKAN: sebelumnya localStorage.getItem() dipanggil DI LUAR blok
+                // try/catch. Di browser/mode privasi tertentu (mis. beberapa mode Private/
+                // Incognito yang mengunci total akses localStorage), sekadar MENGAKSES
+                // localStorage saja bisa langsung melempar SecurityError -- dan karena
+                // fungsi ini dipanggil dari constructor StudioProjectManager, error itu
+                // akan menghentikan seluruh aplikasi sebelum sempat tampil sama sekali.
+                let data = null;
+                try {
+                    data = localStorage.getItem('NEXUS_STUDIO_PROJECT');
+                } catch (e) {
+                    console.error("localStorage tidak dapat diakses (mungkin mode privat/diblokir browser):", e);
+                    if (typeof studioUi !== 'undefined' && typeof studioUi.showStorageWarning === 'function') {
+                        studioUi.showStorageWarning(false);
+                    }
+                    return;
+                }
                 if (data) {
                     try {
                         const parsed = JSON.parse(data);
@@ -4682,6 +5482,166 @@
                         console.error("Gagal memuat cadangan layer:", e);
                     }
                 }
+            }
+
+            // ==========================================================================
+            // FITUR BARU: KEYBOARD SHORTCUT -- Copy / Cut / Paste / Duplicate Multi-Select
+            // & Group/Ungroup/Select All. Semua fungsi ini bekerja untuk SATU ATAU LEBIH
+            // layer sekaligus (mengikuti studioState.selectedLayerIds), bukan cuma layer
+            // aktif tunggal seperti duplicateActiveLayer() lama.
+            // ==========================================================================
+
+            // Menyalin layer yang sedang terpilih ke "clipboard" internal aplikasi
+            // (variabel studioClipboard di memori -- bukan clipboard sistem operasi).
+            copySelection() {
+                const selected = this.getSelectedLayers();
+                const layers = selected.length ? selected : (this.getActiveLayer() ? [this.getActiveLayer()] : []);
+                if (!layers.length) {
+                    if (typeof studioUi !== 'undefined') studioUi.showToast("Tidak ada objek untuk disalin.", "error");
+                    return;
+                }
+                studioClipboard = layers.map(l => JSON.parse(JSON.stringify(l, (key, value) => key === 'mediaElement' ? undefined : value)));
+                if (typeof studioUi !== 'undefined') studioUi.showToast(`${layers.length} objek disalin.`, "success");
+            }
+
+            // Cut = Copy lalu hapus layer aslinya dari kanvas.
+            cutSelection() {
+                const selected = this.getSelectedLayers();
+                const layers = selected.length ? selected : (this.getActiveLayer() ? [this.getActiveLayer()] : []);
+                if (!layers.length) {
+                    if (typeof studioUi !== 'undefined') studioUi.showToast("Tidak ada objek untuk dipotong.", "error");
+                    return;
+                }
+                this.copySelection();
+                const ids = new Set(layers.map(l => l.id));
+                this.layers = this.layers.filter(l => !ids.has(l.id));
+                this.activeIndex = this.layers.length > 0 ? this.layers.length - 1 : -1;
+                if (typeof studioState !== 'undefined') {
+                    studioState.activeLayerId = this.activeIndex >= 0 ? this.layers[this.activeIndex].id : null;
+                    studioState.selectedLayerIds = studioState.activeLayerId ? [studioState.activeLayerId] : [];
+                    studioState.layers = this.layers;
+                }
+                this.renderAndSyncWorkspace();
+                this.saveToLocalStorage();
+                if (typeof studioUi !== 'undefined') studioUi.showToast(`${layers.length} objek dipotong.`, "success");
+            }
+
+            // Menempelkan isi studioClipboard sebagai layer baru (ID baru, posisi digeser
+            // sedikit supaya terlihat jelas bahwa itu salinan, bukan menimpa layer asal).
+            pasteClipboard() {
+                if (!studioClipboard || !studioClipboard.length) {
+                    if (typeof studioUi !== 'undefined') studioUi.showToast("Clipboard kosong, tidak ada yang bisa ditempel.", "error");
+                    return;
+                }
+                const newIds = [];
+                studioClipboard.forEach(original => {
+                    const copy = JSON.parse(JSON.stringify(original));
+                    copy.id = 'layer_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5);
+                    copy.name = `${original.name} Salinan`;
+                    copy.x = (original.x || 0) + 20;
+                    copy.y = (original.y || 0) + 20;
+                    copy.groupId = null;
+                    if (original.type === 'image' && original.mediaSrc) {
+                        const img = new Image();
+                        img.crossOrigin = 'anonymous';
+                        img.onload = () => {
+                            copy.mediaElement = img;
+                            studioCanvasEngine.render();
+                        };
+                        img.src = original.mediaSrc;
+                    }
+                    this.layers.push(copy);
+                    newIds.push(copy.id);
+                });
+                this.activeIndex = this.layers.length - 1;
+                if (typeof studioState !== 'undefined') {
+                    studioState.layers = this.layers;
+                    studioState.selectedLayerIds = newIds;
+                    studioState.activeLayerId = newIds[newIds.length - 1];
+                }
+                this.renderAndSyncWorkspace();
+                this.saveToLocalStorage();
+                if (typeof studioUi !== 'undefined') studioUi.showToast(`${newIds.length} objek ditempel.`, "success");
+            }
+
+            // Duplikat SEMUA layer yang sedang terpilih sekaligus (Ctrl+D). Kalau cuma
+            // satu layer aktif yang terpilih, perilakunya sama seperti duplicateActiveLayer().
+            duplicateSelection() {
+                const selected = this.getSelectedLayers();
+                const layers = selected.length ? selected : (this.getActiveLayer() ? [this.getActiveLayer()] : []);
+                if (!layers.length) {
+                    if (typeof studioUi !== 'undefined') studioUi.showToast("Tidak ada objek untuk diduplikat.", "error");
+                    return;
+                }
+                const newIds = [];
+                layers.forEach(layer => {
+                    const copy = JSON.parse(JSON.stringify(layer, (key, value) => key === 'mediaElement' ? undefined : value));
+                    copy.id = 'layer_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5);
+                    copy.name = `${layer.name} Salinan`;
+                    copy.x = (layer.x || 0) + 20;
+                    copy.y = (layer.y || 0) + 20;
+                    copy.mediaElement = layer.mediaElement || null;
+                    const originalIndex = this.layers.findIndex(l => l.id === layer.id);
+                    this.layers.splice(originalIndex + 1, 0, copy);
+                    newIds.push(copy.id);
+                });
+                this.activeIndex = this.layers.findIndex(l => l.id === newIds[newIds.length - 1]);
+                if (typeof studioState !== 'undefined') {
+                    studioState.layers = this.layers;
+                    studioState.selectedLayerIds = newIds;
+                    studioState.activeLayerId = newIds[newIds.length - 1];
+                }
+                this.renderAndSyncWorkspace();
+                this.saveToLocalStorage();
+                if (typeof studioUi !== 'undefined') studioUi.showToast(`${newIds.length} objek diduplikat.`, "success");
+            }
+
+            // Ctrl+G: kelompokkan SEMUA layer yang sedang terpilih (2 atau lebih) ke dalam
+            // satu grup baru. Kalau cuma satu layer terpilih, jatuh kembali ke groupActiveLayer().
+            groupSelection() {
+                const selected = this.getSelectedLayers();
+                if (selected.length < 2) {
+                    this.groupActiveLayer();
+                    return;
+                }
+                const group = this.createGroupLayer(`Grup (${selected.length} objek)`);
+                // Grup ditaruh tepat di posisi layer TERATAS (index tertinggi) dari seleksi,
+                // supaya urutan tumpuk visualnya tidak berubah drastis.
+                let topIndex = -1;
+                selected.forEach(l => {
+                    const idx = this.layers.findIndex(x => x.id === l.id);
+                    if (idx > topIndex) topIndex = idx;
+                });
+                this.layers.splice(topIndex, 0, group);
+                selected.forEach(l => { l.groupId = group.id; });
+
+                this.activeIndex = this.layers.findIndex(l => l.id === group.id);
+                if (typeof studioState !== 'undefined') {
+                    studioState.activeLayerId = group.id;
+                    studioState.selectedLayerIds = [group.id];
+                }
+                this.renderAndSyncWorkspace();
+                this.saveToLocalStorage();
+                if (typeof studioUi !== 'undefined') studioUi.showToast(`${selected.length} objek dikelompokkan.`, "success");
+            }
+
+            // Ctrl+Shift+G: bubarkan grup yang sedang aktif/terpilih (kalau layer aktifnya
+            // memang bertipe grup).
+            ungroupActiveIfGroup() {
+                const layer = this.getActiveLayer();
+                if (!layer || layer.type !== 'group') {
+                    if (typeof studioUi !== 'undefined') studioUi.showToast("Pilih sebuah grup terlebih dahulu untuk dibubarkan.", "error");
+                    return;
+                }
+                this.ungroupLayer(layer.id);
+            }
+
+            // Ctrl+A: pilih seluruh layer level-atas (bukan child di dalam grup) sekaligus.
+            selectAllLayers() {
+                const topLevelIds = this.layers.filter(l => !l.groupId).map(l => l.id);
+                if (!topLevelIds.length) return;
+                this.setSelection(topLevelIds);
+                if (typeof studioUi !== 'undefined') studioUi.showToast(`${topLevelIds.length} objek terpilih.`, "success");
             }
         }
 
@@ -5041,6 +6001,137 @@
             });
         }
 
+        // ==========================================================================
+        // FITUR BARU: TABEL SHORTCUT KEYBOARD LENGKAP (File/Edit/Objek/Tool/Zoom/Hand
+        // Tool). Diletakkan sebagai listener 'keydown' terpisah di level document,
+        // sama seperti initHistoryKeyboardShortcuts(), dan sama-sama dilewati saat
+        // pengguna sedang mengetik di input/textarea/elemen contentEditable supaya
+        // tidak menabrak pengetikan normal.
+        //
+        // Catatan: Ctrl/Cmd+Z (Undo) & Ctrl/Cmd+Y / Ctrl/Cmd+Shift+Z (Redo) SUDAH
+        // ditangani terpisah oleh initHistoryKeyboardShortcuts() di atas, jadi tidak
+        // diulang lagi di sini. Delete/Backspace (Hapus Objek) & Escape juga sudah
+        // ditangani oleh listener keydown di StudioCanvasEngine.initInteractions().
+        //
+        // Shortcut "P" (Pen Tool) sengaja hanya menampilkan notifikasi -- NexusStudio
+        // saat ini belum punya fitur menggambar path vektor bebas seperti Pen Tool di
+        // Illustrator/Photoshop, jadi tidak ada aksi nyata yang bisa dijalankan.
+        // ==========================================================================
+        function initGlobalActionKeyboardShortcuts() {
+            let spaceHeld = false;
+            let isPanning = false;
+            let panStartX = 0, panStartY = 0, panScrollLeft = 0, panScrollTop = 0;
+            const scrollArea = document.getElementById('canvasScrollAreaContainer');
+
+            document.addEventListener('keydown', (e) => {
+                const target = e.target;
+                const isTypingField = target && (
+                    target.tagName === 'INPUT' ||
+                    target.tagName === 'TEXTAREA' ||
+                    target.isContentEditable
+                );
+
+                const isCtrlOrCmd = e.ctrlKey || e.metaKey;
+                const key = e.key.toLowerCase();
+
+                // ----- Kombinasi dengan Ctrl (Windows/Linux) atau Cmd (Mac) -----
+                if (isCtrlOrCmd && !isTypingField) {
+                    if (key === 'n') { e.preventDefault(); studioUi.openNewProjectModal(); return; }
+                    if (key === 'o') { e.preventDefault(); document.getElementById('projectFileJsonInput').click(); return; }
+                    if (key === 's' && e.shiftKey) { e.preventDefault(); studioProject.exportProjectJson(); return; }
+                    if (key === 's') { e.preventDefault(); studioProject.saveToLocalStorage(); studioUi.showToast("Proyek berhasil disimpan.", "success"); return; }
+                    if (key === 'c') { e.preventDefault(); studioProject.copySelection(); return; }
+                    if (key === 'x') { e.preventDefault(); studioProject.cutSelection(); return; }
+                    if (key === 'v') { e.preventDefault(); studioProject.pasteClipboard(); return; }
+                    if (key === 'd') { e.preventDefault(); studioProject.duplicateSelection(); return; }
+                    if (key === 'g' && e.shiftKey) { e.preventDefault(); studioProject.ungroupActiveIfGroup(); return; }
+                    if (key === 'g') { e.preventDefault(); studioProject.groupSelection(); return; }
+                    if (key === 'a') { e.preventDefault(); studioProject.selectAllLayers(); return; }
+                    // Tombol "+" biasanya berbagi tombol fisik dengan "=", dan "-" dengan "_"
+                    if (key === '=' || key === '+') { e.preventDefault(); studioCanvasEngine.zoomIn(); return; }
+                    if (key === '-' || key === '_') { e.preventDefault(); studioCanvasEngine.zoomOut(); return; }
+                    return; // Ctrl+Z/Y/Shift+Z sudah ditangani oleh initHistoryKeyboardShortcuts()
+                }
+
+                if (isTypingField) return;
+
+                // ----- Space = Hand Tool (tahan untuk geser/pan kanvas) -----
+                if (e.code === 'Space') {
+                    if (!spaceHeld) {
+                        spaceHeld = true;
+                        if (scrollArea) scrollArea.style.cursor = 'grab';
+                    }
+                    e.preventDefault(); // Cegah halaman ikut scroll ke bawah saat Space ditekan
+                    return;
+                }
+
+                // ----- Tombol huruf tunggal (tanpa Ctrl/Cmd) untuk ganti tool -----
+                switch (key) {
+                    case 'b':
+                        e.preventDefault();
+                        studioUi.switchTool('brush');
+                        break;
+                    case 'e':
+                        e.preventDefault();
+                        studioUi.switchTool('eraser');
+                        break;
+                    case 'v':
+                        e.preventDefault();
+                        studioUi.switchTool('select');
+                        break;
+                    case 't':
+                        e.preventDefault();
+                        studioUi.toggleDrawer('text');
+                        break;
+                    case 'r':
+                        e.preventDefault();
+                        studioProject.addShapeLayer('rectangle');
+                        break;
+                    case 'c':
+                        e.preventDefault();
+                        studioProject.addShapeLayer('circle');
+                        break;
+                    case 'p':
+                        e.preventDefault();
+                        studioUi.showToast("Pen Tool belum tersedia di versi ini.", "info");
+                        break;
+                }
+            });
+
+            document.addEventListener('keyup', (e) => {
+                if (e.code === 'Space') {
+                    spaceHeld = false;
+                    isPanning = false;
+                    if (scrollArea) scrollArea.style.cursor = '';
+                }
+            });
+
+            // Geser (pan) area kanvas dengan klik-tahan-tarik SELAMA tombol Space ditahan.
+            if (scrollArea) {
+                scrollArea.addEventListener('mousedown', (e) => {
+                    if (!spaceHeld) return;
+                    isPanning = true;
+                    panStartX = e.clientX;
+                    panStartY = e.clientY;
+                    panScrollLeft = scrollArea.scrollLeft;
+                    panScrollTop = scrollArea.scrollTop;
+                    scrollArea.style.cursor = 'grabbing';
+                    e.preventDefault();
+                });
+                window.addEventListener('mousemove', (e) => {
+                    if (!isPanning) return;
+                    scrollArea.scrollLeft = panScrollLeft - (e.clientX - panStartX);
+                    scrollArea.scrollTop = panScrollTop - (e.clientY - panStartY);
+                });
+                window.addEventListener('mouseup', () => {
+                    if (isPanning) {
+                        isPanning = false;
+                        scrollArea.style.cursor = spaceHeld ? 'grab' : '';
+                    }
+                });
+            }
+        }
+
         function initTimelineInteractionsBinding() {
             const ruler = document.getElementById('timelineRulerSecondsTicksContainer');
             if (ruler) {
@@ -5073,6 +6164,7 @@
             // bukan malah menampilkan pesan "tidak ada tindakan" padahal sudah ada aksi.
             studioHistory.recordSnapshot();
             initHistoryKeyboardShortcuts();
+            initGlobalActionKeyboardShortcuts();
             // Inisialisasi awal setup default ticks timeline pengukur detik
             const ruler = document.getElementById('timelineRulerSecondsTicksContainer');
             for (let i = 0; i <= 30; i += 5) {
