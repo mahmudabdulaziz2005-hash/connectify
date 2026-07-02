@@ -27,29 +27,13 @@
             --success-color: #10b981;
             --error-color: #ef4444;
             --warning-color: #f59e0b;
-            /* Ukuran layout kini fluid (clamp) supaya otomatis menyesuaikan
-               dari layar 320px sampai 4K (3840px) tanpa "meloncat" antar breakpoint. */
-            --sidebar-width: clamp(56px, 6vw, 76px);
-            --panel-width: clamp(240px, 20vw, 320px);
-            --drawer-width: clamp(220px, 24vw, 280px);
-            --header-height: clamp(44px, 5.5vh, 52px);
-            --timeline-height: clamp(160px, 26vh, 280px);
-            --timeline-header-h: clamp(32px, 4vh, 40px);
-            --timeline-col-w: clamp(120px, 14vw, 200px);
-            --gap-main: clamp(6px, 0.8vw, 12px);
-            --radius-main: clamp(6px, 0.6vw, 10px);
-            --icon-size: clamp(16px, 1.8vw, 20px);
-            --fs-xs: clamp(9px, 0.85vw, 11px);
-            --fs-sm: clamp(11px, 1vw, 13px);
-            --fs-md: clamp(12px, 1.1vw, 15px);
-            --fs-lg: clamp(14px, 1.4vw, 18px);
+            --sidebar-width: 72px;
+            --panel-width: 320px;
+            --header-height: 48px;
+            --timeline-height: 280px;
             --font-main: 'Inter', sans-serif;
             --transition-smooth: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
         }
-
-        /* Breakpoint acuan: 320 / 480 / 600 / 768 / 820 / 1024 / 1280 / 1366 / 1440 / 1600 / 1920 / 2560 / 3840
-           DOM TIDAK diubah -- hanya CSS Grid/Flex + grid-template-areas yang
-           menata ulang posisi Sidebar / Canvas / Properties / Timeline per ukuran layar. */
 
         /* Reset & Base Styles */
         * {
@@ -68,7 +52,7 @@
             color: var(--text-main);
             font-family: var(--font-main);
             overflow: hidden;
-            font-size: var(--fs-md);
+            font-size: 13px;
         }
 
         input,
@@ -76,7 +60,7 @@
         textarea,
         button {
             font-family: var(--font-main);
-            font-size: var(--fs-sm);
+            font-size: 12px;
             color: var(--text-main);
             background: transparent;
             border: none;
@@ -106,39 +90,33 @@
            ========================================================================== */
         .app-container {
             display: grid;
-            grid-template-rows: var(--header-height) minmax(0, 1fr);
-            width: 100%;
-            height: 100dvh;
+            grid-template-rows: var(--header-height) 1fr;
+            width: 100vw;
+            height: 100vh;
             overflow: hidden;
         }
 
-        /* App Header Layout -- height otomatis (auto) mengikuti konten,
-           dibatasi via clamp() pada --header-height. Flexbox 1 baris,
-           menu-bar boleh scroll horizontal alih-alih memaksa elemen lain
-           menyempit / meluber keluar layar pada layar kecil. */
+        /* App Header Layout */
         .app-header {
             background-color: var(--bg-secondary);
             border-bottom: 1px solid var(--border-color);
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 0 clamp(8px, 1.5vw, 16px);
-            gap: var(--gap-main);
+            padding: 0 16px;
             z-index: 100;
-            min-width: 0;
         }
 
         .header-left,
         .header-right {
             display: flex;
             align-items: center;
-            gap: clamp(6px, 1vw, 12px);
-            min-width: 0;
+            gap: 12px;
         }
 
         .brand-logo {
             font-weight: 700;
-            font-size: var(--fs-lg);
+            font-size: 16px;
             letter-spacing: -0.5px;
             background: var(--accent-gradient);
             -webkit-background-clip: text;
@@ -146,32 +124,19 @@
             display: flex;
             align-items: center;
             gap: 6px;
-            white-space: nowrap;
-            flex-shrink: 0;
         }
 
-        /* Dropdown Menu System -- scrollable horizontal supaya tidak
-           pernah overflow di layar sempit (mis. 320px), tanpa mengubah
-           struktur DOM ataupun fungsi onclick yang sudah ada. */
+        /* Dropdown Menu System */
         .menu-bar {
             display: flex;
             gap: 4px;
-            overflow-x: auto;
-            overflow-y: hidden;
-            scrollbar-width: none;
-            min-width: 0;
         }
-
-        .menu-bar::-webkit-scrollbar { display: none; }
 
         .menu-item {
             position: relative;
-            padding: clamp(4px, 0.6vw, 6px) clamp(8px, 1vw, 12px);
+            padding: 6px 12px;
             border-radius: 4px;
             cursor: pointer;
-            white-space: nowrap;
-            flex-shrink: 0;
-            font-size: var(--fs-sm);
             transition: var(--transition-smooth);
         }
 
@@ -191,8 +156,7 @@
             background-color: var(--bg-secondary);
             border: 1px solid var(--border-color);
             border-radius: 6px;
-            min-width: clamp(160px, 40vw, 200px);
-            max-width: min(90vw, 260px);
+            min-width: 200px;
             box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
             z-index: 1000;
             padding: 4px 0;
@@ -231,55 +195,36 @@
             margin: 4px 0;
         }
 
-        /* ==========================================================================
-           WORKSPACE CORE LAYOUT -- CSS Grid dengan grid-template-areas.
-           Memakai NAMA area (tools/canvas/props/timeline) supaya setiap
-           breakpoint tinggal mendefinisikan ulang area tanpa perlu
-           mengubah urutan DOM atau JS. minmax(0, ...) dipakai di semua
-           track supaya konten kanvas/timeline TIDAK PERNAH mendorong
-           layout keluar layar (penyebab overflow paling umum di grid).
-           ========================================================================== */
+        /* Workspace Core Layout */
         .main-workspace {
             display: grid;
-            grid-template-columns: var(--sidebar-width) minmax(0, 1fr) var(--panel-width);
-            grid-template-rows: minmax(0, 1fr) 0;
-            grid-template-areas:
-                "tools canvas props"
-                "timeline timeline timeline";
+            grid-template-columns: var(--sidebar-width) 1fr var(--panel-width);
+            grid-template-rows: 1fr;
             height: 100%;
-            min-height: 0;
             overflow: hidden;
             position: relative;
-            transition: grid-template-rows 0.25s ease, grid-template-columns 0.25s ease;
         }
 
         .main-workspace.timeline-active {
-            grid-template-rows: minmax(0, 1fr) var(--timeline-height);
+            grid-template-rows: 1fr var(--timeline-height);
         }
 
-        .sidebar-tools { grid-area: tools; min-width: 0; min-height: 0; }
-        .center-editor-container { grid-area: canvas; min-width: 0; min-height: 0; }
-        .properties-sidebar { grid-area: props; min-width: 0; min-height: 0; }
-        .timeline-panel { grid-area: timeline; min-width: 0; min-height: 0; }
-
-        /* Left Action Tool Panel -- lebar fluid via var(--sidebar-width),
-           icon & label ikut menyusut dengan clamp() di layar sempit. */
+        /* Left Action Tool Panel */
         .sidebar-tools {
             background-color: var(--bg-secondary);
             border-right: 1px solid var(--border-color);
             display: flex;
             flex-direction: column;
             align-items: center;
-            padding: clamp(6px, 1vh, 12px) 0;
-            gap: clamp(4px, 0.8vh, 8px);
-            overflow-y: auto;
+            padding: 12px 0;
+            gap: 8px;
             z-index: 10;
         }
 
         .tool-btn {
-            width: clamp(38px, 4.6vw, 48px);
-            height: clamp(38px, 4.6vw, 48px);
-            border-radius: var(--radius-main);
+            width: 48px;
+            height: 48px;
+            border-radius: 8px;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -288,15 +233,14 @@
             color: var(--text-muted);
             transition: var(--transition-smooth);
             gap: 4px;
-            flex-shrink: 0;
         }
 
         .tool-btn i {
-            font-size: var(--icon-size);
+            font-size: 18px;
         }
 
         .tool-btn span {
-            font-size: clamp(7px, 0.7vw, 9px);
+            font-size: 9px;
             font-weight: 500;
         }
 
@@ -316,8 +260,7 @@
             position: absolute;
             top: 0;
             left: var(--sidebar-width);
-            width: min(var(--drawer-width), calc(100vw - var(--sidebar-width)));
-            max-width: calc(100vw - var(--sidebar-width));
+            width: 260px;
             height: 100%;
             background-color: var(--bg-secondary);
             border-right: 1px solid var(--border-color);
@@ -349,24 +292,20 @@
         /* Central Editor Canvas Layout */
         .center-editor-container {
             display: grid;
-            grid-template-rows: auto minmax(0, 1fr);
+            grid-template-rows: 40px 1fr;
             background-color: var(--bg-primary);
             position: relative;
             overflow: hidden;
             height: 100%;
-            min-width: 0;
         }
 
         .canvas-toolbar {
             background-color: var(--bg-secondary);
             border-bottom: 1px solid var(--border-color);
             display: flex;
-            flex-wrap: wrap;
             align-items: center;
             justify-content: space-between;
-            gap: clamp(4px, 1vw, 12px);
-            padding: clamp(4px, 0.8vh, 8px) clamp(8px, 1.5vw, 16px);
-            font-size: var(--fs-sm);
+            padding: 0 16px;
         }
 
         /* ==========================================================================
@@ -376,11 +315,10 @@
             background-color: var(--bg-secondary);
             border-bottom: 1px solid var(--border-color);
             display: flex;
-            flex-wrap: wrap;
             align-items: center;
             justify-content: space-between;
-            padding: clamp(4px, 0.8vh, 6px) clamp(8px, 1.5vw, 16px);
-            gap: clamp(6px, 1vw, 12px);
+            padding: 6px 16px;
+            gap: 12px;
         }
 
         .sel-toolbar-group {
@@ -390,8 +328,8 @@
         }
 
         .sel-toolbar-group button {
-            width: clamp(24px, 2.6vw, 28px);
-            height: clamp(24px, 2.6vw, 28px);
+            width: 28px;
+            height: 28px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -399,7 +337,6 @@
             cursor: pointer;
             color: var(--text-muted);
             transition: var(--transition-smooth);
-            flex-shrink: 0;
         }
 
         .sel-toolbar-group button:hover {
@@ -425,8 +362,8 @@
         }
 
         .toggle-btn {
-            width: clamp(24px, 2.6vw, 28px);
-            height: clamp(24px, 2.6vw, 28px);
+            width: 28px;
+            height: 28px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -477,7 +414,6 @@
             display: flex;
             flex-direction: column;
             overflow: hidden;
-            min-height: 0;
             z-index: 10;
         }
 
@@ -485,16 +421,14 @@
             display: flex;
             border-bottom: 1px solid var(--border-color);
             background-color: var(--bg-primary);
-            flex-shrink: 0;
         }
 
         .tab-link {
             flex: 1;
-            padding: clamp(8px, 1.2vh, 12px);
+            padding: 12px;
             text-align: center;
             cursor: pointer;
             font-weight: 500;
-            font-size: var(--fs-sm);
             color: var(--text-muted);
             border-bottom: 2px solid transparent;
             transition: var(--transition-smooth);
@@ -509,9 +443,8 @@
         .tab-content {
             flex: 1;
             overflow-y: auto;
-            padding: clamp(10px, 1.4vw, 16px);
+            padding: 16px;
             display: none;
-            min-height: 0;
         }
 
         .tab-content.active {
@@ -520,7 +453,7 @@
 
         /* UI Control Component Styling */
         .control-group {
-            margin-bottom: clamp(12px, 1.6vh, 20px);
+            margin-bottom: 20px;
         }
 
         .control-group label {
@@ -528,7 +461,6 @@
             color: var(--text-muted);
             margin-bottom: 8px;
             font-weight: 500;
-            font-size: var(--fs-sm);
         }
 
         .slider-wrapper {
@@ -555,11 +487,10 @@
 
         .btn-action-block {
             width: 100%;
-            padding: clamp(8px, 1vw, 16px);
+            padding: 10px;
             background: var(--accent-gradient);
-            border-radius: clamp(8px, 1vw, 16px);
+            border-radius: 6px;
             font-weight: 600;
-            font-size: var(--fs-sm);
             cursor: pointer;
             display: flex;
             align-items: center;
@@ -576,12 +507,11 @@
 
         .btn-secondary-block {
             width: 100%;
-            padding: clamp(8px, 1vw, 16px);
+            padding: 10px;
             background: var(--bg-surface);
             border: 1px solid var(--border-color);
-            border-radius: clamp(8px, 1vw, 16px);
+            border-radius: 6px;
             font-weight: 500;
-            font-size: var(--fs-sm);
             cursor: pointer;
             margin-top: 8px;
             transition: var(--transition-smooth);
@@ -594,15 +524,12 @@
         /* ==========================================================================
            TIMELINE EDITOR PANEL STYLING (BOTTOM BAR)
            ========================================================================== */
-        /* Timeline: Flexbox untuk baris kontrol (toolbar) yang sticky,
-           track area (Video/Audio/Subtitle) tetap satu-satunya area yang
-           boleh scroll horizontal, sesuai aturan overflow pada spec. */
         .timeline-panel {
+            grid-column: 1 / 4;
             background-color: var(--bg-secondary);
             border-top: 1px solid var(--border-color);
-            display: flex;
-            flex-direction: column;
-            min-height: 0;
+            display: grid;
+            grid-template-rows: 40px 1fr;
             overflow: hidden;
             z-index: 20;
         }
@@ -611,23 +538,14 @@
             background-color: var(--bg-tertiary);
             border-bottom: 1px solid var(--border-color);
             display: flex;
-            flex-wrap: wrap;
             align-items: center;
             justify-content: space-between;
-            gap: clamp(4px, 1vw, 12px);
-            padding: clamp(4px, 0.8vh, 8px) clamp(8px, 1.5vw, 16px);
-            min-height: var(--timeline-header-h);
-            flex-shrink: 0;
-            position: sticky;
-            top: 0;
-            z-index: 2;
-            font-size: var(--fs-sm);
+            padding: 0 16px;
         }
 
         .timeline-track-container {
-            display: flex;
-            flex: 1;
-            min-height: 0;
+            display: grid;
+            grid-template-columns: 200px 1fr;
             overflow-y: auto;
             position: relative;
         }
@@ -637,27 +555,19 @@
             border-right: 1px solid var(--border-color);
             display: flex;
             flex-direction: column;
-            flex-shrink: 0;
-            width: var(--timeline-col-w);
-            position: sticky;
-            left: 0;
-            z-index: 3;
         }
 
         .timeline-track-header {
-            height: clamp(44px, 6vh, 60px);
+            height: 60px;
             border-bottom: 1px solid var(--border-color);
             display: flex;
             align-items: center;
-            padding: 0 clamp(6px, 1vw, 12px);
+            padding: 0 12px;
             gap: 8px;
             color: var(--text-muted);
-            font-size: var(--fs-xs);
         }
 
         .timeline-workspace-scroll {
-            flex: 1;
-            min-width: 0;
             overflow-x: auto;
             overflow-y: hidden;
             position: relative;
@@ -665,7 +575,7 @@
         }
 
         .timeline-ruler {
-            height: clamp(18px, 2.4vh, 24px);
+            height: 24px;
             background-color: var(--bg-tertiary);
             border-bottom: 1px solid var(--border-color);
             position: relative;
@@ -673,15 +583,15 @@
 
         .timeline-tracks-area {
             position: relative;
-            height: calc(100% - clamp(18px, 2.4vh, 24px));
+            height: calc(100% - 24px);
         }
 
         .timeline-track-row {
-            height: clamp(44px, 6vh, 60px);
+            height: 60px;
             border-bottom: 1px solid var(--border-color);
             position: relative;
             width: 3000px;
-            /* Panjang representatif durasi timeline (area scroll horizontal yang disengaja) */
+            /* Panjang representatif durasi */
         }
 
         .timeline-block {
@@ -959,7 +869,7 @@
             background-color: var(--bg-secondary);
             border: 1px solid var(--border-color);
             border-radius: 12px;
-            width: clamp(280px, 90vw, 500px);
+            width: 500px;
             max-width: 90%;
             box-shadow: 0 24px 64px rgba(0, 0, 0, 0.8);
             overflow: hidden;
@@ -1032,173 +942,6 @@
 
         .context-menu-item:hover {
             background: var(--accent-color);
-        }
-
-        /* ==========================================================================
-           RESPONSIVE BREAKPOINTS
-           320 / 480 / 600 / 768 / 820 / 1024 / 1280 / 1366 / 1440 / 1600 / 1920 / 2560 / 3840
-           Strategi: grid-template-areas diredefinisikan per breakpoint --
-           TIDAK ADA elemen DOM yang dipindah/diduplikasi, semua fungsi JS
-           (tool switching, drawer, tab, timeline) tetap bekerja apa adanya.
-           ========================================================================== */
-
-        /* ---- Large / Ultra-wide desktop (1600px - 4K 3840px) ----
-           Panel & sidebar tetap nyaman dibaca (tidak melar tanpa batas)
-           seperti software editor profesional pada umumnya; ruang ekstra
-           diberikan ke canvas/preview. */
-        @media (min-width: 1600px) {
-            :root {
-                --panel-width: clamp(300px, 17vw, 380px);
-                --sidebar-width: clamp(64px, 4vw, 84px);
-                --timeline-height: clamp(200px, 24vh, 320px);
-            }
-        }
-
-        /* ---- Small laptop / narrow desktop (1024px - 1366px) ---- */
-        @media (max-width: 1366px) {
-            :root {
-                --panel-width: clamp(220px, 22vw, 280px);
-            }
-        }
-
-        /* ---- Tablet (768px - 1024px) ----
-           Layout: Navbar / Preview / Properties / Timeline.
-           Sidebar tools tetap sebagai rail ikon sempit (menyatu dgn kolom
-           preview), Properties pindah ke BAWAH preview (full width),
-           Timeline tetap di paling bawah dengan scroll horizontal. */
-        @media (max-width: 1024px) {
-            .main-workspace {
-                grid-template-columns: var(--sidebar-width) minmax(0, 1fr);
-                grid-template-rows: minmax(0, 1fr) minmax(0, 34vh) 0;
-                grid-template-areas:
-                    "tools canvas"
-                    "tools props"
-                    "timeline timeline";
-            }
-
-            .main-workspace.timeline-active {
-                grid-template-rows: minmax(0, 1fr) minmax(0, 30vh) var(--timeline-height);
-            }
-
-            .properties-sidebar {
-                border-left: none;
-                border-top: 1px solid var(--border-color);
-            }
-
-            .timeline-panel { border-top: 2px solid var(--border-color); }
-        }
-
-        /* ---- Mobile (≤ 768px) ----
-           Layout: Navbar / Preview / Toolbar / Timeline (scroll horizontal).
-           - Sidebar tools -> rail ikon super ramping + Drawer overlay (sudah ada).
-           - Properties -> Bottom Sheet yang bisa ditarik/dibuka (lihat JS kecil
-             di akhir file yang hanya menambah/menghapus class ".sheet-open",
-             tidak menyentuh logic aplikasi yang sudah ada). */
-        @media (max-width: 768px) {
-            .main-workspace {
-                grid-template-columns: var(--sidebar-width) minmax(0, 1fr);
-                grid-template-rows: minmax(0, 1fr) 0;
-                grid-template-areas:
-                    "tools canvas"
-                    "timeline timeline";
-            }
-
-            .main-workspace.timeline-active {
-                grid-template-rows: minmax(0, 1fr) clamp(140px, 24vh, 220px);
-            }
-
-            .sidebar-tools {
-                width: var(--sidebar-width);
-            }
-
-            .tool-btn span { display: none; }
-
-            .drawer-panel {
-                left: 0;
-                width: 100vw;
-                max-width: 100vw;
-            }
-
-            /* Properties Panel jadi Bottom Sheet mengambang di atas canvas,
-               bukan lagi kolom grid biasa -- posisi fixed di sini SENGAJA
-               dipakai (pengecualian yang wajar untuk pola bottom-sheet). */
-            .properties-sidebar {
-                position: fixed;
-                left: 0;
-                right: 0;
-                bottom: 0;
-                grid-area: unset;
-                height: auto;
-                max-height: 72vh;
-                border-left: none;
-                border-top: 1px solid var(--border-color);
-                border-radius: 16px 16px 0 0;
-                box-shadow: 0 -12px 32px rgba(0, 0, 0, 0.45);
-                transform: translateY(calc(100% - 46px));
-                transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1);
-                z-index: 45;
-            }
-
-            .properties-sidebar::before {
-                content: '';
-                position: absolute;
-                top: 6px;
-                left: 50%;
-                transform: translateX(-50%);
-                width: 36px;
-                height: 4px;
-                border-radius: 2px;
-                background: var(--border-color);
-            }
-
-            .properties-sidebar.sheet-open {
-                transform: translateY(0);
-            }
-
-            .tabs-header { padding-top: 6px; cursor: pointer; }
-
-            .timeline-panel { position: relative; z-index: 20; }
-
-            .timeline-headers-column { width: clamp(90px, 26vw, 130px); }
-
-            .canvas-toolbar { font-size: var(--fs-xs); }
-        }
-
-        /* ---- Small phones (≤ 480px) ---- */
-        @media (max-width: 480px) {
-            .brand-logo span,
-            .brand-logo { font-size: var(--fs-md); }
-
-            #autosaveIndicator { display: none; }
-
-            .header-right { gap: 6px; }
-
-            .timeline-headers-column { width: clamp(70px, 24vw, 100px); }
-
-            .timeline-track-header span,
-            .timeline-track-header { font-size: 9px; }
-        }
-
-        /* ---- Extra small (≤ 360px / 320px) ---- */
-        @media (max-width: 360px) {
-            .tool-btn {
-                width: 36px;
-                height: 36px;
-            }
-
-            .selection-toolbar { gap: 4px; }
-
-            .sel-toolbar-sep { margin: 0 2px; }
-        }
-
-        /* Landscape phones: kurangi tinggi timeline supaya preview tetap
-           mendapat ruang layar yang cukup ketika lebar > tinggi. */
-        @media (max-height: 480px) and (orientation: landscape) {
-            .main-workspace.timeline-active {
-                grid-template-rows: minmax(0, 1fr) clamp(110px, 30vh, 160px);
-            }
-
-            .properties-sidebar { max-height: 85vh; }
         }
     </style>
 </head>
@@ -1893,40 +1636,6 @@
         </div>
     </div>
 
-    <!-- ==========================================================================
-         SCRIPT RESPONSIVE TAMBAHAN (TERPISAH, TIDAK MENGUBAH LOGIC APLIKASI)
-         Hanya menambah perilaku "Bottom Sheet" untuk panel Properties di HP:
-         tap header tab untuk membuka/menutup, tap area canvas untuk menutup.
-         Semua fungsi editor (studioUi/studioProject/dll di script utama)
-         tidak disentuh sama sekali oleh script ini.
-         ========================================================================== -->
-    <script>
-        (function () {
-            const mobileQuery = window.matchMedia('(max-width: 768px)');
-            const sheet = document.querySelector('.properties-sidebar');
-            const sheetHandle = document.querySelector('.tabs-header');
-            const canvasArea = document.querySelector('.canvas-view-area');
-
-            function toggleSheet(e) {
-                if (!mobileQuery.matches || !sheet) return;
-                // Selalu BUKA saat tab header disentuh (bukan toggle), supaya
-                // berpindah tab saat sheet sudah terbuka tidak ikut menutupnya.
-                sheet.classList.add('sheet-open');
-            }
-
-            function closeSheet() {
-                if (!mobileQuery.matches || !sheet) return;
-                sheet.classList.remove('sheet-open');
-            }
-
-            if (sheetHandle) sheetHandle.addEventListener('click', toggleSheet);
-            if (canvasArea) canvasArea.addEventListener('click', closeSheet);
-
-            mobileQuery.addEventListener('change', function () {
-                if (sheet) sheet.classList.remove('sheet-open');
-            });
-        })();
-    </script>
 
     <script>
         /**
