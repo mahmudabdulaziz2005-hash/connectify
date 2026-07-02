@@ -90,9 +90,14 @@
            ========================================================================== */
         .app-container {
             display: grid;
-            grid-template-rows: var(--header-height) 1fr;
+            grid-template-rows: var(--header-height) minmax(0, 1fr);
             width: 100vw;
             height: 100vh;
+            /* dvh = tinggi viewport SEBENARNYA yang terlihat user (memperhitungkan
+               toolbar browser/taskbar), lebih akurat daripada vh biasa terutama di
+               laptop dengan resolusi/skala berbeda-beda. Browser lama yang belum
+               kenal dvh otomatis abaikan baris ini & tetap pakai 100vh di atas. */
+            height: 100dvh;
             overflow: hidden;
         }
 
@@ -199,14 +204,14 @@
         .main-workspace {
             display: grid;
             grid-template-columns: var(--sidebar-width) 1fr var(--panel-width);
-            grid-template-rows: 1fr;
+            grid-template-rows: minmax(0, 1fr);
             height: 100%;
             overflow: hidden;
             position: relative;
         }
 
         .main-workspace.timeline-active {
-            grid-template-rows: 1fr var(--timeline-height);
+            grid-template-rows: minmax(0, 1fr) var(--timeline-height);
         }
 
         /* Left Action Tool Panel */
@@ -218,6 +223,8 @@
             align-items: center;
             padding: 12px 0;
             gap: 8px;
+            overflow-y: auto;
+            overflow-x: hidden;
             z-index: 10;
         }
 
@@ -292,7 +299,7 @@
         /* Central Editor Canvas Layout */
         .center-editor-container {
             display: grid;
-            grid-template-rows: 40px 1fr;
+            grid-template-rows: 40px minmax(0, 1fr);
             background-color: var(--bg-primary);
             position: relative;
             overflow: hidden;
@@ -529,7 +536,7 @@
             background-color: var(--bg-secondary);
             border-top: 1px solid var(--border-color);
             display: grid;
-            grid-template-rows: 40px 1fr;
+            grid-template-rows: 40px minmax(0, 1fr);
             overflow: hidden;
             z-index: 20;
         }
@@ -555,10 +562,16 @@
             border-right: 1px solid var(--border-color);
             display: flex;
             flex-direction: column;
+            height: 100%;
         }
 
         .timeline-track-header {
-            height: 60px;
+            /* Tinggi dibuat fleksibel (bukan 60px tetap) supaya 3 track (Video,
+               Audio, Subtitle) selalu muat proporsional di layar berapa pun
+               tingginya -- di layar pendek ia mengecil sampai batas min-height,
+               baru setelah itu container di-scroll. */
+            flex: 1 1 0;
+            min-height: 34px;
             border-bottom: 1px solid var(--border-color);
             display: flex;
             align-items: center;
@@ -584,10 +597,15 @@
         .timeline-tracks-area {
             position: relative;
             height: calc(100% - 24px);
+            display: flex;
+            flex-direction: column;
         }
 
         .timeline-track-row {
-            height: 60px;
+            /* Sama persis dengan .timeline-track-header supaya baris kiri (label)
+               dan kanan (klip) tetap sejajar meski tingginya mengecil/membesar. */
+            flex: 1 1 0;
+            min-height: 34px;
             border-bottom: 1px solid var(--border-color);
             position: relative;
             width: 3000px;
@@ -596,8 +614,8 @@
 
         .timeline-block {
             position: absolute;
-            top: 6px;
-            height: 48px;
+            top: 12%;
+            bottom: 12%;
             background: linear-gradient(90deg, #3b82f6 0%, #1d4ed8 100%);
             border: 1px solid rgba(255, 255, 255, 0.2);
             border-radius: 4px;
@@ -1060,7 +1078,7 @@
             .main-workspace,
             .main-workspace.timeline-active {
                 grid-template-columns: 1fr;
-                grid-template-rows: 1fr;
+                grid-template-rows: minmax(0, 1fr);
             }
 
             /* Sidebar tool kiri -> bilah navigasi bawah (horizontal, fixed) */
@@ -1863,7 +1881,7 @@
                 <div class="timeline-track-container">
                     <div class="timeline-headers-column">
                         <div class="timeline-track-header"
-                            style="height:24px; background:var(--bg-tertiary); border-bottom:1px solid var(--border-color);">
+                            style="height:24px; flex:0 0 24px; background:var(--bg-tertiary); border-bottom:1px solid var(--border-color);">
                         </div>
                         <div class="timeline-track-header"><i class="fa-solid fa-video"></i> Video Track</div>
                         <div class="timeline-track-header"><i class="fa-solid fa-music"></i> Audio Track</div>
@@ -6150,7 +6168,47 @@
                 });
             }
         }
+        // ==========================================================================
+        // RESPONSIVE (ADAPTIF): deteksi tinggi layar/viewport SEBENARNYA milik user.
+        // Sebelumnya --timeline-height cuma diatur lewat breakpoint CSS statis
+        // (berdasar lebar layar), jadi di laptop yang lebih pendek dari biasanya,
+        // track Subtitle bisa terpotong habis karena tidak ada sisa ruang & body
+        // di-overflow:hidden. Fungsi ini mengukur ruang vertikal yang benar-benar
+        // tersedia (via visualViewport bila ada, fallback ke innerHeight) lalu
+        // menghitung ulang tinggi panel timeline supaya Video/Audio/Subtitle
+        // selalu proporsional & tidak pernah hilang dari layar, di laptop besar
+        // maupun kecil, dan dipanggil ulang tiap kali ukuran jendela berubah.
+        // ==========================================================================
+        function nexusSyncViewportToScreen() {
+            const vh = Math.round(window.visualViewport ? window.visualViewport.height : window.innerHeight);
+            const vw = Math.round(window.visualViewport ? window.visualViewport.width : window.innerWidth);
+            document.documentElement.style.setProperty('--real-vh', vh + 'px');
+            document.documentElement.style.setProperty('--real-vw', vw + 'px');
+
+            // Layout khusus HP (bottom-nav/overlay) sudah ditangani lewat CSS
+            // @media max-width:768px, jadi perhitungan dinamis timeline di bawah
+            // ini hanya perlu berlaku untuk mode PC/laptop (kolom 3 sisi).
+            if (vw <= 768) return;
+
+            const headerH = 48;   // var(--header-height)
+            const toolbarH = 40;  // tinggi .canvas-toolbar
+            const available = vh - headerH - toolbarH;
+
+            const minTimeline = 150;   // batas bawah supaya 3 track tetap terbaca
+            const maxTimeline = 300;   // batas atas di layar sangat tinggi
+            const suggested = Math.max(minTimeline, Math.min(maxTimeline, Math.round(available * 0.32)));
+
+            document.documentElement.style.setProperty('--timeline-height', suggested + 'px');
+        }
+        window.addEventListener('resize', nexusSyncViewportToScreen);
+        window.addEventListener('orientationchange', nexusSyncViewportToScreen);
+        if (window.visualViewport) {
+            window.visualViewport.addEventListener('resize', nexusSyncViewportToScreen);
+        }
+        nexusSyncViewportToScreen();
+
         window.addEventListener('DOMContentLoaded', () => {
+            nexusSyncViewportToScreen();
             studioUi.initDomListeners();
             studioUi.initFullscreenSync();
             studioCanvasEngine.initCanvas();
