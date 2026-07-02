@@ -940,6 +940,23 @@
             transition: var(--transition-smooth);
         }
 
+        /* Backdrop gelap overlay mobile — HARUS position:fixed & display:none secara
+           default di semua ukuran layar, supaya elemen ini tidak pernah ikut jadi
+           "kotak grid" di dalam .main-workspace (itu penyebab layout laptop rusak
+           sebelumnya). Ia hanya dimunculkan lewat class .visible saat drawer/panel
+           mobile terbuka. */
+        .mobile-overlay-backdrop {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 190;
+        }
+
+        .mobile-overlay-backdrop.visible {
+            display: block;
+        }
+
         .context-menu-item:hover {
             background: var(--accent-color);
         }
@@ -1118,19 +1135,6 @@
 
             .mobile-panel-close {
                 display: flex !important;
-            }
-
-            /* Backdrop gelap saat drawer/panel mobile terbuka */
-            .mobile-overlay-backdrop {
-                display: none;
-                position: fixed;
-                inset: 0;
-                background: rgba(0, 0, 0, 0.5);
-                z-index: 190;
-            }
-
-            .mobile-overlay-backdrop.visible {
-                display: block;
             }
 
             /* Kanvas & timeline mengisi ruang tersisa, beri jarak bawah untuk nav bar */
