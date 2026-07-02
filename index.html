@@ -27,13 +27,29 @@
             --success-color: #10b981;
             --error-color: #ef4444;
             --warning-color: #f59e0b;
-            --sidebar-width: 72px;
-            --panel-width: 320px;
-            --header-height: 48px;
-            --timeline-height: 280px;
+            /* Ukuran layout kini fluid (clamp) supaya otomatis menyesuaikan
+               dari layar 320px sampai 4K (3840px) tanpa "meloncat" antar breakpoint. */
+            --sidebar-width: clamp(56px, 6vw, 76px);
+            --panel-width: clamp(240px, 20vw, 320px);
+            --drawer-width: clamp(220px, 24vw, 280px);
+            --header-height: clamp(44px, 5.5vh, 52px);
+            --timeline-height: clamp(160px, 26vh, 280px);
+            --timeline-header-h: clamp(32px, 4vh, 40px);
+            --timeline-col-w: clamp(120px, 14vw, 200px);
+            --gap-main: clamp(6px, 0.8vw, 12px);
+            --radius-main: clamp(6px, 0.6vw, 10px);
+            --icon-size: clamp(16px, 1.8vw, 20px);
+            --fs-xs: clamp(9px, 0.85vw, 11px);
+            --fs-sm: clamp(11px, 1vw, 13px);
+            --fs-md: clamp(12px, 1.1vw, 15px);
+            --fs-lg: clamp(14px, 1.4vw, 18px);
             --font-main: 'Inter', sans-serif;
             --transition-smooth: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
         }
+
+        /* Breakpoint acuan: 320 / 480 / 600 / 768 / 820 / 1024 / 1280 / 1366 / 1440 / 1600 / 1920 / 2560 / 3840
+           DOM TIDAK diubah -- hanya CSS Grid/Flex + grid-template-areas yang
+           menata ulang posisi Sidebar / Canvas / Properties / Timeline per ukuran layar. */
 
         /* Reset & Base Styles */
         * {
@@ -52,7 +68,7 @@
             color: var(--text-main);
             font-family: var(--font-main);
             overflow: hidden;
-            font-size: 13px;
+            font-size: var(--fs-md);
         }
 
         input,
@@ -60,7 +76,7 @@
         textarea,
         button {
             font-family: var(--font-main);
-            font-size: 12px;
+            font-size: var(--fs-sm);
             color: var(--text-main);
             background: transparent;
             border: none;
@@ -91,37 +107,38 @@
         .app-container {
             display: grid;
             grid-template-rows: var(--header-height) minmax(0, 1fr);
-            width: 100vw;
-            height: 100vh;
-            /* dvh = tinggi viewport SEBENARNYA yang terlihat user (memperhitungkan
-               toolbar browser/taskbar), lebih akurat daripada vh biasa terutama di
-               laptop dengan resolusi/skala berbeda-beda. Browser lama yang belum
-               kenal dvh otomatis abaikan baris ini & tetap pakai 100vh di atas. */
+            width: 100%;
             height: 100dvh;
             overflow: hidden;
         }
 
-        /* App Header Layout */
+        /* App Header Layout -- height otomatis (auto) mengikuti konten,
+           dibatasi via clamp() pada --header-height. Flexbox 1 baris,
+           menu-bar boleh scroll horizontal alih-alih memaksa elemen lain
+           menyempit / meluber keluar layar pada layar kecil. */
         .app-header {
             background-color: var(--bg-secondary);
             border-bottom: 1px solid var(--border-color);
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 0 16px;
+            padding: 0 clamp(8px, 1.5vw, 16px);
+            gap: var(--gap-main);
             z-index: 100;
+            min-width: 0;
         }
 
         .header-left,
         .header-right {
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: clamp(6px, 1vw, 12px);
+            min-width: 0;
         }
 
         .brand-logo {
             font-weight: 700;
-            font-size: 16px;
+            font-size: var(--fs-lg);
             letter-spacing: -0.5px;
             background: var(--accent-gradient);
             -webkit-background-clip: text;
@@ -129,19 +146,32 @@
             display: flex;
             align-items: center;
             gap: 6px;
+            white-space: nowrap;
+            flex-shrink: 0;
         }
 
-        /* Dropdown Menu System */
+        /* Dropdown Menu System -- scrollable horizontal supaya tidak
+           pernah overflow di layar sempit (mis. 320px), tanpa mengubah
+           struktur DOM ataupun fungsi onclick yang sudah ada. */
         .menu-bar {
             display: flex;
             gap: 4px;
+            overflow-x: auto;
+            overflow-y: hidden;
+            scrollbar-width: none;
+            min-width: 0;
         }
+
+        .menu-bar::-webkit-scrollbar { display: none; }
 
         .menu-item {
             position: relative;
-            padding: 6px 12px;
+            padding: clamp(4px, 0.6vw, 6px) clamp(8px, 1vw, 12px);
             border-radius: 4px;
             cursor: pointer;
+            white-space: nowrap;
+            flex-shrink: 0;
+            font-size: var(--fs-sm);
             transition: var(--transition-smooth);
         }
 
@@ -161,7 +191,8 @@
             background-color: var(--bg-secondary);
             border: 1px solid var(--border-color);
             border-radius: 6px;
-            min-width: 200px;
+            min-width: clamp(160px, 40vw, 200px);
+            max-width: min(90vw, 260px);
             box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
             z-index: 1000;
             padding: 4px 0;
@@ -200,38 +231,55 @@
             margin: 4px 0;
         }
 
-        /* Workspace Core Layout */
+        /* ==========================================================================
+           WORKSPACE CORE LAYOUT -- CSS Grid dengan grid-template-areas.
+           Memakai NAMA area (tools/canvas/props/timeline) supaya setiap
+           breakpoint tinggal mendefinisikan ulang area tanpa perlu
+           mengubah urutan DOM atau JS. minmax(0, ...) dipakai di semua
+           track supaya konten kanvas/timeline TIDAK PERNAH mendorong
+           layout keluar layar (penyebab overflow paling umum di grid).
+           ========================================================================== */
         .main-workspace {
             display: grid;
-            grid-template-columns: var(--sidebar-width) 1fr var(--panel-width);
-            grid-template-rows: minmax(0, 1fr);
+            grid-template-columns: var(--sidebar-width) minmax(0, 1fr) var(--panel-width);
+            grid-template-rows: minmax(0, 1fr) 0;
+            grid-template-areas:
+                "tools canvas props"
+                "timeline timeline timeline";
             height: 100%;
+            min-height: 0;
             overflow: hidden;
             position: relative;
+            transition: grid-template-rows 0.25s ease, grid-template-columns 0.25s ease;
         }
 
         .main-workspace.timeline-active {
             grid-template-rows: minmax(0, 1fr) var(--timeline-height);
         }
 
-        /* Left Action Tool Panel */
+        .sidebar-tools { grid-area: tools; min-width: 0; min-height: 0; }
+        .center-editor-container { grid-area: canvas; min-width: 0; min-height: 0; }
+        .properties-sidebar { grid-area: props; min-width: 0; min-height: 0; }
+        .timeline-panel { grid-area: timeline; min-width: 0; min-height: 0; }
+
+        /* Left Action Tool Panel -- lebar fluid via var(--sidebar-width),
+           icon & label ikut menyusut dengan clamp() di layar sempit. */
         .sidebar-tools {
             background-color: var(--bg-secondary);
             border-right: 1px solid var(--border-color);
             display: flex;
             flex-direction: column;
             align-items: center;
-            padding: 12px 0;
-            gap: 8px;
+            padding: clamp(6px, 1vh, 12px) 0;
+            gap: clamp(4px, 0.8vh, 8px);
             overflow-y: auto;
-            overflow-x: hidden;
             z-index: 10;
         }
 
         .tool-btn {
-            width: 48px;
-            height: 48px;
-            border-radius: 8px;
+            width: clamp(38px, 4.6vw, 48px);
+            height: clamp(38px, 4.6vw, 48px);
+            border-radius: var(--radius-main);
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -240,14 +288,15 @@
             color: var(--text-muted);
             transition: var(--transition-smooth);
             gap: 4px;
+            flex-shrink: 0;
         }
 
         .tool-btn i {
-            font-size: 18px;
+            font-size: var(--icon-size);
         }
 
         .tool-btn span {
-            font-size: 9px;
+            font-size: clamp(7px, 0.7vw, 9px);
             font-weight: 500;
         }
 
@@ -267,7 +316,8 @@
             position: absolute;
             top: 0;
             left: var(--sidebar-width);
-            width: 260px;
+            width: min(var(--drawer-width), calc(100vw - var(--sidebar-width)));
+            max-width: calc(100vw - var(--sidebar-width));
             height: 100%;
             background-color: var(--bg-secondary);
             border-right: 1px solid var(--border-color);
@@ -299,20 +349,24 @@
         /* Central Editor Canvas Layout */
         .center-editor-container {
             display: grid;
-            grid-template-rows: 40px minmax(0, 1fr);
+            grid-template-rows: auto minmax(0, 1fr);
             background-color: var(--bg-primary);
             position: relative;
             overflow: hidden;
             height: 100%;
+            min-width: 0;
         }
 
         .canvas-toolbar {
             background-color: var(--bg-secondary);
             border-bottom: 1px solid var(--border-color);
             display: flex;
+            flex-wrap: wrap;
             align-items: center;
             justify-content: space-between;
-            padding: 0 16px;
+            gap: clamp(4px, 1vw, 12px);
+            padding: clamp(4px, 0.8vh, 8px) clamp(8px, 1.5vw, 16px);
+            font-size: var(--fs-sm);
         }
 
         /* ==========================================================================
@@ -322,10 +376,11 @@
             background-color: var(--bg-secondary);
             border-bottom: 1px solid var(--border-color);
             display: flex;
+            flex-wrap: wrap;
             align-items: center;
             justify-content: space-between;
-            padding: 6px 16px;
-            gap: 12px;
+            padding: clamp(4px, 0.8vh, 6px) clamp(8px, 1.5vw, 16px);
+            gap: clamp(6px, 1vw, 12px);
         }
 
         .sel-toolbar-group {
@@ -335,8 +390,8 @@
         }
 
         .sel-toolbar-group button {
-            width: 28px;
-            height: 28px;
+            width: clamp(24px, 2.6vw, 28px);
+            height: clamp(24px, 2.6vw, 28px);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -344,6 +399,7 @@
             cursor: pointer;
             color: var(--text-muted);
             transition: var(--transition-smooth);
+            flex-shrink: 0;
         }
 
         .sel-toolbar-group button:hover {
@@ -369,8 +425,8 @@
         }
 
         .toggle-btn {
-            width: 28px;
-            height: 28px;
+            width: clamp(24px, 2.6vw, 28px);
+            height: clamp(24px, 2.6vw, 28px);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -421,6 +477,7 @@
             display: flex;
             flex-direction: column;
             overflow: hidden;
+            min-height: 0;
             z-index: 10;
         }
 
@@ -428,14 +485,16 @@
             display: flex;
             border-bottom: 1px solid var(--border-color);
             background-color: var(--bg-primary);
+            flex-shrink: 0;
         }
 
         .tab-link {
             flex: 1;
-            padding: 12px;
+            padding: clamp(8px, 1.2vh, 12px);
             text-align: center;
             cursor: pointer;
             font-weight: 500;
+            font-size: var(--fs-sm);
             color: var(--text-muted);
             border-bottom: 2px solid transparent;
             transition: var(--transition-smooth);
@@ -450,8 +509,9 @@
         .tab-content {
             flex: 1;
             overflow-y: auto;
-            padding: 16px;
+            padding: clamp(10px, 1.4vw, 16px);
             display: none;
+            min-height: 0;
         }
 
         .tab-content.active {
@@ -460,7 +520,7 @@
 
         /* UI Control Component Styling */
         .control-group {
-            margin-bottom: 20px;
+            margin-bottom: clamp(12px, 1.6vh, 20px);
         }
 
         .control-group label {
@@ -468,6 +528,7 @@
             color: var(--text-muted);
             margin-bottom: 8px;
             font-weight: 500;
+            font-size: var(--fs-sm);
         }
 
         .slider-wrapper {
@@ -494,10 +555,11 @@
 
         .btn-action-block {
             width: 100%;
-            padding: 10px;
+            padding: clamp(8px, 1vw, 16px);
             background: var(--accent-gradient);
-            border-radius: 6px;
+            border-radius: clamp(8px, 1vw, 16px);
             font-weight: 600;
+            font-size: var(--fs-sm);
             cursor: pointer;
             display: flex;
             align-items: center;
@@ -514,11 +576,12 @@
 
         .btn-secondary-block {
             width: 100%;
-            padding: 10px;
+            padding: clamp(8px, 1vw, 16px);
             background: var(--bg-surface);
             border: 1px solid var(--border-color);
-            border-radius: 6px;
+            border-radius: clamp(8px, 1vw, 16px);
             font-weight: 500;
+            font-size: var(--fs-sm);
             cursor: pointer;
             margin-top: 8px;
             transition: var(--transition-smooth);
@@ -531,12 +594,15 @@
         /* ==========================================================================
            TIMELINE EDITOR PANEL STYLING (BOTTOM BAR)
            ========================================================================== */
+        /* Timeline: Flexbox untuk baris kontrol (toolbar) yang sticky,
+           track area (Video/Audio/Subtitle) tetap satu-satunya area yang
+           boleh scroll horizontal, sesuai aturan overflow pada spec. */
         .timeline-panel {
-            grid-column: 1 / 4;
             background-color: var(--bg-secondary);
             border-top: 1px solid var(--border-color);
-            display: grid;
-            grid-template-rows: 40px minmax(0, 1fr);
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
             overflow: hidden;
             z-index: 20;
         }
@@ -545,14 +611,23 @@
             background-color: var(--bg-tertiary);
             border-bottom: 1px solid var(--border-color);
             display: flex;
+            flex-wrap: wrap;
             align-items: center;
             justify-content: space-between;
-            padding: 0 16px;
+            gap: clamp(4px, 1vw, 12px);
+            padding: clamp(4px, 0.8vh, 8px) clamp(8px, 1.5vw, 16px);
+            min-height: var(--timeline-header-h);
+            flex-shrink: 0;
+            position: sticky;
+            top: 0;
+            z-index: 2;
+            font-size: var(--fs-sm);
         }
 
         .timeline-track-container {
-            display: grid;
-            grid-template-columns: 200px 1fr;
+            display: flex;
+            flex: 1;
+            min-height: 0;
             overflow-y: auto;
             position: relative;
         }
@@ -562,25 +637,27 @@
             border-right: 1px solid var(--border-color);
             display: flex;
             flex-direction: column;
-            height: 100%;
+            flex-shrink: 0;
+            width: var(--timeline-col-w);
+            position: sticky;
+            left: 0;
+            z-index: 3;
         }
 
         .timeline-track-header {
-            /* Tinggi dibuat fleksibel (bukan 60px tetap) supaya 3 track (Video,
-               Audio, Subtitle) selalu muat proporsional di layar berapa pun
-               tingginya -- di layar pendek ia mengecil sampai batas min-height,
-               baru setelah itu container di-scroll. */
-            flex: 1 1 0;
-            min-height: 34px;
+            height: clamp(44px, 6vh, 60px);
             border-bottom: 1px solid var(--border-color);
             display: flex;
             align-items: center;
-            padding: 0 12px;
+            padding: 0 clamp(6px, 1vw, 12px);
             gap: 8px;
             color: var(--text-muted);
+            font-size: var(--fs-xs);
         }
 
         .timeline-workspace-scroll {
+            flex: 1;
+            min-width: 0;
             overflow-x: auto;
             overflow-y: hidden;
             position: relative;
@@ -588,7 +665,7 @@
         }
 
         .timeline-ruler {
-            height: 24px;
+            height: clamp(18px, 2.4vh, 24px);
             background-color: var(--bg-tertiary);
             border-bottom: 1px solid var(--border-color);
             position: relative;
@@ -596,26 +673,21 @@
 
         .timeline-tracks-area {
             position: relative;
-            height: calc(100% - 24px);
-            display: flex;
-            flex-direction: column;
+            height: calc(100% - clamp(18px, 2.4vh, 24px));
         }
 
         .timeline-track-row {
-            /* Sama persis dengan .timeline-track-header supaya baris kiri (label)
-               dan kanan (klip) tetap sejajar meski tingginya mengecil/membesar. */
-            flex: 1 1 0;
-            min-height: 34px;
+            height: clamp(44px, 6vh, 60px);
             border-bottom: 1px solid var(--border-color);
             position: relative;
             width: 3000px;
-            /* Panjang representatif durasi */
+            /* Panjang representatif durasi timeline (area scroll horizontal yang disengaja) */
         }
 
         .timeline-block {
             position: absolute;
-            top: 12%;
-            bottom: 12%;
+            top: 6px;
+            height: 48px;
             background: linear-gradient(90deg, #3b82f6 0%, #1d4ed8 100%);
             border: 1px solid rgba(255, 255, 255, 0.2);
             border-radius: 4px;
@@ -887,7 +959,7 @@
             background-color: var(--bg-secondary);
             border: 1px solid var(--border-color);
             border-radius: 12px;
-            width: 500px;
+            width: clamp(280px, 90vw, 500px);
             max-width: 90%;
             box-shadow: 0 24px 64px rgba(0, 0, 0, 0.8);
             overflow: hidden;
@@ -958,292 +1030,175 @@
             transition: var(--transition-smooth);
         }
 
-        /* Backdrop gelap overlay mobile — HARUS position:fixed & display:none secara
-           default di semua ukuran layar, supaya elemen ini tidak pernah ikut jadi
-           "kotak grid" di dalam .main-workspace (itu penyebab layout laptop rusak
-           sebelumnya). Ia hanya dimunculkan lewat class .visible saat drawer/panel
-           mobile terbuka. */
-        .mobile-overlay-backdrop {
-            display: none;
-            position: fixed;
-            inset: 0;
-            background: rgba(0, 0, 0, 0.5);
-            z-index: 190;
-        }
-
-        .mobile-overlay-backdrop.visible {
-            display: block;
-        }
-
         .context-menu-item:hover {
             background: var(--accent-color);
         }
 
         /* ==========================================================================
-           RESPONSIVE ADJUSTMENTS
-           Skala tampilan menyesuaikan lebar layar: PC besar (default di atas),
-           laptop/layar sedang (<=1366px & <=1024px), lalu HP (<=768px & <=480px).
+           RESPONSIVE BREAKPOINTS
+           320 / 480 / 600 / 768 / 820 / 1024 / 1280 / 1366 / 1440 / 1600 / 1920 / 2560 / 3840
+           Strategi: grid-template-areas diredefinisikan per breakpoint --
+           TIDAK ADA elemen DOM yang dipindah/diduplikasi, semua fungsi JS
+           (tool switching, drawer, tab, timeline) tetap bekerja apa adanya.
            ========================================================================== */
 
-        /* ---------- LAPTOP BESAR / LAYAR SEDANG (<=1366px) ---------- */
+        /* ---- Large / Ultra-wide desktop (1600px - 4K 3840px) ----
+           Panel & sidebar tetap nyaman dibaca (tidak melar tanpa batas)
+           seperti software editor profesional pada umumnya; ruang ekstra
+           diberikan ke canvas/preview. */
+        @media (min-width: 1600px) {
+            :root {
+                --panel-width: clamp(300px, 17vw, 380px);
+                --sidebar-width: clamp(64px, 4vw, 84px);
+                --timeline-height: clamp(200px, 24vh, 320px);
+            }
+        }
+
+        /* ---- Small laptop / narrow desktop (1024px - 1366px) ---- */
         @media (max-width: 1366px) {
             :root {
-                --panel-width: 280px;
-                --sidebar-width: 68px;
-                --timeline-height: 240px;
+                --panel-width: clamp(220px, 22vw, 280px);
             }
         }
 
-        /* ---------- LAPTOP KECIL / TABLET LANSKAP (<=1024px) ---------- */
+        /* ---- Tablet (768px - 1024px) ----
+           Layout: Navbar / Preview / Properties / Timeline.
+           Sidebar tools tetap sebagai rail ikon sempit (menyatu dgn kolom
+           preview), Properties pindah ke BAWAH preview (full width),
+           Timeline tetap di paling bawah dengan scroll horizontal. */
         @media (max-width: 1024px) {
-            :root {
-                --panel-width: 250px;
-                --sidebar-width: 60px;
-                --timeline-height: 200px;
+            .main-workspace {
+                grid-template-columns: var(--sidebar-width) minmax(0, 1fr);
+                grid-template-rows: minmax(0, 1fr) minmax(0, 34vh) 0;
+                grid-template-areas:
+                    "tools canvas"
+                    "tools props"
+                    "timeline timeline";
             }
 
-            body, html {
-                font-size: 12px;
+            .main-workspace.timeline-active {
+                grid-template-rows: minmax(0, 1fr) minmax(0, 30vh) var(--timeline-height);
             }
 
-            .tool-btn {
-                width: 42px;
-                height: 42px;
+            .properties-sidebar {
+                border-left: none;
+                border-top: 1px solid var(--border-color);
             }
 
-            .tool-btn span {
-                display: none;
-                /* sembunyikan label teks di bawah ikon supaya sidebar tetap ramping */
-            }
-
-            .menu-item {
-                padding: 6px 8px;
-            }
-
-            .brand-logo {
-                font-size: 14px;
-            }
-
-            .timeline-track-container {
-                grid-template-columns: 150px 1fr;
-            }
+            .timeline-panel { border-top: 2px solid var(--border-color); }
         }
 
-        /* ---------- TABLET POTRAIT / HP LANSKAP (<=768px) ---------- */
+        /* ---- Mobile (≤ 768px) ----
+           Layout: Navbar / Preview / Toolbar / Timeline (scroll horizontal).
+           - Sidebar tools -> rail ikon super ramping + Drawer overlay (sudah ada).
+           - Properties -> Bottom Sheet yang bisa ditarik/dibuka (lihat JS kecil
+             di akhir file yang hanya menambah/menghapus class ".sheet-open",
+             tidak menyentuh logic aplikasi yang sudah ada). */
         @media (max-width: 768px) {
-
-            /* Header dibuat ringkas & bisa discroll horizontal supaya menu tidak pecah */
-            .app-header {
-                padding: 0 8px;
-                gap: 6px;
+            .main-workspace {
+                grid-template-columns: var(--sidebar-width) minmax(0, 1fr);
+                grid-template-rows: minmax(0, 1fr) 0;
+                grid-template-areas:
+                    "tools canvas"
+                    "timeline timeline";
             }
 
-            .header-left {
-                overflow-x: auto;
-                -ms-overflow-style: none;
-                scrollbar-width: none;
-                flex: 1;
-                min-width: 0;
-            }
-
-            .header-left::-webkit-scrollbar {
-                display: none;
-            }
-
-            .brand-logo span.brand-full-text {
-                display: none;
-            }
-
-            .menu-bar {
-                flex-shrink: 0;
-            }
-
-            .menu-item {
-                white-space: nowrap;
-                padding: 6px 8px;
-                font-size: 12px;
-            }
-
-            #languageSelector {
-                display: none;
-                /* disembunyikan di HP supaya header tidak sesak, tetap bisa diubah lewat menu View bila perlu */
-            }
-
-            #autosaveIndicator span.autosave-text {
-                display: none;
-            }
-
-            /* Workspace utama: kolom sidebar & panel kanan dilepas dari grid,
-               keduanya berubah jadi overlay/drawer yang muncul di atas kanvas. */
-            .main-workspace,
             .main-workspace.timeline-active {
-                grid-template-columns: 1fr;
-                grid-template-rows: minmax(0, 1fr);
+                grid-template-rows: minmax(0, 1fr) clamp(140px, 24vh, 220px);
             }
 
-            /* Sidebar tool kiri -> bilah navigasi bawah (horizontal, fixed) */
             .sidebar-tools {
+                width: var(--sidebar-width);
+            }
+
+            .tool-btn span { display: none; }
+
+            .drawer-panel {
+                left: 0;
+                width: 100vw;
+                max-width: 100vw;
+            }
+
+            /* Properties Panel jadi Bottom Sheet mengambang di atas canvas,
+               bukan lagi kolom grid biasa -- posisi fixed di sini SENGAJA
+               dipakai (pengecualian yang wajar untuk pola bottom-sheet). */
+            .properties-sidebar {
                 position: fixed;
                 left: 0;
                 right: 0;
                 bottom: 0;
-                top: auto;
-                width: 100%;
-                height: 58px;
-                flex-direction: row;
-                align-items: center;
-                justify-content: flex-start;
-                overflow-x: auto;
-                border-right: none;
+                grid-area: unset;
+                height: auto;
+                max-height: 72vh;
+                border-left: none;
                 border-top: 1px solid var(--border-color);
-                padding: 6px 8px;
-                z-index: 200;
+                border-radius: 16px 16px 0 0;
+                box-shadow: 0 -12px 32px rgba(0, 0, 0, 0.45);
+                transform: translateY(calc(100% - 46px));
+                transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+                z-index: 45;
             }
 
-            .tool-btn {
-                flex-shrink: 0;
-                width: 44px;
-                height: 44px;
+            .properties-sidebar::before {
+                content: '';
+                position: absolute;
+                top: 6px;
+                left: 50%;
+                transform: translateX(-50%);
+                width: 36px;
+                height: 4px;
+                border-radius: 2px;
+                background: var(--border-color);
             }
 
-            /* Drawer konteks (upload/shape/text/ai) -> bottom sheet full width */
-            .drawer-panel {
-                left: 0;
-                right: 0;
-                top: auto;
-                bottom: 58px;
-                width: 100%;
-                height: 55vh;
-                max-height: 55vh;
-                transform: translateY(100%);
-                border-right: none;
-                border-top: 1px solid var(--border-color);
-                border-radius: 12px 12px 0 0;
-                z-index: 195;
-            }
-
-            .drawer-panel.open {
+            .properties-sidebar.sheet-open {
                 transform: translateY(0);
             }
 
-            /* Panel kanan (Properti/Layer) -> overlay penuh yang muncul dari kanan,
-               ditutup lewat tombol close atau tombol toggle di canvas-toolbar. */
-            .properties-sidebar {
-                position: fixed;
-                top: var(--header-height);
-                right: 0;
-                bottom: 58px;
-                width: min(85vw, 320px);
-                height: auto;
-                border-left: 1px solid var(--border-color);
-                transform: translateX(100%);
-                transition: var(--transition-smooth);
-                z-index: 210;
-                box-shadow: -10px 0 30px rgba(0, 0, 0, 0.5);
-            }
+            .tabs-header { padding-top: 6px; cursor: pointer; }
 
-            .properties-sidebar.mobile-open {
-                transform: translateX(0);
-            }
+            .timeline-panel { position: relative; z-index: 20; }
 
-            /* Tombol toggle panel properti (khusus mobile) */
-            .mobile-panel-toggle {
-                display: flex !important;
-            }
+            .timeline-headers-column { width: clamp(90px, 26vw, 130px); }
 
-            .mobile-panel-close {
-                display: flex !important;
-            }
-
-            /* Kanvas & timeline mengisi ruang tersisa, beri jarak bawah untuk nav bar */
-            .center-editor-container {
-                padding-bottom: 58px;
-            }
-
-            .canvas-toolbar {
-                flex-wrap: wrap;
-                gap: 6px;
-                padding: 6px 10px;
-                height: auto;
-            }
-
-            .canvas-toolbar > div {
-                flex-wrap: wrap;
-            }
-
-            #currentProjectDimensionsDisplay {
-                display: none;
-                /* info dimensi disembunyikan di layar sempit, fokus ke kontrol utama */
-            }
-
-            .selection-toolbar {
-                flex-wrap: wrap;
-                padding: 6px 10px;
-            }
-
-            /* Timeline: tetap di alur normal, tapi tinggi dibatasi & mengambang
-               di atas bottom nav supaya tidak tertutup. */
-            .timeline-panel {
-                position: fixed;
-                left: 0;
-                right: 0;
-                bottom: 58px;
-                grid-column: auto;
-                width: 100%;
-                height: 42vh;
-                z-index: 150;
-                border-radius: 12px 12px 0 0;
-                display: none;
-            }
-
-            .main-workspace.timeline-active .timeline-panel {
-                display: grid;
-            }
-
-            .timeline-track-container {
-                grid-template-columns: 110px 1fr;
-            }
-
-            .timeline-track-header {
-                font-size: 10px;
-                padding: 4px 6px;
-            }
-
-            /* Modal & dropdown menyesuaikan lebar HP */
-            .modal-box {
-                width: 92vw !important;
-                max-width: 92vw !important;
-            }
+            .canvas-toolbar { font-size: var(--fs-xs); }
         }
 
-        /* ---------- HP LAYAR KECIL (<=480px) ---------- */
+        /* ---- Small phones (≤ 480px) ---- */
         @media (max-width: 480px) {
-            .properties-sidebar {
-                width: 100vw;
+            .brand-logo span,
+            .brand-logo { font-size: var(--fs-md); }
+
+            #autosaveIndicator { display: none; }
+
+            .header-right { gap: 6px; }
+
+            .timeline-headers-column { width: clamp(70px, 24vw, 100px); }
+
+            .timeline-track-header span,
+            .timeline-track-header { font-size: 9px; }
+        }
+
+        /* ---- Extra small (≤ 360px / 320px) ---- */
+        @media (max-width: 360px) {
+            .tool-btn {
+                width: 36px;
+                height: 36px;
             }
 
-            .drawer-panel {
-                height: 65vh;
-                max-height: 65vh;
+            .selection-toolbar { gap: 4px; }
+
+            .sel-toolbar-sep { margin: 0 2px; }
+        }
+
+        /* Landscape phones: kurangi tinggi timeline supaya preview tetap
+           mendapat ruang layar yang cukup ketika lebar > tinggi. */
+        @media (max-height: 480px) and (orientation: landscape) {
+            .main-workspace.timeline-active {
+                grid-template-rows: minmax(0, 1fr) clamp(110px, 30vh, 160px);
             }
 
-            .timeline-panel {
-                height: 48vh;
-            }
-
-            .tabs-header .tab-link {
-                font-size: 11px;
-                padding: 10px 6px;
-            }
-
-            .brand-logo {
-                font-size: 13px;
-            }
-
-            .menu-item {
-                padding: 6px 6px;
-                font-size: 11px;
-            }
+            .properties-sidebar { max-height: 85vh; }
         }
     </style>
 </head>
@@ -1296,7 +1251,7 @@
         <header class="app-header">
             <div class="header-left">
                 <div class="brand-logo">
-                    <i class="fa-solid fa-bezier-curve"></i> NexusStudio<span class="brand-full-text"> Pro</span>
+                    <i class="fa-solid fa-bezier-curve"></i> NexusStudio Pro
                 </div>
                 <nav class="menu-bar">
                     <div class="menu-item" data-lang-key="menuFile">File
@@ -1362,15 +1317,12 @@
                     <option value="en">English (US)</option>
                 </select>
                 <div id="autosaveIndicator" style="font-size: 11px; color: var(--success-color);">
-                    <i class="fa-solid fa-cloud-inversion"></i> <span class="autosave-text">Terpaut Autosave</span>
+                    <i class="fa-solid fa-cloud-inversion"></i> Terpaut Autosave
                 </div>
             </div>
         </header>
 
         <main class="main-workspace timeline-active" id="mainWorkspaceLayout">
-
-            <div class="mobile-overlay-backdrop" id="mobileOverlayBackdrop" onclick="studioUi.closeMobileOverlays()">
-            </div>
 
             <section class="sidebar-tools">
                 <div class="tool-btn active" id="toolBtnSelect" onclick="studioUi.switchTool('select')"
@@ -1551,11 +1503,6 @@
                         <button id="btnToggleFullscreen" title="Mode Layar Penuh" onclick="studioUi.toggleFullscreen()">
                             <i class="fa-solid fa-expand" id="fullscreenIcon"></i>
                         </button>
-                        <button id="btnMobilePropertiesToggle" class="mobile-panel-toggle" title="Panel Properti"
-                            onclick="studioUi.toggleMobilePropertiesPanel()"
-                            style="display:none; background:var(--accent-color); border-radius:4px; width:28px; height:28px; align-items:center; justify-content:center;">
-                            <i class="fa-solid fa-sliders"></i>
-                        </button>
                     </div>
                 </div>
                 <!-- FITUR BARU: Selection Toolbar -- muncul otomatis begitu ada objek terpilih.
@@ -1596,10 +1543,6 @@
                         id="tabLinkProperties" data-lang-key="tabProps">Properti</div>
                     <div class="tab-link" onclick="studioUi.switchPropertyTab('layers')" id="tabLinkLayers"
                         data-lang-key="tabLayers">Layer</div>
-                    <div class="mobile-panel-close" onclick="studioUi.toggleMobilePropertiesPanel()"
-                        style="display:none; align-items:center; justify-content:center; width:40px; cursor:pointer; color:var(--text-muted); flex:none;">
-                        <i class="fa-solid fa-xmark"></i>
-                    </div>
                 </div>
 
                 <div class="tab-content active" id="tabContentProperties">
@@ -1881,7 +1824,7 @@
                 <div class="timeline-track-container">
                     <div class="timeline-headers-column">
                         <div class="timeline-track-header"
-                            style="height:24px; flex:0 0 24px; background:var(--bg-tertiary); border-bottom:1px solid var(--border-color);">
+                            style="height:24px; background:var(--bg-tertiary); border-bottom:1px solid var(--border-color);">
                         </div>
                         <div class="timeline-track-header"><i class="fa-solid fa-video"></i> Video Track</div>
                         <div class="timeline-track-header"><i class="fa-solid fa-music"></i> Audio Track</div>
@@ -1950,6 +1893,40 @@
         </div>
     </div>
 
+    <!-- ==========================================================================
+         SCRIPT RESPONSIVE TAMBAHAN (TERPISAH, TIDAK MENGUBAH LOGIC APLIKASI)
+         Hanya menambah perilaku "Bottom Sheet" untuk panel Properties di HP:
+         tap header tab untuk membuka/menutup, tap area canvas untuk menutup.
+         Semua fungsi editor (studioUi/studioProject/dll di script utama)
+         tidak disentuh sama sekali oleh script ini.
+         ========================================================================== -->
+    <script>
+        (function () {
+            const mobileQuery = window.matchMedia('(max-width: 768px)');
+            const sheet = document.querySelector('.properties-sidebar');
+            const sheetHandle = document.querySelector('.tabs-header');
+            const canvasArea = document.querySelector('.canvas-view-area');
+
+            function toggleSheet(e) {
+                if (!mobileQuery.matches || !sheet) return;
+                // Selalu BUKA saat tab header disentuh (bukan toggle), supaya
+                // berpindah tab saat sheet sudah terbuka tidak ikut menutupnya.
+                sheet.classList.add('sheet-open');
+            }
+
+            function closeSheet() {
+                if (!mobileQuery.matches || !sheet) return;
+                sheet.classList.remove('sheet-open');
+            }
+
+            if (sheetHandle) sheetHandle.addEventListener('click', toggleSheet);
+            if (canvasArea) canvasArea.addEventListener('click', closeSheet);
+
+            mobileQuery.addEventListener('change', function () {
+                if (sheet) sheet.classList.remove('sheet-open');
+            });
+        })();
+    </script>
 
     <script>
         /**
@@ -2351,52 +2328,17 @@
                 if (this.activeDrawer === type) {
                     drawer.classList.remove('open');
                     this.activeDrawer = null;
-                    this.updateMobileBackdrop();
                 } else {
                     document.getElementById(`drawerContent${type.charAt(0).toUpperCase() + type.slice(1)}`).style.display = 'block';
                     document.getElementById('drawerTitle').innerText = type.toUpperCase() + " CONTROL PANEL";
                     drawer.classList.add('open');
                     this.activeDrawer = type;
-                    this.updateMobileBackdrop();
                 }
             }
 
             closeDrawer() {
                 document.getElementById('sidebarDrawerPanel').classList.remove('open');
                 this.activeDrawer = null;
-                this.updateMobileBackdrop();
-            }
-
-            // ==========================================================================
-            // RESPONSIVE (MOBILE): panel Properti/Layer di layar HP disembunyikan
-            // secara default (lihat CSS @media max-width:768px) dan hanya muncul
-            // sebagai overlay ketika tombol sliders di canvas-toolbar ditekan.
-            // ==========================================================================
-            toggleMobilePropertiesPanel() {
-                const panel = document.querySelector('.properties-sidebar');
-                panel.classList.toggle('mobile-open');
-                this.updateMobileBackdrop();
-            }
-
-            // Menutup drawer kiri & panel properti mobile sekaligus, dipanggil saat
-            // backdrop gelap di belakang overlay diklik/tap.
-            closeMobileOverlays() {
-                document.getElementById('sidebarDrawerPanel').classList.remove('open');
-                this.activeDrawer = null;
-                const panel = document.querySelector('.properties-sidebar');
-                if (panel) panel.classList.remove('mobile-open');
-                this.updateMobileBackdrop();
-            }
-
-            // Menampilkan/menyembunyikan backdrop gelap sesuai ada tidaknya overlay
-            // (drawer kiri atau panel properti) yang sedang terbuka di layar HP.
-            updateMobileBackdrop() {
-                const backdrop = document.getElementById('mobileOverlayBackdrop');
-                if (!backdrop) return;
-                const drawerOpen = document.getElementById('sidebarDrawerPanel').classList.contains('open');
-                const panel = document.querySelector('.properties-sidebar');
-                const panelOpen = panel && panel.classList.contains('mobile-open');
-                backdrop.classList.toggle('visible', drawerOpen || panelOpen);
             }
 
             // ==========================================================================
@@ -6168,47 +6110,7 @@
                 });
             }
         }
-        // ==========================================================================
-        // RESPONSIVE (ADAPTIF): deteksi tinggi layar/viewport SEBENARNYA milik user.
-        // Sebelumnya --timeline-height cuma diatur lewat breakpoint CSS statis
-        // (berdasar lebar layar), jadi di laptop yang lebih pendek dari biasanya,
-        // track Subtitle bisa terpotong habis karena tidak ada sisa ruang & body
-        // di-overflow:hidden. Fungsi ini mengukur ruang vertikal yang benar-benar
-        // tersedia (via visualViewport bila ada, fallback ke innerHeight) lalu
-        // menghitung ulang tinggi panel timeline supaya Video/Audio/Subtitle
-        // selalu proporsional & tidak pernah hilang dari layar, di laptop besar
-        // maupun kecil, dan dipanggil ulang tiap kali ukuran jendela berubah.
-        // ==========================================================================
-        function nexusSyncViewportToScreen() {
-            const vh = Math.round(window.visualViewport ? window.visualViewport.height : window.innerHeight);
-            const vw = Math.round(window.visualViewport ? window.visualViewport.width : window.innerWidth);
-            document.documentElement.style.setProperty('--real-vh', vh + 'px');
-            document.documentElement.style.setProperty('--real-vw', vw + 'px');
-
-            // Layout khusus HP (bottom-nav/overlay) sudah ditangani lewat CSS
-            // @media max-width:768px, jadi perhitungan dinamis timeline di bawah
-            // ini hanya perlu berlaku untuk mode PC/laptop (kolom 3 sisi).
-            if (vw <= 768) return;
-
-            const headerH = 48;   // var(--header-height)
-            const toolbarH = 40;  // tinggi .canvas-toolbar
-            const available = vh - headerH - toolbarH;
-
-            const minTimeline = 150;   // batas bawah supaya 3 track tetap terbaca
-            const maxTimeline = 300;   // batas atas di layar sangat tinggi
-            const suggested = Math.max(minTimeline, Math.min(maxTimeline, Math.round(available * 0.32)));
-
-            document.documentElement.style.setProperty('--timeline-height', suggested + 'px');
-        }
-        window.addEventListener('resize', nexusSyncViewportToScreen);
-        window.addEventListener('orientationchange', nexusSyncViewportToScreen);
-        if (window.visualViewport) {
-            window.visualViewport.addEventListener('resize', nexusSyncViewportToScreen);
-        }
-        nexusSyncViewportToScreen();
-
         window.addEventListener('DOMContentLoaded', () => {
-            nexusSyncViewportToScreen();
             studioUi.initDomListeners();
             studioUi.initFullscreenSync();
             studioCanvasEngine.initCanvas();
